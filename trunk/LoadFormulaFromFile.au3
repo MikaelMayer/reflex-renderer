@@ -10,6 +10,7 @@
 #include-once
 #include "GlobalUtils.au3"
 #include "JpegHandling.au3"
+#include "PngHandling.au3"
 
 Global $LOAD_FORMULA_EXISTS = False
 
@@ -105,7 +106,7 @@ EndFunc
 ;Build a string representation of the formula_item
 Func formulaItemToString($formula_item)
   If $formula_item[$FORMULA_ITEM_TYPE]==$BLANK_LINE Then
-    Return "";
+    Return ""
   ElseIf $formula_item[$FORMULA_ITEM_TYPE]==$OPTIONS_LINE Then
     $result = emptyQueue()
     For $i = 1 To UBound($formula_item)-1
@@ -203,7 +204,7 @@ Func expandOptions(ByRef $queue)
         $options_item = $queue[$i]
         ;Logging("  considering:"&FormulaItemToString($options_item))
         While UBound($options_item) >= 3
-          ;jpegDebug("One expansion done")
+          ;logging("One expansion done")
           $last = _ArrayCreate($OPTIONS_LINE, _ArrayPop($options_item))
           ;Logging("  Queue length before:"&size($queue))
           ;Logging("  Moving ressource "& FormulaItemToString($last))
@@ -437,35 +438,47 @@ Func loadFormulaFromReflex()
   loadJpegReflex($fullpath)
 EndFunc
 
-Func loadJpegReflex($fullpath)
-  If @error == 1 Or $fullpath =='' Then
+Func loadImgContainingReflex($fullpath)
+  If $fullpath =='' Then Return
+  $isJpeg = StringEndsWith($fullpath, '.jpeg') Or StringEndsWith($fullpath, '.jpg')
+  $isPng =  StringEndsWith($fullpath, '.png')
+  Dim $text_tags_found
+  If $isJpeg Then
+    $text_tags_found = XpExifTags($fullpath)
+  ElseIf $isPng Then
+    $text_tags_found = PngReflexTags($fullpath)
+  Else
+    MsgBox(0, $Error, StringFormat($no_algorithm_to_import_data_from_this_kind_of_file__s, $fullpath))
     Return
   EndIf
-  $exif_tags = XpExifTags($fullpath)
+  If $ERROR_DECODE_HANDLING <> "" Then
+    MsgBox(0, $Error, StringFormat($error_while_importing_from__s, $fullpath)&@CRLF&$ERROR_DECODE_HANDLING)
+    Return
+  EndIf
   Dim $comment = ""
-  jpegDebug("tags:"&$exif_tags[0])
-  For $i = 1 To $exif_tags[0]
-    $current_tag = $exif_tags[$i]
+  ;logging("tags:"&$text_tags_found[0])
+  For $i = 1 To $text_tags_found[0]
+    $current_tag = $text_tags_found[$i]
     If StringCompare($current_tag[0], "comment")==0 Then
       $comment = $current_tag[1]
       ExitLoop
     EndIf
   Next
   If $comment == "" Then
-    MsgBox(0, $Error, $No_xp_comments_in_this_jpeg_image)
+    MsgBox(0, $Error, $No_comments_found_in_this_image)
     Return
   EndIf
-  ;jpegDebug("Comment trouvé: "&$comment)
+  ;logging("Comment trouvé: "&$comment)
   $file = StringSplit($comment, @CRLF, 1)
   _ArrayDelete($file, 0) ;Supprime le compteur
-  ;jpegDebug("File splité")
+  ;logging("File splité")
   $queue = _ArrayCreate(0)
   if @error == -1 Then
     Return -1
   EndIf
-  ;jpegDebug("queue créée")
+  ;logging("queue créée")
   For $line in $file
-	;jpegDebug("Adding line to queue: "&$line)
+	;logging("Adding line to queue: "&$line)
     If $line <> "" Then
       addFormulaItem($queue, $line)
     EndIf
@@ -488,7 +501,7 @@ Func loadJpegReflex($fullpath)
   expandOptions($queue)
   
   $result = getEverythingAvailableFromFormula($queue)
-  ;jpegDebug("Retour avec n options: "&size($queue))
+  ;logging("Retour avec n options: "&size($queue))
   loadFormulaCallback($result)
 EndFunc
 

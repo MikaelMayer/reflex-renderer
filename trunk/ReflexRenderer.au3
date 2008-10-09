@@ -6,26 +6,24 @@
  Script Function:
   A user-friendly interface for the RenderReflex programm
 
-
  Wish List:
- 
+
+ - Moving the main window / minimizing / maximizing => do the same for the children
  - Little "cancel" button close to the "Rentering..." label.
  - Add the possibility of adding 1 special variable name, and a slider for the interpolation.
- - Sequence recording window (combine with the special variable name)
+ - Video/Sequence rendering window (combine with the special variable name)
  - 'Reset all' button
  - Save/open session(s) in ini files
  - Independence of the save box
  - Axes
  - An option dialog box (gray/black zooming box, if save session when leaving, display axes, default NaN color, black rendering for realmode,
-   how many formulas in history before it gets stored again, if stores in history and where,)
- - Explanation and demo script
+   how many formulas in history before it gets stored again, if stores in history and where, how many in local history, etc.)
+ - Explanation and demo script / tutorial ?
 
  Design questions:
- - Ok - Appliquer - Annuler dans Savebox + indicateur s'il fat sauvegarder ou non + indépendance de la fenêtre.
- - If press over "inv", labels "sin, cos, sinh" change to "arcsin", "arccos", "argsh" or color change?
+ - Ok - Appliquer - Annuler dans Savebox + indicateur s'il faut sauvegarder ou non + indépendance de la fenêtre.
  
  Difficult/long:
- - PNG support...
  - Export to a readable OpenOffice formula string (renderreflex.exe exportooffice formula="")
  - Press "plus" more times should do something.
  
@@ -33,7 +31,6 @@
  - Mouse/Keyboard for the BMP/JPEG option?
  - randf(36)*randh(36) bug!!
  - Bug redim en 640 x 480 + zoom avant, pas bon le redimensionnement, à reproduire?
- - Mum: Automatic rendering when pressed "ENTER" (GUIRegisterMsg)
 
  ==== Erwin's notes ====
 V Ne pas avoir besoin de cliquer pour relâcher le drag, quand on veut naviguer sur la réflex. Il faudrait que ça actualise lorsqu'on relâche le bouton de la souris.
@@ -54,13 +51,16 @@ V "Libeller la Reflex comme la formule" m'a fait penser au début que ça mettrait
  ===== Done ====
  
 Mik notes : 
-
+ V If press over "inv", labels "sin, cos, sinh" change to "arcsin", "arccos", "argsh" or color change?
+ V [Bug] If no INI file is provided, or some values are missing (ex: seed hidden), should fill it automatically
+ V PNG support (quick)...
+ V Speed - Accelerate syntax coloring
  V Bug - Find why "Fracture dans toile" is not imported.
  V Bug - Find why "Autres" does not reset the tree
  V Resizable formula editor
  V Load the history_formulas file first and then do not read it again, just record the last 5 _ArrayPush (else it's slow)
  V ENTER in Edit formula mode submits the changes
- V All formulas which have been used should be written to a common file (history_formulas.txt)
+ V All formulas which have been used are written to a common file (history_formulas.txt)
  V 1-click choose in the formula recovery (or formula import)
  V Coloration syntaxique
  V When saving, automatically detects if the last picture has just to be copied in HD and LR
@@ -164,7 +164,7 @@ puis d'y adjoindre les chaînes traduites de &Tools + ' > ' + &Save reflex / form
  
 #ce ----------------------------------------------------------------------------
 
-Global Const $VERSION_NUMER = "2.5.01 beta"
+Global Const $VERSION_NUMER = "2.7.03 beta"
 Global Const $COPYRIGHT_DATE = "2008"
 
 HotKeySet('{ESC}', 'cancelDrag')
@@ -173,8 +173,6 @@ $output_x = 312
 $output_y = 28
 $output_max_size=401
 
-;Opt('TrayIconDebug', 1)
-Opt('TrayIconHide', 1)
 Opt('MouseCoordMode', 2)
 #include <Math.au3>
 #Include <Misc.au3>
@@ -205,7 +203,7 @@ Global $factor_threading = 1.0
 Global $rri_out_rendu_pos
 Global Enum $REFLEX_NOT_UP_TO_DATE = 0, $REFLEX_RENDERED_IN_LR, $REFLEX_RENDERED_IN_HR
 Global $REFLEX_RENDERING = $REFLEX_NOT_UP_TO_DATE, $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE, $REFLEX_RENDERED_FINISHED = True
-Global $history_formula_array = _ArrayCreate("", "", "", "", "", "", "", "", "", "")
+Global $history_formula_array = _ArrayCreate("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "")
 
 Func loadRRI()
   Opt('GUIOnEventMode', 1)
@@ -417,20 +415,21 @@ Func loadRRI()
   EndIf
 
   Global $sessionParametersMap = _ArrayCreate( _
-   _ArrayCreate('formula', $rri_in_formula), _
-   _ArrayCreate('width', $rri_width), _
-   _ArrayCreate('height', $rri_height), _
-   _ArrayCreate('winmin', $rri_winmin), _
-   _ArrayCreate('winmax', $rri_winmax), _
-   _ArrayCreate('percentPreview', $rri_percent), _
-   _ArrayCreate('outputFile', $rri_output), _
-   _ArrayCreate('ZoomFactor', $rri_zoom_factor), _
-   _ArrayCreate('seed', $rri_seed) _
+   _ArrayCreate('formula', $rri_in_formula, 'oo(cosh(z)-i*argsh(j*z)-z/(x^y),5)'), _
+   _ArrayCreate('width', $rri_width, '401'), _
+   _ArrayCreate('height', $rri_height, '401'), _
+   _ArrayCreate('winmin', $rri_winmin, '-4-4i'), _
+   _ArrayCreate('winmax', $rri_winmax, '4+4i'), _
+   _ArrayCreate('percentPreview', $rri_percent, '25'), _
+   _ArrayCreate('outputFile', $rri_output, '.\My_temporary_nice_function.bmp'), _
+   _ArrayCreate('ZoomFactor', $rri_zoom_factor, '2'), _
+   _ArrayCreate('seed', $rri_seed, '1986') _
   )
+
   Global $sessionCheckBoxMap = _ArrayCreate( _
-   _ArrayCreate('preview', $rri_preview), _
-   _ArrayCreate('AutoRender', $rri_check_auto_render), _
-   _ArrayCreate('RealMode', $rri_realmode) _
+   _ArrayCreate('preview', $rri_preview, 'FALSE'), _
+   _ArrayCreate('AutoRender', $rri_check_auto_render, 'TRUE'), _
+   _ArrayCreate('RealMode', $rri_realmode, 'FALSE') _
   )
 
   Global $resolutionsMap = _ArrayCreate( _
@@ -448,7 +447,7 @@ Func loadRRI()
   GUISetOnEvent($GUI_EVENT_PRIMARYDOWN, 'rri_winMouseLeftDown')
   GUISetOnEvent($GUI_EVENT_PRIMARYUP, 'rri_winMouseLeftUp')
   GUISetOnEvent($GUI_EVENT_SECONDARYUP, 'rri_winMouseRightUp')
-  GUISetOnEvent($GUI_EVENT_DROPPED, "loadJpegDropped")
+  GUISetOnEvent($GUI_EVENT_DROPPED, "loadImgDropped")
   GUICtrlSetState($rri_out_rendu, $GUI_DROPACCEPTED)
   GUICtrlSetState($rri_rendering_text, $GUI_HIDE)
   GUICtrlSetState($rri_progress, $GUI_HIDE)
@@ -633,9 +632,9 @@ EndFunc
 Func rri_menu_import_formulaClick()
   loadFormula()
 EndFunc
-Func loadJpegDropped()
-  jpegDebug(@GUI_DRAGFILE)
-  loadJpegReflex(@GUI_DRAGFILE)
+Func loadImgDropped()
+  ;logging(@GUI_DRAGFILE)
+  loadImgContainingReflex(@GUI_DRAGFILE)
 EndFunc
 Func rri_menu_import_reflexClick()
   loadFormulaFromReflex()
@@ -653,12 +652,12 @@ Func loadFormulaCallback($formula)
       updateWindow($item[1])
       $render_again = True
     Case "comment"
-      ;TODO.
+      ;TODO : Put a variable, even hidden (like seed), containing the comment, so that it can be changed dynamically, not on the file.
     Case "resolution"
       updateResolution($item[1])
       $render_again = True
     Case Else
-      jpegDebug("Unknown tag : "&$item[0])
+      logging("Unknown tag : "&$item[0])
     EndSwitch
   Next
   if $render_again Then renderIfAutoRender($rri_out_rendu)
@@ -666,7 +665,6 @@ EndFunc
 Func rri_menu_resolutionsClick()
 EndFunc
 Func rri_menu_saveClick()
-  SaveSession()
   $savingParameters = savebox()
   If $savingParameters <> 1 Then Return
   saveboxSave()
@@ -1166,12 +1164,19 @@ Func getFirstAvailableFileName($filename)
 EndFunc
 
 Func saveReflex()
-  Local $next = UpdateMyDocuments(IniReadSavebox('reflexFile', ''))
-  $next = getFirstAvailableFileName($next)
-  $isBmp = (StringRight($next, 4)=='.bmp')
+  SaveSession()
+  Local $reflex_file = UpdateMyDocuments(IniReadSavebox('reflexFile', ''))
+  $reflex_file = getFirstAvailableFileName($reflex_file)
+  $isBmp =  StringEndsWith($reflex_file, '.bmp')
+  $isJpeg = StringEndsWith($reflex_file, '.jpeg') Or StringEndsWith($reflex_file, '.jpg')
+  $isPng =  StringEndsWith($reflex_file, '.png')
+  If Not ($isBmp Or $isJpeg Or $isPng) Then
+    MsgBox(0, $Error, StringFormat($unknown_file_format_s, $reflex_file))
+    Return
+  EndIf
   $lowres = isSavebox('LRReflex')
   $highres = isSavebox('HRReflex')
-  logging(StringFormat("Valeur: highres=%d, lowres=%d, reflex_rendered=%d", $highres, $lowres, $reflex_rendered))
+  ;logging(StringFormat("Valeur: highres=%d, lowres=%d, reflex_rendered=%d", $highres, $lowres, $reflex_rendered))
   If ($highres And $REFLEX_RENDERED <> $REFLEX_RENDERED_IN_HR) Or ($lowres And $REFLEX_RENDERED <> $REFLEX_RENDERED_IN_LR) _
 Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Then
     ;Renders the reflex depending on the resolution (low or high)
@@ -1189,7 +1194,7 @@ Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Then
     addFlag($flags, "winmin",  IniRead($ini_file, $ini_file_session, 'winmin', ''))
     addFlag($flags, "winmax",  IniRead($ini_file, $ini_file_session, 'winmax', ''))
     If $isBmp Then ;On le rend directement à la bonne place!
-      addFlag($flags, "output", $next)
+      addFlag($flags, "output", $reflex_file)
     Else
       addFlag($flags, "output", IniRead($ini_file, $ini_file_session, 'outputFile', ''))
     EndIf
@@ -1204,28 +1209,45 @@ Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Then
   EndIf
   $existing = IniRead($ini_file, $ini_file_session, 'outputFile', '')
   If $isBmp Then
-    ;If FileGetSize($next) < 10000000 Then
-      ;FileCopy($next, $existing, 1)
+    ;If FileGetSize($reflex_file) < 10000000 Then
+      ;FileCopy($reflex_file, $existing, 1)
       ;If @error Then
-      ;  MsgBox(0, $Error, StringFormat($Could_not_copy_from___s__to___s_, $next, $existing))
+      ;  MsgBox(0, $Error, StringFormat($Could_not_copy_from___s__to___s_, $reflex_file, $existing))
       ;EndIf
-    GUICtrlSetImage($rri_out_rendu,  $next)
+    GUICtrlSetImage($rri_out_rendu,  $reflex_file)
     ;EndIf
-  Else
-    ;Logging("Copying to "&$next)
+  ElseIf $isJpeg Then
+    ;Logging("Copying to "&$reflex_file)
     _GDIPlus_Startup ()
     $hImage = _GDIPlus_ImageLoadFromFile($existing)
-    _GDIPlus_ImageSaveToFile($hImage, $next)
-    If FileExists($next)==0 Then
-      MsgBox(0, $Error, StringFormat($Could_not_convert_from___s__to___s_, $existing, $next))
+    _GDIPlus_ImageSaveToFile($hImage, $reflex_file)
+    If FileExists($reflex_file)==0 Then
+      MsgBox(0, $Error, StringFormat($Could_not_convert_from___s__to___s_, $existing, $reflex_file))
     EndIf
     _GDIPlus_ImageDispose ($hImage)
     _GDIPlus_ShutDown ()
-    $comment = IniReadSavebox('formulaComment', '')
-    $formula_and_options = saveFormulaString(IniRead($ini_file, 'Session', 'formula', ''), $comment, isSavebox('saveComment'), isSavebox('saveResolution'), isSavebox('saveWindow'))
+    $formula_and_options = defaultFormulaString()
     Dim $informations = _ArrayCreate(2, _ArrayCreate("title", "Reflex"), _ArrayCreate("comment", $formula_and_options))
-    WriteXPSections($next, $informations)
+    WriteXPSections($reflex_file, $informations)
+  ElseIf $isPng Then
+    _GDIPlus_Startup ()
+    $hImage = _GDIPlus_ImageLoadFromFile($existing)
+    _GDIPlus_ImageSaveToFile($hImage, $reflex_file)
+    If FileExists($reflex_file)==0 Then
+      MsgBox(0, $Error, StringFormat($Could_not_convert_from___s__to___s_, $existing, $reflex_file))
+    EndIf
+    _GDIPlus_ImageDispose ($hImage)
+    _GDIPlus_ShutDown ()
+    $formula_and_options = defaultFormulaString()
+    Dim $informations = _ArrayCreate(3, _ArrayCreate("Title", "Reflex"), _ArrayCreate("Comment", $formula_and_options), _ArrayCreate("Software", "ReflexRenderer v."&$VERSION_NUMER))
+    WritePngTextChunks($reflex_file, $informations)
   EndIf
+EndFunc
+
+Func defaultFormulaString()
+  $comment = IniReadSavebox('formulaComment', '')
+  $formula_and_options = saveFormulaString(IniRead($ini_file, 'Session', 'formula', ''), $comment, isSavebox('saveComment'), isSavebox('saveResolution'), isSavebox('saveWindow'))
+  return $formula_and_options
 EndFunc
 
 Func calculateWidthHeight()
@@ -1535,7 +1557,7 @@ Func menu_setLang()
   $res_string = ''
   $language_name = ''
   For $language in $languages
-    Logging("$"&$language[1]&Execute("$"&$language[1])&" : Value to be compared to "&@GUI_CTRLID)
+    ;Logging("$"&$language[1]&Execute("$"&$language[1])&" : Value to be compared to "&@GUI_CTRLID)
     If Execute("$"&$language[1]) == @GUI_CTRLID Then
       $res_string = $language[2]
       $language_name = $language[0]
@@ -1686,14 +1708,14 @@ EndFunc
 
 Func LoadSession()
   For $singlemap in $sessionParametersMap
-    LoadSessionParameter($singlemap[0], $singlemap[1])
+    LoadSessionParameter($singlemap[0], $singlemap[1], $singlemap[2])
 	Next
   ;TODO: On le fait deux fois pour que la formule soit affichée. Autre moyen?
-  For $singlemap in $sessionParametersMap
-    LoadSessionParameter($singlemap[0], $singlemap[1])
-  Next
+  ;For $singlemap in $sessionParametersMap
+  ;  LoadSessionParameter($singlemap[0], $singlemap[1])
+  ;Next
   For $singlemap in $sessionCheckBoxMap
-    LoadSessionCheckBox($singlemap[0], $singlemap[1])
+    LoadSessionCheckBox($singlemap[0], $singlemap[1], $singlemap[2])
   Next
   changePreviewState()
 EndFunc

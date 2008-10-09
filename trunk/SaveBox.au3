@@ -15,10 +15,10 @@
 
 Func LoadSavebox($saveboxParametersMap, $saveboxCheckBoxMap)
   for $singlemap in $saveboxParametersMap
-    LoadSaveboxParameter($singlemap[0], $singlemap[1])
+    LoadSaveboxParameter($singlemap[0], $singlemap[1], $singlemap[2])
   Next
   for $singlemap in $saveboxCheckBoxMap
-    LoadSaveboxCheckBox($singlemap[0], $singlemap[1])
+    LoadSaveboxCheckBox($singlemap[0], $singlemap[1], $singlemap[2])
   Next
 EndFunc
 
@@ -82,7 +82,7 @@ Func savebox()
   Global $sb_save_lowres_reflex = GUICtrlCreateRadio($__low_resolution_reflex__, 19, 279, 193, 17)
   Global $sb_LabelReflexFileName = GUICtrlCreateLabel($__reflex_file_name__, 22, 304, 120, 17)
   Global $sb_reflex_extension = GUICtrlCreateCombo("Jpeg (*.jpg)", 167, 298, 97, 25, BitOR($CBS_DROPDOWNLIST,$CBS_AUTOHSCROLL))
-  GUICtrlSetData($sb_reflex_extension, "Bitmap (*.bmp)")
+  GUICtrlSetData($sb_reflex_extension, "PNG (*.png)|Bitmap (*.bmp)")
   Global $sb_reflex_filename = GUICtrlCreateInput("c:\Images\My nice function.jpg", 19, 321, 217, 21)
   GUICtrlSetState($sb_reflex_filename, $GUI_DISABLE)
   Global $sb_new_reflex_filename = GUICtrlCreateButton("...", 238, 321, 28, 20, 0)
@@ -114,23 +114,23 @@ Func savebox()
   )
   
   Global $saveboxParametersMap = _ArrayCreate( _
-   _ArrayCreate('formulaComment', $sb_formula_comment), _
-   _ArrayCreate('formulaFile', $sb_formula_filename), _
-   _ArrayCreate('Extension', $sb_reflex_extension), _
-   _ArrayCreate('reflexFile', $sb_reflex_filename) _
+   _ArrayCreate('formulaComment', $sb_formula_comment, 'My nice function'), _
+   _ArrayCreate('formulaFile', $sb_formula_filename, '%MY_DOCUMENTS%\Reflex\formulas.txt'), _
+   _ArrayCreate('Extension', $sb_reflex_extension, 'Jpeg (*.jpg)'), _
+   _ArrayCreate('reflexFile', $sb_reflex_filename, '%MY_DOCUMENTS%\Reflex\My nice function.jpg') _
   )
 
   Global $saveboxCheckBoxMap = _ArrayCreate( _
-   _ArrayCreate('saveBoth', $sb_save_fr), _
-   _ArrayCreate('saveFormula', $sb_save_f), _
-   _ArrayCreate('saveReflex', $sb_save_r), _
-   _ArrayCreate('saveComment', $sb_save_comment), _
-   _ArrayCreate('saveWindow', $sb_save_window), _
-   _ArrayCreate('saveResolution', $sb_save_resolution), _
-   _ArrayCreate('HRReflex', $sb_save_highres_reflex), _
-   _ArrayCreate('CopyLast', $sb_save_last_reflex), _
-   _ArrayCreate('LRReflex', $sb_save_lowres_reflex), _
-   _ArrayCreate('useComment', $sb_use_formula_comment) _
+   _ArrayCreate('saveBoth', $sb_save_fr, 'TRUE'), _
+   _ArrayCreate('saveFormula', $sb_save_f, 'FALSE'), _
+   _ArrayCreate('saveReflex', $sb_save_r, 'FALSE'), _
+   _ArrayCreate('saveComment', $sb_save_comment, 'TRUE'), _
+   _ArrayCreate('saveWindow', $sb_save_window, 'TRUE'), _
+   _ArrayCreate('saveResolution', $sb_save_resolution, 'TRUE'), _
+   _ArrayCreate('HRReflex', $sb_save_highres_reflex, 'TRUE'), _
+   _ArrayCreate('CopyLast', $sb_save_last_reflex, 'FALSE'), _
+   _ArrayCreate('LRReflex', $sb_save_lowres_reflex, 'FALSE'), _
+   _ArrayCreate('useComment', $sb_use_formula_comment, 'TRUE') _
   )
 
   LoadSavebox($saveboxParametersMap, $saveboxCheckBoxMap)
@@ -306,6 +306,7 @@ Func getFirstAvailableComment($comment)
 EndFunc
 
 Func saveFormula()
+  SaveSession()
   $filename = UpdateMyDocuments(IniReadSavebox('formulafile', ''))
   $formula = IniRead($ini_file, 'Session', 'formula', '')
   $comment = IniReadSavebox('formulaComment', '')
