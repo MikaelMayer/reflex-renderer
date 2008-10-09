@@ -14,9 +14,9 @@
 LoadTranslations()
 Func LoadTranslations()
 
-Local $language = IniRead($ini_file, $ini_file_session, 'language', '')
+Local $language = IniRead($ini_file, $ini_file_session, 'language', 'en')
 Local $updates = True
-Global $lang_folder = 'lang' ;TODO: To externalize
+Global $lang_folder = 'lang' ;TODO: To externalize?
 
 Global $translation_ini = @ScriptDir&'\'&$lang_folder&'\'&translationFile($language)
 Global $ini_section = 'Messages'
@@ -49,7 +49,9 @@ add($affectations_messages, "changement_langue_titre", $ini_section, "New langua
 add($affectations_messages, "changement_langue_text__s", $ini_section, "Please restart the application to have it in %s.", "Please restart the application to have it in %s.")
 add($affectations_messages, "No_xp_comments_in_this_jpeg_image", $ini_section, "No XP comments corresponding to a formula in this jpeg image.", "No XP comments corresponding to a formula in this jpeg image.")
 add($affectations_messages, "Bad_formatting_in_xp_comment", $ini_section, "Bad formatting in xp comment", "Bad formatting in xp comment")
-
+add($affectations_messages, "no_algorithm_to_import_data_from_this_kind_of_file__s", $ini_section, "No possible import from %s", "No possible import from %s")
+add($affectations_messages, "error_while_importing_from__s", $ini_section, "Error occured when importing from %s", "Error occured when importing from %s")
+add($affectations_messages, "No_comments_found_in_this_image", $ini_section, "No comments corresponding to a formula in this image.", "No comments corresponding to a formula in this image.")
 
 ;=============== GUI ===================;
 ; Reflex Renderer Interface
@@ -85,7 +87,7 @@ add($affectations, "__menu_save__", $gui_section, '&Saving options...', '&Saving
 add($affectations, "__menu_windows__", $gui_section, '&Windows', '&Windows')
 add($affectations, "__menu_resolutions__", $gui_section, '&Resolutions', '&Resolutions')
 add($affectations, "__menu_about__", $gui_section, '&About...', '&About...')
-add($affectations, "__menu_quit__", $gui_section, 'Quit', 'Quit')
+add($affectations, "__menu_quit__", $gui_section, 'Quit [menu]', 'Quit')
 add($affectations, "__formula_menu__", $gui_section, '&Formula', '&Formula')
 add($affectations, "__menu_formula_editor__", $gui_section, '&Editor...', '&Editor...')
 add($affectations, "__menu_formula_import__", $gui_section, '&Import...', '&Import...')
@@ -183,12 +185,9 @@ Next
 EndFunc
 
 Func update($affectations)
-  ;If $languages <> False Then Return
-  Logging("Affectations2")
+  If $languages == False Then Return
   For $var In $affectations
-   ; Logging("Affectations3")
     For $language In $languages
-      ;Logging("Affectations4")
       Local $ini_translation = $lang_folder&'\'&translationFile($language[2])
       If IniRead($ini_translation, $var[1], $var[2], 'ZXW')=='ZXW' Then
         IniWrite($ini_translation, $var[1], $var[2], $var[3])

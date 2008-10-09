@@ -12,14 +12,14 @@
 Global $ini_file = @ScriptDir&'\ReflexRenderer.ini'
 Global $ini_file_session = 'Session'
 Global $ini_file_default = 'Default'
-Global Const $options_line_string = "@Options:"
+Global Const $options_line_string = '@Options:'
 
-Func LoadParameter($type, $name, $control)
-  $w = IniRead($ini_file, $type, $name, '')
+Func LoadParameter($type, $name, $control, $default='')
+  $w = IniRead($ini_file, $type, $name, $default)
   If $w <> '' Then GUICtrlSetData($control, $w)
 EndFunc
-Func LoadCheckBox($type, $name, $control)
-  $w = IniRead($ini_file, $type, $name, '')
+Func LoadCheckBox($type, $name, $control, $default='')
+  $w = IniRead($ini_file, $type, $name, $default)
   If $w <> '' Then GUICtrlSetState($control, _Iif($w=='TRUE', $GUI_CHECKED, $GUI_UNCHECKED))
 EndFunc
 Func SaveParameter($type, $name, $control)
@@ -29,14 +29,14 @@ Func SaveCheckBox($type, $name, $control)
   IniWrite($ini_file, $type, $name, _Iif(BitAnd(GUICtrlRead($control),$GUI_CHECKED), 'TRUE', 'FALSE'))
 EndFunc
 
-Func LoadSessionParameter($name, $control)
-  LoadParameter($ini_file_session, $name, $control)
+Func LoadSessionParameter($name, $control, $default)
+  LoadParameter($ini_file_session, $name, $control, $default)
 EndFunc
 Func LoadDefaultParameter($name, $control)
   LoadParameter($ini_file_default, $name, $control)
 EndFunc
-Func LoadSessionCheckBox($name, $control)
-  LoadCheckBox($ini_file_session, $name, $control)
+Func LoadSessionCheckBox($name, $control, $default)
+  LoadCheckBox($ini_file_session, $name, $control, $default)
 EndFunc
 Func LoadDefaultCheckBox($name, $control)
   LoadCheckBox($ini_file_default, $name, $control)
@@ -55,11 +55,11 @@ Func SaveDefaultCheckBox($name, $control)
   SaveCheckBox($ini_file_default, $name, $control)
 EndFunc
 
-Func LoadSaveboxParameter($name, $control)
-  LoadParameter('Savebox', $name, $control)
+Func LoadSaveboxParameter($name, $control, $default)
+  LoadParameter('Savebox', $name, $control, $default)
 EndFunc
-Func LoadSaveboxCheckBox($name, $control)
-  LoadCheckBox('Savebox', $name, $control)
+Func LoadSaveboxCheckBox($name, $control, $default)
+  LoadCheckBox('Savebox', $name, $control, $default)
 EndFunc
 Func SaveSaveboxParameter($name, $control)
   SaveParameter('Savebox', $name, $control)

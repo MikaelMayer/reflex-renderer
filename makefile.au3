@@ -9,10 +9,11 @@
 #ce ----------------------------------------------------------------------------
 
 #include <Array.au3>
+#include "GlobalUtils.au3"
 
 $zip_file = "ReflexRendererv2.1.zip"
 
-$folderout = "ReflexRendererv2.5.01beta"
+$folderout = "ReflexRendererv2.7.03beta"
 
 $filescript1 = "ReflexRenderer.au3"
 $filescript2 = "LoadFormulaFromFile.au3"
@@ -25,8 +26,6 @@ $filescript8 = "JpegHandling.au3"
 
 $filebinout  = $folderout&"\ReflexRenderer.exe"
 $fileini     = "ReflexRenderer.ini"
-;$filetrad    = "translations.ini"
-;$filetrad_en    = "translations_en.ini"
 $filereadme  = "Readme.txt"
 $filebin     = "Release\RenderReflex.exe"
 $filenoir    = "Release\noir.bmp"
@@ -71,8 +70,9 @@ _ArrayAdd($tocopy, $filecolico)
 ;$filetrad_en, _
 ;$filetrad)
 
-$dirtocopy = _ArrayCreate( _
-$dirtrad)
+$dirtocopy = _ArrayCreate($dirtrad)
+
+$initocopy = _ArrayCreate($fileini)
 
 assertAllFilesExist($dependencies)
 If Not FileExists($folderout) Then
@@ -83,6 +83,7 @@ $Aut2Exe = StringReplace(@AutoItExe, "AutoIt3.exe", "Aut2Exe\Aut2Exe.exe")
 $cmd = StringFormat('%s /in "%s" /out "%s" /icon "%s" /nopack', $Aut2Exe, @ScriptDir&'\'&$filescript1, @ScriptDir&'\'&$filebinout, @ScriptDir&'\'&$fileico)
 ;MsgBox(0, "", $cmd)
 RunWait($cmd)
+copyAllMissingIniConfig($initocopy, $folderout)
 copyAllFiles($tocopy, $folderout)
 copyAllDirectories($dirtocopy, $folderout)
 compressAll($folderout, $zip_file)
@@ -109,6 +110,28 @@ EndFunc
 Func copyAllDirectories($arrayDirs, $folder)
   For $dirname In $arrayDirs
     DirCopy($dirname, $folder&"\"&$dirname, 1)
+  Next
+EndFunc
+
+Func copyAllMissingIniConfig($arrayIniFiles, $folder)
+  Return
+  $default_string = "/\/\/%ùl^^*"
+  For $iniFilename In $arrayIniFiles
+    $other_iniFilename = $folder&"\"&$iniFilename 
+    $sectionNames = IniReadSectionNames($iniFilename)
+    toBasicArray($sectionNames)
+    For $sectionName In $sectionNames
+      $section = IniReadSection($iniFilename, $sectionName)
+      If @error == 1 Then
+        logging("Unable to read sections of "&$iniFilename&" on "&$sectionName)
+      EndIf
+      For $i = 1 To $section[0][0]
+        If IniRead($other_iniFilename, $sectionName, $section[$i][0], $default_string) == $default_string Then
+          IniWrite($other_iniFilename, $sectionName, $section[$i][0], $section[$i][1])
+          logging("Written to "&$sectionName&" : "&$section[$i][0]&" = " & $section[$i][1])
+        EndIf
+      Next
+    Next
   Next
 EndFunc
 

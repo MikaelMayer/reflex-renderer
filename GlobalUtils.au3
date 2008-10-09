@@ -14,8 +14,15 @@
 #include <Array.au3>
 #include <Date.au3>
 
-;Manipulating Array which can be empty
+Global $ERROR_DECODE_HANDLING = ""
 
+If @Compiled Then
+  Opt('TrayIconHide', 1)
+Else
+  Opt('TrayIconDebug', 1)
+EndIf
+
+;Manipulating Array which can be empty
 Func size(ByRef $SizedArray)
   return $SizedArray[0]
 EndFunc
@@ -50,6 +57,15 @@ Func insertAfter(ByRef $queue, $element, $index)
   EndIf
 EndFunc
 
+Func deleteAt(ByRef $queue, $index)
+  If $index > $queue[0] or $index < 1 Then 
+    Return
+  Else
+    _ArrayDelete($queue, $index)
+    $queue[0] -= 1
+  EndIf
+EndFunc
+
 Func isEmpty(ByRef $queue)
   Return $queue[0]==0
 EndFunc
@@ -60,6 +76,31 @@ EndFunc
 
 Func toBasicArray(ByRef $queue)
   _ArrayDelete($queue, 0)
+EndFunc
+
+Func toString(ByRef $element)
+  Local $res = ""
+  If IsArray($element) Then
+    Local $first = True
+    $res = "["
+    For $el in $element
+      If $first Then
+        $res &= toString($el)
+        $first = False
+      Else
+        $res &= ", "&toString($el)
+      EndIf
+    Next
+    $res &= "]"
+  ElseIf IsString($element) Then
+    $res = """"&$element&""""
+  Else
+    $res = String($element)
+  EndIf
+  If Not isArray($element) and StringLen($res)>1000 Then
+    $res = StringLeft($res, 1000)&"..."
+  EndIf
+  Return $res
 EndFunc
 
 Func concatenate(ByRef $array, $array2)
@@ -91,8 +132,10 @@ Func reflexFileNameFromComment($formula_comment, $formula_filename, $reflex_exte
   Return IniReadSaveBox('reflexFile', '')
 EndFunc
 
-Func Logging($str)
-  ConsoleWrite(_NowCalc()&" "&$str&@CRLF)
+Func Logging($str, $line = @ScriptLineNumber)
+  ;ConsoleWrite(_NowCalc()&" line "&$line&": "&$str&@CRLF)
+  ConsoleWrite("Line:"&$line&": "&_NowCalc()&" : "&$str&@CRLF)
+  ;ConsoleWrite(_NowCalc()&" line "&$line&": "&$str&@CRLF)
 EndFunc
 
 Func isChecked($ctrl)
@@ -100,12 +143,31 @@ Func isChecked($ctrl)
   Return BitAND($state, $GUI_CHECKED)
 EndFunc
 
+Func ErrorDecodeAdd($string)
+  logging("Adding '"&$string&"' to error string")
+  $ERROR_DECODE_HANDLING &= @CRLF&$string
+EndFunc
+
+Func ErrorDecodeDisplay()
+  ConsoleWriteError($ERROR_DECODE_HANDLING&@CRLF)
+  logging("Error: "&$ERROR_DECODE_HANDLING)
+  Return False
+EndFunc
+
+; Flag management
+
 Func createFlag($flag, $value)
   Return StringFormat(' "%s=%s"', $flag, $value)
 EndFunc
 
 Func addFlag(ByRef $flags, $new_flag, $new_value)
   $flags = $flags&createFlag($new_flag, $new_value)
+EndFunc
+
+; String management
+
+Func StringEndsWith($str, $end)
+  Return StringCompare(StringRight($str, StringLen($end)), $end)==0
 EndFunc
 
 ; Animation

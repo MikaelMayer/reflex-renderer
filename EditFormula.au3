@@ -8,6 +8,7 @@
   Presents a dialog box to edit a formula.
 
 #ce ----------------------------------------------------------------------------
+#include-once
 
 #include <WinAPI.au3>
 #include "GlobalUtils.au3"
@@ -16,7 +17,7 @@
 #include "rich_edit\Include\DllCallBack.au3"
 #include "rich_edit\Include\_RichEdit_912.au3"
 
-Global $EDIT_FORMULA_EXISTS = False, $EDIT_FORMULA_PREVIOUS_TEXT = ""
+Global $EDIT_FORMULA_EXISTS = False, $EDIT_FORMULA_PREVIOUS_TEXT = "", $LOCK_SYNTAX_COLORING = False
 Global $CALLBACK_FUNCTION = ""
 ;EditFormula("13", "0")
 
@@ -30,6 +31,7 @@ Func SetFocus($hCtrl)
 EndFunc
 
 Func insertText($hEdit, $text)
+  $LOCK_SYNTAX_COLORING = True
   $function = GUICtrlRead($hEdit)
   $size = StringLen($text)
   $aSel = _GUICtrlEdit_GetSel($hEdit)
@@ -64,6 +66,7 @@ Func insertText($hEdit, $text)
   ;MsgBox(0, $begin, $end)
   ;SetFocus($hEdit)
   ;On fait de la coloration syntaxique.
+  $LOCK_SYNTAX_COLORING = False
   colorationSyntaxique($hEdit)
   _WinAPI_SetFocus($hEdit)
   _RichEdit_SetSel($hEdit, $begin-1, $end-1)
@@ -98,7 +101,7 @@ EndFunc
 
 ;_RichEdit_SetEventMask
 Func colorationSyntaxique($hEdit)
-  logging("coloration syntaxique")
+  ;logging("coloration syntaxique")
   $sauv_sel = _GUICtrlEdit_GetSel($hEdit)
   $contenu = _GUICtrlEdit_GetText($IDC_EDIT1)
   $p = -1
@@ -394,7 +397,7 @@ Func GenerateEditFormulaBox($main_window_handle)
   ;logging($pos[0] &","& $pos[1] &","& $pos[2] &","& $pos[3])
   $IDC_EDIT1 = _GuiCtrl_RichEdit_Create($ID_EDITFORMULA, $pos[0], $pos[1], $pos[2], $pos[3])
   GUICtrlSetOnEvent($IDC_EDIT1, "ef_insertionClick")
-  logging(GUICtrlSetResizing($IDC_EDIT1, $GUI_DOCKBORDERS))
+  ;logging(GUICtrlSetResizing($IDC_EDIT1, $GUI_DOCKBORDERS))
   ;-------------------------------------To recieve EN_LINK and $EN_PROTECTED Notifications
   Opt("ColorMode", 0)
   _RichEdit_LimitText($IDC_EDIT1, 512000)
@@ -481,6 +484,7 @@ EndFunc
 Func ef_insertionClick()
   $nMsg = @GUI_CtrlId
   $r = BitAnd(GUICtrlRead($ID_INV),$GUI_CHECKED)
+  Local $inverse_map = _ArrayCreate($IDC_F_SIN, $IDC_F_COS, $IDC_F_TAN, $IDC_F_SINH, $IDC_F_COSH, $IDC_F_TANH)
   Switch $nMsg      
     Case $IDC_F_SIN
       insertText($IDC_EDIT1, _Iif($r, TEXT('arcsin({[_]})'), TEXT('sin({[_]})')))
@@ -583,9 +587,14 @@ Func ef_insertionClick()
     Case $IDC_F_RESET
       deleteText($IDC_EDIT1, 0)
     Case $ID_INV
+      For $inverse_function in $inverse_map
+        GUICtrlSetFont($inverse_function, 8.5, 400, _Iif($r, 2, 0))
+      Next
       _WinAPI_SetFocus($IDC_EDIT1)
     Case $ID_DRAW
       ID_DRAWClick()
+    Case $IDC_F_SEED
+      If GUICtrlRead($IDC_F_SEED) == '' Then GUICtrlSetData($IDC_F_SEED, '0')
     Case Else
       logging("Message non id in editformula: "&$nMsg)
       If Not WinActive($ID_EDITFORMULA) Then WinActivate($ID_EDITFORMULA)
@@ -633,10 +642,10 @@ Func WM_NOTIFY($hWnd, $iMsg, $iwParam, $ilParam)
       Local $tSELCHANGE = DllStructCreate($tagSELCHANGE, $ilParam)
       Local $cpMin = DllStructGetData($tSELCHANGE, 4)
       Local $cpMax = DllStructGetData($tSELCHANGE, 5)
-      If $cpMin == $cpMax Then
+      If $cpMin == $cpMax and Not $LOCK_SYNTAX_COLORING Then
         $NEW_TEXT = _GUICtrlEdit_GetText($IDC_EDIT1)
         $submit = StringCompare(StringMid($NEW_TEXT, $cpMin, 2), @CRLF)
-        logging($submit&":"&StringMid($NEW_TEXT, $cpMin, 1) )
+        ;logging($submit&":"&StringMid($NEW_TEXT, $cpMin, 1) )
         If $EDIT_FORMULA_PREVIOUS_TEXT <> $NEW_TEXT Then
           If $submit==0 Then
             logging("REPLACESEL")
@@ -647,7 +656,7 @@ Func WM_NOTIFY($hWnd, $iMsg, $iwParam, $ilParam)
           If $submit==0 Then
             ID_DRAWClick()
           EndIf
-          logging("Color activation")
+          ;logging("Color activation")
           $EDIT_FORMULA_PREVIOUS_TEXT = $NEW_TEXT
         EndIf
         _WinAPI_SetFocus($IDC_EDIT1)
