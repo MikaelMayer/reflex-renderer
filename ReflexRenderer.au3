@@ -9,9 +9,9 @@
  Wish List:
 
  - Moving the main window / minimizing / maximizing => do the same for the children
+ - Better locate the main window.
  - Little "cancel" button close to the "Rentering..." label.
- - Add the possibility of adding 1 special variable name, and a slider for the interpolation.
- - Video/Sequence rendering window (combine with the special variable name)
+ - Add the possibility of adding 1 special variable name, and a slider for the interpolation + a "render along variable" button.
  - 'Reset all' button
  - Save/open session(s) in ini files
  - Independence of the save box
