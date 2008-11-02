@@ -10,8 +10,11 @@
 #ce ----------------------------------------------------------------------------
 ;testIncrementName()
 
+#include-once
 #include <GUIConstants.au3>
-#Include <GDIPlus.au3>
+#include <GDIPlus.au3>
+#include "IniHandling.au3"
+#include "translations.au3"
 
 Func LoadSavebox($saveboxParametersMap, $saveboxCheckBoxMap)
   for $singlemap in $saveboxParametersMap
@@ -29,22 +32,6 @@ Func SaveSavebox($saveboxParametersMap, $saveboxCheckBoxMap)
   for $singlemap in $saveboxCheckBoxMap
     SaveSaveboxCheckBox($singlemap[0], $singlemap[1])
   Next
-EndFunc
-
-Func IniReadSavebox($p1, $p2)
-  Return IniRead($ini_file, 'Savebox', $p1, $p2)
-EndFunc
-
-Func IniReadSession($p1, $p2)
-  Return IniRead($ini_file, 'Session', $p1, $p2)
-EndFunc
-
-Func IniWriteSavebox($p1, $p2)
-  IniWrite($ini_file, 'Savebox', $p1, $p2)
-EndFunc
-
-Func isSavebox($parameter)
-  Return IniReadSaveBox($parameter,'FALSE')=='TRUE'
 EndFunc
 
 Func savebox()
@@ -143,7 +130,7 @@ Func savebox()
       $sb_use_formula_comment, $sb_reflex_filename, $sb_reflex_extension)
   $pos = WinGetPos($rri_win)
   WinMove($sb_savebox, "", $pos[0]+$pos[2], $pos[1])
-  DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $sb_savebox, "int", 100, "long", 0x00040001);slide in from left
+  AnimateFromLeft($sb_savebox)
   GUISetState(@SW_SHOW)
   While 1
     $nMsg = GUIGetMsg()

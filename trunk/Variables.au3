@@ -1,0 +1,296 @@
+#cs ----------------------------------------------------------------------------
+
+ AutoIt Version: 3.2.10.0
+ Author:         Mikaël Mayer
+ Date:           2008 /10/21
+ Script Function:
+  The variable window to controll a variable in the Editor of Formula.
+
+#ce ----------------------------------------------------------------------------
+#include "Translations.au3"
+#include "GlobalUtils.au3"
+#include "WindowManager.au3"
+#include <GuiConstants.au3>
+
+Global $vm_variable_windows = emptySizedArray(), $Variables__update_function = ""
+Global $vaw_slidermin=0, $vaw_slidermax=100, $Variables__current_window_indice
+Global $vaw_window, $vaw_varmin, $vaw_varmax, $vaw_varcurrent, $vaw_slider
+
+Global enum $N_VAW_WINDOW = 0, _
+            $N_VAW_CURRENT, _
+            $N_VAW_SLIDER, _
+            $N_VAW_SLIDERMIN, _
+            $N_VAW_SLIDERMAX, _
+            $N_VAW_VARMIN, _
+            $N_VAW_VARMAX, _
+            $N_VAW_VARNAME, _
+            $N_VAW_RENDER, _
+            $N_VAW_HANDLE, _
+            $N_VAW_SET_MIN, _
+            $N_VAW_SET_MAX, _
+            $N_VAW_INCREASE_RANGE, _
+            $N_VAW_SIZE
+
+Func VariableManager__registerVariable($vaw_window, $vaw_varcurrent, $vaw_slider, $vaw_varmin, $vaw_varmax, $vaw_varname, $vaw_render, $vaw_set_min, $vaw_set_max, $vaw_increase_range)
+  Local $new_window[$N_VAW_SIZE]
+  $new_window[$N_VAW_WINDOW]  = $vaw_window
+  $new_window[$N_VAW_CURRENT] = $vaw_varcurrent
+  $new_window[$N_VAW_SLIDER]  = $vaw_slider
+  $new_window[$N_VAW_SLIDERMIN]  = 0
+  $new_window[$N_VAW_SLIDERMAX]  = 100
+  $new_window[$N_VAW_VARMIN]  = $vaw_varmin
+  $new_window[$N_VAW_VARMAX]  = $vaw_varmax
+  $new_window[$N_VAW_VARNAME] = $vaw_varname
+  $new_window[$N_VAW_RENDER]  = $vaw_render
+  $new_window[$N_VAW_SET_MIN] = $vaw_set_min
+  $new_window[$N_VAW_SET_MAX] = $vaw_set_max
+  $new_window[$N_VAW_INCREASE_RANGE] = $vaw_increase_range
+  push($vm_variable_windows, $new_window)
+  $Variables__current_window_indice = $vm_variable_windows[0]
+EndFunc
+
+Func VariableManager__unregisterVariable($vaw_window)
+  For $i = 1 To $vm_variable_windows[0]
+    Local $vm = $vm_variable_windows[$i]
+    If $vm[$N_VAW_WINDOW] == $vaw_window Then
+      deleteAt($vm_variable_windows, $i)
+      Return
+    EndIf
+  Next
+EndFunc
+
+Func VariableManager__setCurrentVariable($win_handle)
+  If $vaw_window = $win_handle Then Return
+  For $i = 1 To $vm_variable_windows[0]
+    Local $vw = $vm_variable_windows[$i]
+    If $vw[0] == $win_handle Then
+      logging("Variable "&$i&" loaded")
+      $vaw_window = $vw[$N_VAW_WINDOW]
+      $vaw_varcurrent = $vw[$N_VAW_CURRENT]
+      $vaw_slider     = $vw[$N_VAW_SLIDER] 
+      $vaw_slidermin  = $vw[$N_VAW_SLIDERMIN]
+      $vaw_slidermax  = $vw[$N_VAW_SLIDERMAX]
+      $vaw_varmin     = $vw[$N_VAW_VARMIN]
+      $vaw_varmax     = $vw[$N_VAW_VARMAX]
+      $vaw_varname    = $vw[$N_VAW_VARNAME]
+      $vaw_render     = $vw[$N_VAW_RENDER]
+      $vaw_set_min    = $vw[$N_VAW_SET_MIN]
+      $vaw_set_max    = $vw[$N_VAW_SET_MAX]
+      $vaw_increase_range = $vw[$N_VAW_INCREASE_RANGE]
+      $Variables__current_window_indice = $i
+      Return
+    EndIf
+  Next
+EndFunc
+
+;$string = "$xy, $x1, $x+, $x"
+;logging(replaceVariableString($string, "$x", "1-3i"))
+
+;GenerateVariableWindow()
+;AnimateFromLeft($vaw_window)
+;GUISetState(@SW_SHOW)
+#comments-start
+GenerateVariableWindow()
+AnimateFromLeft($vaw_window)
+GUISetState(@SW_SHOW)
+Sleep(10000)
+#comments-end
+
+Func GenerateVariableWindow($edit_formula_handle)
+  Opt('GUIOnEventMode', 1)
+  #Region ### START Koda GUI section ### Form=C:\Documents and Settings\Mikaël\Mes documents\Reflex\LogicielOrdi\RenderReflex\ReflexRendererVariables.kxf
+  Global $vaw_window = GUICreate($__variable__, 310, 138, 260, 190, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS))
+  GUISetOnEvent($GUI_EVENT_CLOSE, "vaw_windowClose")
+  GUISetOnEvent($GUI_EVENT_MINIMIZE, "vaw_windowMinimize")
+  GUISetOnEvent($GUI_EVENT_MAXIMIZE, "vaw_windowMaximize")
+  GUISetOnEvent($GUI_EVENT_RESTORE, "vaw_windowRestore")
+  Global $vaw_Label5 = GUICtrlCreateLabel($__variable_editor__, 8, 8, 177, 17, $SS_CENTER)
+  GUICtrlSetOnEvent($vaw_Label5, "vaw_Label5Click")
+  Global $vaw_render = GUICtrlCreateButton($__render_along_variable__, 196, 4, 97, 25, 0)
+  GUICtrlSetResizing($vaw_render, $GUI_DOCKAUTO)
+  GUICtrlSetOnEvent($vaw_render, "vaw_renderClick")
+  Global $vaw_Label1 = GUICtrlCreateLabel($__variable_name__, 6, 34, 73, 17, $SS_RIGHT)
+  GUICtrlSetOnEvent($vaw_Label1, "vaw_Label1Click")
+  Global $vaw_varname = GUICtrlCreateInput("$x", 81, 32, 33, 21, BitOR($ES_RIGHT,$ES_AUTOHSCROLL))
+  GUICtrlSetOnEvent($vaw_varname, "vaw_varnameChange")
+  Global $vaw_Label2 = GUICtrlCreateLabel("=", 117, 33, 13, 24)
+  GUICtrlSetFont($vaw_Label2, 12, 400, 0, "MS Sans Serif")
+  GUICtrlSetOnEvent($vaw_Label2, "vaw_Label2Click")
+  Global $vaw_varcurrent = GUICtrlCreateInput("0.5", 130, 32, 56, 21, BitOR($ES_CENTER,$ES_AUTOHSCROLL))
+  GUICtrlSetOnEvent($vaw_varcurrent, "vaw_varcurrentChange")
+  Global $vaw_set_min = GUICtrlCreateButton($__set_min__, 189, 30, 57, 25, 0)
+  GUICtrlSetResizing($vaw_set_min, $GUI_DOCKAUTO)
+  GUICtrlSetOnEvent($vaw_set_min, "vaw_set_minClick")
+  Global $vaw_set_max = GUICtrlCreateButton($__set_max__, 247, 30, 57, 25, 0)
+  GUICtrlSetResizing($vaw_set_max, $GUI_DOCKAUTO)
+  GUICtrlSetOnEvent($vaw_set_max, "vaw_set_maxClick")
+  Global $vaw_Label3 = GUICtrlCreateLabel($__minimum__, 37, 58, 92, 17, $SS_RIGHT)
+  GUICtrlSetOnEvent($vaw_Label3, "vaw_Label3Click")
+  Global $vaw_varmin = GUICtrlCreateInput("-1", 130, 56, 56, 21)
+  GUICtrlSetOnEvent($vaw_varmin, "vaw_varminChange")
+  Global $vaw_increase_range = GUICtrlCreateButton($__increase_range__, 189, 55, 115, 25, 0)
+  GUICtrlSetResizing($vaw_increase_range, $GUI_DOCKAUTO)
+  GUICtrlSetOnEvent($vaw_increase_range, "vaw_increase_rangeClick")
+  Global $vaw_Label4 = GUICtrlCreateLabel($__maximum__, 37, 82, 92, 17, $SS_RIGHT)
+  GUICtrlSetOnEvent($vaw_Label4, "vaw_Label4Click")
+  Global $vaw_varmax = GUICtrlCreateInput("1", 130, 80, 56, 21, BitOR($ES_RIGHT,$ES_AUTOHSCROLL))
+  GUICtrlSetOnEvent($vaw_varmax, "vaw_varmaxChange")
+  Global $vaw_slider = GUICtrlCreateSlider(8, 104, 292, 25)
+  GUICtrlSetData($vaw_slider, 75)
+  GUICtrlSetOnEvent($vaw_slider, "vaw_sliderChange")
+  Global $vaw_decrease_range = GUICtrlCreateButton($__decrease_range__, 189, 79, 115, 25, 0)
+  GUICtrlSetResizing($vaw_decrease_range, $GUI_DOCKAUTO)
+  GUICtrlSetOnEvent($vaw_decrease_range, "vaw_decrease_rangeClick")
+  #EndRegion ### END Koda GUI section ###
+
+  If WinExists($edit_formula_handle) Then
+    $pos = WinGetPos($edit_formula_handle, "")
+    WinMove($vaw_window, "", $pos[0], $pos[1]+$pos[3])
+  EndIf
+  AnimateFromTop($vaw_window)
+  GUISetState(@SW_SHOW, $vaw_window)
+  GUISetOnEvent($GUI_EVENT_RESIZED, 'vaw_windowResized')
+  
+  WindowManager__registerWindow($vaw_window)
+  VariableManager__registerVariable($vaw_window, $vaw_varcurrent, $vaw_slider, $vaw_varmin, $vaw_varmax, $vaw_varname, $vaw_render, $vaw_set_min, $vaw_set_max, $vaw_increase_range)
+EndFunc
+
+Func Variables__updateString($string)
+  ;Replace the variables in $string by their value.
+  logging("Variable_replacement")
+  For $i = 1 To $vm_variable_windows[0]
+    $tab = $vm_variable_windows[$i]
+    $string = replaceVariableString($string, GUICtrlRead($tab[$N_VAW_VARNAME]), GUICtrlRead($tab[$N_VAW_CURRENT]));
+  Next
+  Return $string
+EndFunc
+
+Func replaceVariableString($string, $varname, $varvalue)
+  $varname = StringReplace($varname, "$", "\$")
+  $string = StringRegExpReplace($string, $varname&"([^[:alnum:]]|\z)", "("&$varvalue&")\1")
+  return $string
+EndFunc
+
+Func loadVariable($window = @GUI_WinHandle)
+  VariableManager__setCurrentVariable($window)
+EndFunc
+
+Func vawUpdate()
+  If $Variables__update_function <> "" Then
+    Call($Variables__update_function)
+  EndIf
+EndFunc
+
+Func vaw_windowClose()
+  loadVariable()
+  ;MsgBox(0, "@GUI_CtrlId", @GUI_WinHandle == $vaw_window)
+  VariableManager__unregisterVariable(@GUI_WinHandle)
+  WindowManager__unregisterWindow(@GUI_WinHandle)
+  GUIDelete($vaw_window)
+EndFunc
+Func vaw_windowMinimize()
+  vaw_windowResized()
+EndFunc
+Func vaw_windowMaximize()
+  vaw_windowResized()
+EndFunc
+Func vaw_windowRestore()
+  vaw_windowResized()
+EndFunc
+Func vaw_windowResized()
+  loadVariable()
+  logging("GUI: "&@GUI_WinHandle)
+  $tab = $vm_variable_windows[1]
+  logging("GUI: "&$tab[0])
+  $p = ControlGetPos($vaw_window, "", $vaw_slider)
+  $min = 0
+  $max = $p[2]
+  GUICtrlSetLimit($vaw_slider, $max, $min)
+  logging("vm:"&$Variables__current_window_indice)
+  $tab = $vm_variable_windows[$Variables__current_window_indice]
+  $tab[$N_VAW_SLIDERMIN] = $min
+  $tab[$N_VAW_SLIDERMAX] = $max
+  $vm_variable_windows[$Variables__current_window_indice] = $tab
+EndFunc
+
+Func vaw_update_slider($min, $max, $current)
+  $rangemin = $vaw_slidermin
+  $rangemax = $vaw_slidermax
+  Local $calc = complex_calculate(StringFormat("%s*real(((%s)-(%s))/((%s)-(%s)))+%s", $rangemax - $rangemin, $current, $min, $max, $min, $rangemin))
+  Local $result = Int($calc)
+  GUICtrlSetData($vaw_slider, $result)
+EndFunc
+Func vaw_update_slider_raw()
+  vaw_update_slider(GUICtrlRead($vaw_varmin), GUICtrlRead($vaw_varmax), GUICtrlRead($vaw_varcurrent))
+EndFunc
+
+Func vaw_multiply_range($coef)
+  loadVariable()
+  Local $min = GUICtrlRead($vaw_varmin)
+  Local $max = GUICtrlRead($vaw_varmax)
+  Local $middle = complex_calculate(StringFormat("(%s+%s)/2", $min, $max))
+  Local $newmin = complex_calculate(StringFormat("%s*(%s-%s)+%s", $coef, $min, $middle, $middle))
+  Local $newmax = complex_calculate(StringFormat("%s*(%s-%s)+%s", $coef, $max, $middle, $middle))
+  GUICtrlSetData($vaw_varmin, $newmin)
+  GUICtrlSetData($vaw_varmax, $newmax)
+  vaw_update_slider($newmin, $newmax, GUICtrlRead($vaw_varcurrent))
+EndFunc
+Func vaw_increase_rangeClick()
+  vaw_multiply_range(2)
+EndFunc
+Func vaw_decrease_rangeClick()
+  vaw_multiply_range(0.5)
+EndFunc
+
+Func vaw_renderClick()
+  loadVariable()
+EndFunc
+Func vaw_set_maxClick()
+  loadVariable()
+  GUICtrlSetData($vaw_varmax, GUICtrlRead($vaw_varcurrent))
+  vaw_update_slider_raw()
+EndFunc
+Func vaw_set_minClick()
+  loadVariable()
+  GUICtrlSetData($vaw_varmin, GUICtrlRead($vaw_varcurrent))
+  vaw_update_slider_raw()
+EndFunc
+Func vaw_sliderChange()
+  loadVariable()
+  Local $part = (GUICtrlRead($vaw_slider)-$vaw_slidermin)/($vaw_slidermax - $vaw_slidermin)
+  Local $min = GUICtrlRead($vaw_varmin)
+  Local $max = GUICtrlRead($vaw_varmax)
+  Local $newcurrent = complex_calculate(StringFormat("%s*(%s)+%s*(%s)", 1-$part, $min, $part, $max))
+  GUICtrlSetData($vaw_varcurrent, $newcurrent)
+  vawUpdate()
+EndFunc
+Func vaw_varcurrentChange()
+  loadVariable()
+  vaw_update_slider_raw()
+  vawUpdate()
+EndFunc
+Func vaw_varmaxChange()
+  loadVariable()
+  vaw_update_slider_raw()
+  vawUpdate()
+EndFunc
+Func vaw_varminChange()
+  loadVariable()
+  vaw_update_slider_raw()
+  vawUpdate()
+EndFunc
+Func vaw_varnameChange()
+  loadVariable()
+  vawUpdate()
+EndFunc
+
+Func vaw_Label1Click()
+EndFunc
+Func vaw_Label2Click()
+EndFunc
+Func vaw_Label3Click()
+EndFunc
+Func vaw_Label4Click()
+EndFunc
+Func vaw_Label5Click()
+EndFunc

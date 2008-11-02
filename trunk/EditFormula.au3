@@ -11,24 +11,23 @@
 #include-once
 
 #include <WinAPI.au3>
+#include "WindowManager.au3"
 #include "GlobalUtils.au3"
 #include "IniHandling.au3"
 #include "translations.au3"
+#include "Variables.au3"
 #include "rich_edit\Include\DllCallBack.au3"
 #include "rich_edit\Include\_RichEdit_912.au3"
 
 Global $EDIT_FORMULA_EXISTS = False, $EDIT_FORMULA_PREVIOUS_TEXT = "", $LOCK_SYNTAX_COLORING = False
-Global $CALLBACK_FUNCTION = ""
+Global $EDIT_FORMULA_CALLBACK = ""
+$Variables__update_function = "ID_DRAWClick"
 ;EditFormula("13", "0")
 
 ;Compatibility
 Func TEXT($i)
   Return $i
 Endfunc
-
-Func SetFocus($hCtrl)
-  GUICtrlSetState($hCtrl, $GUI_FOCUS)
-EndFunc
 
 Func insertText($hEdit, $text)
   $LOCK_SYNTAX_COLORING = True
@@ -127,10 +126,10 @@ Func colorationSyntaxique($hEdit)
   For $i = 1 To $n
     $c = StringMid($contenu, $i, 1)
     If $c == '(' Then $p += 1
-    If StringIsAlpha($c) Then
+    If StringIsAlNum($c) Then
       If $variab <> "" Then
         $variab &= $c
-      Else
+      ElseIf $string <> "" Or StringIsAlpha($c) Then
         $string &= $c
       EndIf
     Else
@@ -187,7 +186,7 @@ Func GenerateEditFormulaBox($main_window_handle)
   EndIf
   $EDIT_FORMULA_EXISTS = True
   #Region ### START Koda GUI section ### Form=C:\Documents and Settings\Mikaël\Mes documents\Reflex\LogicielOrdi\RenderReflex\ReflexRendererEditFormula.kxf
-  Global $ID_EDITFORMULA = GUICreate($__edit_formula__, 248, 331, 301, 132, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS))
+  Global $ID_EDITFORMULA = GUICreate($__edit_formula__, 248, 351, 301, 132, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS))
   GUISetOnEvent($GUI_EVENT_CLOSE, "ID_EDITFORMULAClose")
   GUISetOnEvent($GUI_EVENT_MINIMIZE, "ID_EDITFORMULAMinimize")
   GUISetOnEvent($GUI_EVENT_MAXIMIZE, "ID_EDITFORMULAMaximize")
@@ -388,6 +387,13 @@ Func GenerateEditFormulaBox($main_window_handle)
   GUICtrlSetResizing($IDC_F_SEED, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_SEED, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_SEED, $__seed_hint__)
+  Global $IDC_INSERTVAR = GUICtrlCreateButton($__insert_var__, 167, 320, 74, 25, 0)
+  GUICtrlSetResizing($IDC_INSERTVAR, $GUI_DOCKAUTO)
+  GUICtrlSetOnEvent($IDC_INSERTVAR, "ef_insertionClick")
+  Global $ID_RANDSEED = GUICtrlCreateCheckbox($__randomize_seed__, 8, 323, 137, 17)
+  GUICtrlSetResizing($ID_RANDSEED, $GUI_DOCKAUTO)
+  GUICtrlSetOnEvent($ID_RANDSEED, "ef_insertionClick")
+  GUICtrlSetTip($ID_RANDSEED, $__inv_hint__)
   #EndRegion ### END Koda GUI section ###
   GUISetOnEvent($GUI_EVENT_RESIZED, 'ID_EDITFORMULAResize')
   
@@ -399,13 +405,13 @@ Func GenerateEditFormulaBox($main_window_handle)
   GUICtrlSetOnEvent($IDC_EDIT1, "ef_insertionClick")
   ;logging(GUICtrlSetResizing($IDC_EDIT1, $GUI_DOCKBORDERS))
   ;-------------------------------------To recieve EN_LINK and $EN_PROTECTED Notifications
-  Opt("ColorMode", 0)
   _RichEdit_LimitText($IDC_EDIT1, 512000)
   _GUICtrlEdit_SetMargins ($IDC_EDIT1, BitOR($EC_LEFTMARGIN, $EC_RIGHTMARGIN), 3, 3)
   _RichEdit_SetFont($IDC_EDIT1, 0000, 0x000000, 0xFFFFFF, "Times New Roman", 12, 0)
   _RichEdit_BkColor($IDC_EDIT1, 0xFFFFFF)
   _RichEdit_SetEventMask($IDC_EDIT1 , BitOr($ENM_LINK, $ENM_PROTECTED, $ENM_MOUSEEVENTS, $ENM_KEYEVENTS, $ENM_SELCHANGE))
   GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
+  WindowManager__registerWindow($ID_EDITFORMULA)
 EndFunc
 
 Func resizeIDC_EDIT1()
@@ -419,11 +425,12 @@ Func DeleteEditFormulaBox()
     GUIDelete($ID_EDITFORMULA)
     $EDIT_FORMULA_EXISTS = False
     GUIRegisterMsg($WM_NOTIFY, "")
+    WindowManager__unregisterWindow($ID_EDITFORMULA)
   EndIf
 EndFunc
 
 Func EditFormula($main_window_handle, $formula, $seed, $callbackfunction)
-  $CALLBACK_FUNCTION = $callbackfunction
+  $EDIT_FORMULA_CALLBACK = $callbackfunction
   ;Opt('GUIOnEventMode', 0)
   $efe_save = $EDIT_FORMULA_EXISTS
   GenerateEditFormulaBox($main_window_handle)
@@ -443,21 +450,34 @@ Func EditFormula($main_window_handle, $formula, $seed, $callbackfunction)
   _WinAPI_SetFocus($IDC_EDIT1)
 EndFunc
 
-Func EditFormulaHighlightError($start, $end)
+; randh()*$x => randh()*0.10 => cos(sin(x))*0.10 => 
+
+Func EditFormula__UpdateFormulaFromApplication($formula)
+  ;If StringInStr(
+  _GUICtrlEdit_SetText($IDC_EDIT1, $formula)
+EndFunc
+
+Func EditFormula__HighlightError($start, $end)
   EditFormulaActivate()
   _RichEdit_SetSel($IDC_EDIT1, $start, $end)
 EndFunc
 
+Func EditFormula__getFormulaText()
+  $sauv_sel = _GUICtrlEdit_GetSel($IDC_EDIT1)
+  $formula  = _GUICtrlEdit_GetText($IDC_EDIT1)
+  _GUICtrlEdit_SetSel($IDC_EDIT1, $sauv_sel[0], $sauv_sel[1])
+  return $formula
+EndFunc
+
 Func ID_DRAWClick()
-  ;logging("ID_DRAW clicked!")
-  $result_formula  = _GUICtrlEdit_GetText($IDC_EDIT1)
-  ;$result_formula = GUICtrlRead($IDC_EDIT1)
+  $result_formula  = EditFormula__getFormulaText()
+  
   $result_seed = GUICtrlRead($IDC_F_SEED)
   $result = _ArrayCreate(2, $result_formula, $result_seed)
-  $tocall = $CALLBACK_FUNCTION&'("'&$result_formula&'",'&$result_seed&')'
-  ;logging("Going to call  "&$tocall)
-  EditFormulaCallBack($result_formula, $result_seed)
-  ;Execute($tocall)
+  
+  logging("Going to callback on "&$result_formula)
+  
+  Call($EDIT_FORMULA_CALLBACK, $result_formula, $result_seed)
 EndFunc
 Func ID_CANCELClick()
   ID_EDITFORMULAClose()
@@ -483,7 +503,9 @@ EndFunc
 
 Func ef_insertionClick()
   $nMsg = @GUI_CtrlId
-  $r = BitAnd(GUICtrlRead($ID_INV),$GUI_CHECKED)
+  Local $r = isChecked($ID_INV)
+  Local $randseed = isChecked($ID_RANDSEED)
+  
   Local $inverse_map = _ArrayCreate($IDC_F_SIN, $IDC_F_COS, $IDC_F_TAN, $IDC_F_SINH, $IDC_F_COSH, $IDC_F_TANH)
   Switch $nMsg      
     Case $IDC_F_SIN
@@ -576,10 +598,10 @@ Func ef_insertionClick()
       insertText($IDC_EDIT1, TEXT('${[]}'))
     Case $IDC_F_RANDF
       insertText($IDC_EDIT1, TEXT('randf([{5}])'))
-  ;GUICtrlSetData($IDC_F_SEED, newSeed())
+      If $randseed Then GUICtrlSetData($IDC_F_SEED, newSeed())
     Case $IDC_F_RANDH
       insertText($IDC_EDIT1, TEXT('randh([{5}])'))
-  ;GUICtrlSetData($IDC_F_SEED, newSeed())
+      If $randseed Then GUICtrlSetData($IDC_F_SEED, newSeed())
     Case $IDC_F_RETOUR_ARRIERE
       deleteText($IDC_EDIT1, 1)
     Case $IDC_F_SUPPRIMER
@@ -591,6 +613,10 @@ Func ef_insertionClick()
         GUICtrlSetFont($inverse_function, 8.5, 400, _Iif($r, 2, 0))
       Next
       _WinAPI_SetFocus($IDC_EDIT1)
+    Case $IDC_INSERTVAR
+      GenerateVariableWindow($ID_EDITFORMULA)
+    Case $ID_RANDSEED
+      GUICtrlSetState($IDC_F_SEED, _Iif($randseed, $GUI_DISABLE, $GUI_ENABLE))
     Case $ID_DRAW
       ID_DRAWClick()
     Case $IDC_F_SEED
@@ -602,7 +628,8 @@ Func ef_insertionClick()
 EndFunc
 
 Func newSeed()
-  Return 1679895117;Random(0, 2147483647, 1)
+  ;Return 1679895117;
+  Return Random(0, 2147483647, 1)
 EndFunc
 
 Func WM_NOTIFY($hWnd, $iMsg, $iwParam, $ilParam)

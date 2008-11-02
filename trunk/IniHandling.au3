@@ -8,6 +8,8 @@
 
 #ce ----------------------------------------------------------------------------
 #include-once
+#include <GUIConstants.au3>
+#include <Misc.au3>
 
 Global $ini_file = @ScriptDir&'\ReflexRenderer.ini'
 Global $ini_file_session = 'Session'
@@ -66,4 +68,18 @@ Func SaveSaveboxParameter($name, $control)
 EndFunc
 Func SaveSaveboxCheckBox($name, $control)
   SaveCheckBox('Savebox', $name, $control)
+EndFunc
+
+
+Func IniReadSavebox($p1, $p2)
+  Return IniRead($ini_file, 'Savebox', $p1, $p2)
+EndFunc
+Func IniReadSession($p1, $p2)
+  Return IniRead($ini_file, 'Session', $p1, $p2)
+EndFunc
+Func IniWriteSavebox($p1, $p2)
+  IniWrite($ini_file, 'Savebox', $p1, $p2)
+EndFunc
+Func isSavebox($parameter)
+  Return IniReadSaveBox($parameter,'FALSE')=='TRUE'
 EndFunc

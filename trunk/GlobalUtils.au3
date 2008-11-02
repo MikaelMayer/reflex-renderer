@@ -11,10 +11,12 @@
 
 ; Script Start - Add your code below here
 #include-once
+#include "IniHandling.au3"
 #include <Array.au3>
 #include <Date.au3>
 
 Global $ERROR_DECODE_HANDLING = ""
+Global $bin_dir = @ScriptDir&'\Release\'
 
 If @Compiled Then
   Opt('TrayIconHide', 1)
@@ -64,6 +66,17 @@ Func deleteAt(ByRef $queue, $index)
     _ArrayDelete($queue, $index)
     $queue[0] -= 1
   EndIf
+EndFunc
+
+Func indexOf(ByRef $queue, $element)
+  For $i=1 To $queue[0]
+    If $queue[$i] == $element Then Return $i
+  Next
+  Return 0
+EndFunc
+
+Func deleteElement(ByRef $queue, $element)
+  deleteAt($queue, indexOf($queue, $element))
 EndFunc
 
 Func isEmpty(ByRef $queue)
@@ -143,6 +156,10 @@ Func isChecked($ctrl)
   Return BitAND($state, $GUI_CHECKED)
 EndFunc
 
+Func SetFocus($hCtrl)
+  GUICtrlSetState($hCtrl, $GUI_FOCUS)
+EndFunc
+
 Func ErrorDecodeAdd($string)
   logging("Adding '"&$string&"' to error string")
   $ERROR_DECODE_HANDLING &= @CRLF&$string
@@ -154,7 +171,7 @@ Func ErrorDecodeDisplay()
   Return False
 EndFunc
 
-; Flag management
+; Flag and complex management
 
 Func createFlag($flag, $value)
   Return StringFormat(' "%s=%s"', $flag, $value)
@@ -163,6 +180,53 @@ EndFunc
 Func addFlag(ByRef $flags, $new_flag, $new_value)
   $flags = $flags&createFlag($new_flag, $new_value)
 EndFunc
+
+Func isFormulaLine($line)
+  Return StringCompare(StringLeft($line, 8), "formula:")==0
+EndFunc
+
+Func extractFormulaLine($line)
+  Return StringMid($line, 9)
+EndFunc
+
+Func simplifyParenthesis($complex_number)
+  While StringLeft($complex_number, 1)=='(' and StringRight($complex_number, 1)==')'
+    $complex_number = StringMid($complex_number, 2, StringLen($complex_number) - 2)
+  WEnd
+  return $complex_number
+EndFunc
+
+Func complex_calculate($expr)
+  ;logging("Calculating "&$expr)
+  Dim $flags = ""
+  addFlag($flags, "formula", $expr)
+  ;$flags = $formula_flag&$seed_flag
+  $p = Run(StringFormat("%sRenderReflex.exe simplify%s", $bin_dir, $flags), '', @SW_HIDE, 2+4)
+  $found = False
+  $result = 0
+  While True
+    $text = StdoutRead($p)
+    If @error Then ExitLoop
+    $lines = StringSplit($text, @CRLF, 1)
+    For $i = 1 To $lines[0]
+      $current_line = $lines[$i]
+      ;Logging("Line to compare: "&$current_line)
+      If isFormulaLine($current_line) Then
+        ;Logging("Formula!")
+        $result= extractFormulaLine($current_line)
+        $found = True
+        ExitLoop 2
+      EndIf
+    Next
+  WEnd
+  ProcessClose($p)
+  If Not $found Then
+    logging(StringFormat("%s has not been simplified", $expr))
+  EndIf
+  $result = simplifyParenthesis($result)
+  Return $result
+EndFunc
+
 
 ; String management
 
@@ -177,6 +241,11 @@ Func AnimateFromTopLeft($win)
   GUISetState(@SW_SHOW, $win)
 EndFunc
 
+Func AnimateFromTop($win)
+  DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $win, "int", 200, "long", 0x00040004);diag slide-in from Top-left
+  GUISetState(@SW_SHOW, $win)
+EndFunc
+
 Func AnimateToTopRight($win)
   DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $win, "int", 200, "long", 0x00050009);diag slide-out to Top-Right
 EndFunc
@@ -187,4 +256,17 @@ EndFunc
 
 Func AnimateFromLeft($win)
   DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $win, "int", 100, "long", 0x00040001);slide in from left
+EndFunc
+
+Func AnimateToLeft($win)
+  DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $win, "int", 100, "long", 0x00050002);slide out to left
+EndFunc
+
+;Testing
+
+Func AssertEqual($a, $b)
+  If $a <> $b Then
+    MsgBox(0, "Assertion error", StringFormat("%s != %s and it's bad", $a, $b))
+    Exit
+  EndIf
 EndFunc

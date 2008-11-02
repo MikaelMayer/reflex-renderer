@@ -8,9 +8,9 @@
 
  Wish List:
 
- - Moving the main window / minimizing / maximizing => do the same for the children
+ - Find how to store that there are some variables : [Variables], and when loading a session, loading these variables.
+ - Moving the main window => do the same for the children
  - Better locate the main window.
- - Little "cancel" button close to the "Rentering..." label.
  - Add the possibility of adding 1 special variable name, and a slider for the interpolation + a "render along variable" button.
  - 'Reset all' button
  - Save/open session(s) in ini files
@@ -21,6 +21,7 @@
  - Explanation and demo script / tutorial ?
 
  Design questions:
+ - Little "cancel" button close to the "Rentering..." label.
  - Ok - Appliquer - Annuler dans Savebox + indicateur s'il faut sauvegarder ou non + indépendance de la fenêtre.
  
  Difficult/long:
@@ -51,6 +52,9 @@ V "Libeller la Reflex comme la formule" m'a fait penser au début que ça mettrait
  ===== Done ====
  
 Mik notes : 
+ V Keeping the number of rendered pixels constant when changing the resolution
+ V Minimizing/Maximizing the main window => do the same for the children
+ V Syntax coloring in EditFormula highlights variables and strings containing numbers.
  V If press over "inv", labels "sin, cos, sinh" change to "arcsin", "arccos", "argsh" or color change?
  V [Bug] If no INI file is provided, or some values are missing (ex: seed hidden), should fill it automatically
  V PNG support (quick)...
@@ -174,24 +178,30 @@ $output_y = 28
 $output_max_size=401
 
 Opt('MouseCoordMode', 2)
+
 #include <Math.au3>
 #Include <Misc.au3>
 #include <GUIConstants.au3>
+#include <WindowsConstants.au3>
+#include <StaticConstants.au3>
+#include <ButtonConstants.au3>
+
 #include <Array.au3>
 #Include <GuiEdit.au3>
-#include 'IniHandling.au3'
-#include 'translations.au3'
-#include 'SaveBox.au3'
-#include 'LoadFormulaFromFile.au3'
 #include 'AboutBox.au3'
 #include 'EditFormula.au3'
+#include 'IniHandling.au3'
+#include 'LoadFormulaFromFile.au3'
+#include 'Parameters.au3'
+#include 'SaveBox.au3'
+#include 'Translations.au3'
+#include 'WindowManager.au3'
 
-Global $bin_dir = @ScriptDir&'\Release\'
-Global $noir_file = $bin_dir&'noir.bmp'
-Global $gris_file = $bin_dir&'gris.bmp'
-Global $history_formula_filename = @ScriptDir&"\history_formulas.txt"
+Global $noir_file = $bin_dir&'black.bmp'
+Global $gris_file = $bin_dir&'gray.bmp'
+Global $history_formula_filename = @ScriptDir&"\"&"history_formulas.txt"
 
-Global $arrayWindows = _ArrayCreate(_ArrayCreate(0, 0))
+Global $arrayWindows[1] = [_ArrayCreate(0, 0)]
 Global $nPreviousWindows = 0
 Global $nNextWindows = 0
 Global $currentWindow = 0
@@ -203,12 +213,12 @@ Global $factor_threading = 1.0
 Global $rri_out_rendu_pos
 Global Enum $REFLEX_NOT_UP_TO_DATE = 0, $REFLEX_RENDERED_IN_LR, $REFLEX_RENDERED_IN_HR
 Global $REFLEX_RENDERING = $REFLEX_NOT_UP_TO_DATE, $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE, $REFLEX_RENDERED_FINISHED = True
-Global $history_formula_array = _ArrayCreate("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "")
+Global $history_formula_array[19] = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
 
 Func loadRRI()
   Opt('GUIOnEventMode', 1)
   #Region ### START Koda GUI section ### Form=C:\Documents and Settings\Mikaël\Mes documents\Reflex\LogicielOrdi\RenderReflex\ReflexRendererInterface.kxf
-  Global $rri_win = GUICreate($__reflex_renderer_interface__, 737, 468, -1, -1, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS,$DS_MODALFRAME), BitOR($WS_EX_ACCEPTFILES,$WS_EX_WINDOWEDGE))
+  Global $rri_win = GUICreate($__reflex_renderer_interface__, 737, 468, 90, 79, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS,$DS_MODALFRAME), BitOR($WS_EX_ACCEPTFILES,$WS_EX_WINDOWEDGE))
   GUISetOnEvent($GUI_EVENT_CLOSE, "rri_winClose")
   GUISetOnEvent($GUI_EVENT_MINIMIZE, "rri_winMinimize")
   GUISetOnEvent($GUI_EVENT_MAXIMIZE, "rri_winMaximize")
@@ -399,6 +409,7 @@ Func loadRRI()
   Global $rri_menu_language = GUICtrlCreateMenu($__language_menu__)
   GUICtrlSetOnEvent(-1, "rri_menu_languageClick")
   #EndRegion ### END Koda GUI section ###
+  
   ;Koda doesn't know how to handle that
   $menu_about = GUICtrlCreateMenuItem($__menu_about__, -1)
   GUICtrlSetOnEvent(-1, "menu_aboutClick")
@@ -413,6 +424,8 @@ Func loadRRI()
     GUICtrlSetOnEvent(-1, "menu_setLang")
     Next
   EndIf
+
+  ;WindowManager__registerWindow($rri_win)
 
   Global $sessionParametersMap = _ArrayCreate( _
    _ArrayCreate('formula', $rri_in_formula, 'oo(cosh(z)-i*argsh(j*z)-z/(x^y),5)'), _
@@ -468,7 +481,8 @@ Func loadRRI()
   rri_line_resetInit()
 
   LoadSession()
-
+  calculateWidthHeight()
+  
   If FileExists(GUICtrlRead($rri_output)) Then
     GUICtrlSetImage($rri_out_rendu,  GUICtrlRead($rri_output))
   EndIf
@@ -478,7 +492,7 @@ Func loadRRI()
   Global $initWorkingDir = @ScriptDir
   Global $moving = False
   Global $navigation = $DRAG
-  Global $width, $height, $maxwh
+  Global $width_highres, $height_highres, $maxwh, $width_percent, $height_percent
   Global $x = 0, $y = 0, $dx = 0, $dy = 0
   Global $xprev = -1, $yprev = -1
   Global $k = 0
@@ -564,17 +578,38 @@ Func rri_selectClick()
   EndIf
   FileChangeDir(@ScriptDir)
 EndFunc
+
 Func rri_in_formulaChange()
   renderIfAutoRender($rri_out_rendu)
 EndFunc
+
+;Keeps the product $percent*$percent*$width*$height constant.
 Func rri_heightChange()
+  $height_pred = $height_highres
+  $height_new = Number(GUICtrlRead($rri_height))
+  $percent = Number(GUICtrlRead($rri_percent))
+  If Not isChecked($rri_preview) Then $percent = 100
+  logging("Percent: "&$percent)
+  $percent *= Sqrt($height_pred / $height_new)
+  setPreviewPercent(Round($percent*4)/4)
+  calculateWidthHeight()
   resolutionChanged()
   renderIfAutoRender($rri_out_rendu)
 EndFunc
+
 Func rri_widthChange()
+  $width_pred = $width_highres
+  $width_new = Number(GUICtrlRead($rri_width))
+  $percent = Number(GUICtrlRead($rri_percent))
+  If Not isChecked($rri_preview) Then $percent = 100
+  logging("Percent: "&$percent)
+  $percent *= Sqrt($width_pred / $width_new)
+  setPreviewPercent(Round($percent*4)/4)
+  calculateWidthHeight()
   resolutionChanged()
   renderIfAutoRender($rri_out_rendu)
 EndFunc
+
 Func resolutionChanged()
   GUICtrlSetState($rri_resolutions_201, $GUI_UNCHECKED)
   GUICtrlSetState($rri_resolutions_401, $GUI_UNCHECKED)
@@ -620,8 +655,8 @@ Func rri_menu_formula_editorClick()
 EndFunc
 
 Func EditFormulaCallBack($formula_modified, $seed_modified)
-  $formula = GUICtrlRead($rri_in_formula)
-  $seed    = GUICtrlRead($rri_seed)
+  ;$formula = GUICtrlRead($rri_in_formula)
+  ;$seed    = GUICtrlRead($rri_seed)
   updateFormula($formula_modified)
   GUICtrlSetData($rri_seed, $seed_modified)
   ;If ($formula <> $formula_modified Or $seed <> $seed_modified) Then
@@ -630,7 +665,7 @@ Func EditFormulaCallBack($formula_modified, $seed_modified)
 EndFunc
 
 Func rri_menu_import_formulaClick()
-  loadFormula()
+  loadFormula("loadFormulaCallback")
 EndFunc
 Func loadImgDropped()
   ;logging(@GUI_DRAGFILE)
@@ -839,12 +874,18 @@ Func rri_winMaximize()
   rri_line_resetInit()
 EndFunc
 Func rri_winMinimize()
+  ;If BitAND(WinGetState($rri_win), 16) Then Return
+  logging("Main window minimized")
+  WindowManager__minimizeAll()
 EndFunc
 Func rri_winRestore()
   updatePos()
+  logging("Main window restored")
   rri_line_resetInit()
+  WindowManager__restoreAll()
 EndFunc
 Func rri_winResize()
+  logging("Main window resized")
   updatePos()
   rri_line_resetInit()
 EndFunc
@@ -976,8 +1017,11 @@ Func winNext()
 EndFunc
 
 Func updateFormula($string)
+  ;TODO: Detect if there are some Variable windows somewhere,
+  ;and if so, use them to replace the variables by their values.
+  $string = Variables__updateString($string)
   GUICtrlSetData($rri_in_formula, $string)
-  GUICtrlSetData($rri_in_formula, $string)
+  ;GUICtrlSetData($rri_in_formula, $string)
 EndFunc
 
 Func frmSave()
@@ -1025,13 +1069,14 @@ Func render($id_rendu)
   calculateWidthHeight()
   Dim $flags = ""
   addFlag($flags, "formula", GUICtrlRead($rri_in_formula))
-  addFlag($flags, "width",  $width)
-  addFlag($flags, "height", $height)
+  addFlag($flags, "width",  $width_percent)
+  addFlag($flags, "height", $height_percent)
   addFlag($flags, "winmin", getWinmin())
   addFlag($flags, "winmax", getWinmax())
   addFlag($flags, "output", GUICtrlRead($rri_output))
   addFlag($flags, "seed",   GUICtrlRead($rri_seed))
   addFlag($flags, "realmode",_Iif(isChecked($rri_realmode), 1, 0))
+  addFlag($flags, "colornan", $color_NaN_complex)
   ;$flags = $formula_flag&$width_flag&$height_flag&$winmin_flag&$winmax_flag&$output_flag&$seed_flag
   $RENDERING_IMAGE_TO_UPDATE = $id_rendu
   startRendering($flags)
@@ -1051,13 +1096,6 @@ Func startRendering($flags)
   $rendering_thread = True
 EndFunc
 
-Func isFormulaLine($line)
-  Return StringCompare(StringLeft($line, 8), "formula:")==0
-EndFunc
-Func extractFormulaLine($line)
-  Return StringMid($line, 9)
-EndFunc
-
 Func handleRenderingAndIsFinished()
   Local $lines
   $text = StdoutRead($pid_rendering)
@@ -1074,7 +1112,7 @@ Func handleRenderingAndIsFinished()
         updateFormula($formula)
         If $EDIT_FORMULA_EXISTS Then
           $seed    = GUICtrlRead($rri_seed)
-          EditFormula($rri_win, $formula, $seed, "EditFormulaCallBack")
+          EditFormula__UpdateFormulaFromApplication($formula)
         EndIf
       Else
         $progress = StringSplit($current_line, '/')
@@ -1098,7 +1136,7 @@ Func handleFinishedRendering()
     If $EDIT_FORMULA_EXISTS Then
       $p_str = StringInStr($errors_pid, "position ")
       $position = Int(StringMid($errors_pid, $p_str + 9))
-      EditFormulaHighlightError($position, $position + 1)
+      EditFormula__HighlightError($position, $position + 1)
     EndIf
     Return False
   EndIf
@@ -1199,7 +1237,8 @@ Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Then
       addFlag($flags, "output", IniRead($ini_file, $ini_file_session, 'outputFile', ''))
     EndIf
 	addFlag($flags, "seed",     GUICtrlRead($rri_seed))
-    addFlag($flags, "realmode",_Iif(isChecked($rri_realmode), 1, 0))  
+    addFlag($flags, "realmode",_Iif(isChecked($rri_realmode), 1, 0))
+    addFlag($flags, "colornan", $color_NaN_complex)
     ;$flags = $formula_flag&$width_flag&$height_flag&$winmin_flag&$winmax_flag&$output_flag&$seed_flag
     If renderWithFlags($flags, $highres) Then
       repositionneRendu($rri_out_rendu, 0, 0)
@@ -1251,21 +1290,24 @@ Func defaultFormulaString()
 EndFunc
 
 Func calculateWidthHeight()
-  $width  = Int(GUICtrlRead($rri_width))
-  $height = Int(GUICtrlRead($rri_height))
+  $width_highres  = Int(GUICtrlRead($rri_width))
+  $height_highres = Int(GUICtrlRead($rri_height))
   if isChecked($rri_preview) Then
     $percent = Int(GUICtrlRead($rri_percent))
-    $width = Int(($width * $percent)/100)
-    $height = Int(($height * $percent)/100)
+    $width_percent = Int(($width_highres * $percent)/100)
+    $height_percent = Int(($height_highres * $percent)/100)
+  Else
+    $width_percent = $width_highres
+    $height_percent = $height_highres
   EndIf
-  $maxwh = _Max($width, $height)
+  $maxwh = _Max($width_percent, $height_percent)
 EndFunc
 
 Func getWinMinMaxMoved($delta_x, $delta_y)
   Dim $flags = ""
   addFlag($flags, "formula", GUICtrlRead($rri_in_formula))
-  addFlag($flags, "width",  $width)
-  addFlag($flags, "height", $height)
+  addFlag($flags, "width",  $width_percent)
+  addFlag($flags, "height", $height_percent)
   addFlag($flags, "winmin", getWinmin())
   addFlag($flags, "winmax", getWinmax())
   addFlag($flags, "output", GUICtrlRead($rri_output))
@@ -1365,7 +1407,7 @@ EndFunc
 
 Func zoomForward($x0, $y0, $x1, $y1)
   calculateWidthHeight()
-  $coord = resizeCoordinates($x0, $y0, $x1, $y1, $width, $height)
+  $coord = resizeCoordinates($x0, $y0, $x1, $y1, $width_percent, $height_percent)
   $xmin = $coord[0]
   $ymin = $coord[1]
   $xmax = $coord[2]
@@ -1417,7 +1459,7 @@ Func zoomBackward($x0, $y0, $x1, $y1)
   calculateWidthHeight()
   ; Everything is to be recalculated... because it's not linear
   
-  $coord = resizeCoordinates($x0, $y0, $x1, $y1, $width, $height)
+  $coord = resizeCoordinates($x0, $y0, $x1, $y1, $width_percent, $height_percent)
   $xmin = $coord[0]
   $ymin = $coord[1]
   $xmax = $coord[2]
@@ -1447,16 +1489,16 @@ EndFunc
 
 Func repositionneRendu($id_rendu, $dx, $dy)
   calculateWidthHeight()
-  If $width > $height Then
-    $height = $height *  $output_max_size / $width
-    $width = $output_max_size
+  If $width_percent > $height_percent Then
+    $height_percent = $height_percent *  $output_max_size / $width_percent
+    $width_percent = $output_max_size
   Else
-    $width = $width *  $output_max_size / $height
-    $height = $output_max_size
+    $width_percent = $width_percent *  $output_max_size / $height_percent
+    $height_percent = $output_max_size
   EndIf
-  $xmin = $output_x+($output_max_size-$width)/2+$dx
-  $ymin = $output_y+($output_max_size-$height)/2+$dy
-  GUICtrlSetPos($id_rendu, $xmin, $ymin, $width, $height)
+  $xmin = $output_x+($output_max_size-$width_percent)/2+$dx
+  $ymin = $output_y+($output_max_size-$height_percent)/2+$dy
+  GUICtrlSetPos($id_rendu, $xmin, $ymin, $width_percent, $height_percent)
   ;Logging(StringFormat("Déplacement vers %s, %s, %s, %s", $xmin, $ymin, $width, $height))
 EndFunc
 
@@ -1490,7 +1532,7 @@ Func resizeZoomBox($x0, $y0, $x1, $y1)
   ControlMove($rri_win,'', $rri_zoom_box2, $x0, $y1, $dx, 1)
   ControlMove($rri_win,'', $rri_zoom_box3, $x0, $y0, 1, $dy)
   
-  $coord = resizeCoordinates($x0, $y0, $x1, $y1, $width, $height)
+  $coord = resizeCoordinates($x0, $y0, $x1, $y1, $width_percent, $height_percent)
   $x0 = $coord[0]
   $y0 = $coord[1]
   $x1 = $coord[2]
@@ -1585,47 +1627,8 @@ Func rri_realmodeClick()
   renderIfAutoRender($rri_out_rendu)
 EndFunc
 
-Func complex_calculate($expr)
-  ;logging("Calculating "&$expr)
-  Dim $flags = ""
-  addFlag($flags, "formula", $expr)
-  addFlag($flags, "seed",   GUICtrlRead($rri_seed))
-  ;$flags = $formula_flag&$seed_flag
-  $p = Run(StringFormat("%sRenderReflex.exe simplify%s", $bin_dir, $flags), '', @SW_HIDE, 2+4)
-  $found = False
-  $result = 0
-  While True
-    $text = StdoutRead($p)
-    If @error Then ExitLoop
-    $lines = StringSplit($text, @CRLF, 1)
-    For $i = 1 To $lines[0]
-      $current_line = $lines[$i]
-      ;Logging("Line to compare: "&$current_line)
-      If isFormulaLine($current_line) Then
-        ;Logging("Formula!")
-        $result= extractFormulaLine($current_line)
-        $found = True
-        ExitLoop 2
-      EndIf
-    Next
-  WEnd
-  ProcessClose($p)
-  If Not $found Then
-    logging(StringFormat("%s has not been simplified", $expr))
-  EndIf
-  $result = simplifyParenthesis($result)
-  Return $result
-EndFunc
-
-Func simplifyParenthesis($complex_number)
-  While StringLeft($complex_number, 1)=='(' and StringRight($complex_number, 1)==')'
-    $complex_number = StringMid($complex_number, 2, StringLen($complex_number) - 2)
-  WEnd
-  return $complex_number
-EndFunc
-
 Func rri_menu_formula_historyClick()
-  loadFormula($history_formula_filename)
+  loadFormula("loadFormulaCallback", $history_formula_filename)
 EndFunc
 
 ;============================= Color code ==================================;
@@ -1710,10 +1713,6 @@ Func LoadSession()
   For $singlemap in $sessionParametersMap
     LoadSessionParameter($singlemap[0], $singlemap[1], $singlemap[2])
 	Next
-  ;TODO: On le fait deux fois pour que la formule soit affichée. Autre moyen?
-  ;For $singlemap in $sessionParametersMap
-  ;  LoadSessionParameter($singlemap[0], $singlemap[1])
-  ;Next
   For $singlemap in $sessionCheckBoxMap
     LoadSessionCheckBox($singlemap[0], $singlemap[1], $singlemap[2])
   Next

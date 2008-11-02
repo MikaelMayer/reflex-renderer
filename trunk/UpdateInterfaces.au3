@@ -17,7 +17,8 @@ Global $interfacesToUpdate = _ArrayCreate( _
  _ArrayCreate("ReflexRendererEditFormula.kxf", "EditFormula.au3",         True), _
  _ArrayCreate("ReflexRendererFormulaList.kxf", "LoadFormulaFromFile.au3", True), _
  _ArrayCreate("ReflexRendererSaveBox.kxf",     "SaveBox.au3",             False), _
- _ArrayCreate("ReflexRendererAboutBox.kxf",    "AboutBox.au3",            True) _
+ _ArrayCreate("ReflexRendererAboutBox.kxf",    "AboutBox.au3",            True), _
+ _ArrayCreate("ReflexRendererVariables.kxf",   "Variables.au3",           True) _
 )
 
 ;updateInterfaces()
@@ -45,37 +46,37 @@ WinMove($title, "", Default, Default, $width + $width2, ($i+1)*30+10)
 GUISetState(@SW_SHOW)
 
 While True
-	$nMsg = GUIGetMsg()
-    Switch $nMsg
-	Case $GUI_EVENT_CLOSE
-		ExitLoop
-	Case $all_button
-		updateInterfaces()
-		updateTraductions()
-		ExitLoop
-	Case Else
-		$i = 0
-		for $ctrl in $interfacesEdit
-			if $ctrl == $nMsg Then
-				$pp = $interfacesToUpdate[$i]
-				ShellExecute($pp[0])
-				WinWaitActive("Koda","")
-				WinWaitClose("Koda")
-				updateFile($pp)
-				updateTraductions()
-			EndIf
-			$i += 1
-		Next
-		$i = 0
-		for $ctrl in $interfacesUpdate
-			if $ctrl == $nMsg Then
-				$pp = $interfacesToUpdate[$i]
-				updateFile($pp)
-				updateTraductions()
-			EndIf
-			$i += 1
-		Next
-	EndSwitch
+  $nMsg = GUIGetMsg()
+  Switch $nMsg
+  Case $GUI_EVENT_CLOSE
+    ExitLoop
+  Case $all_button
+    updateInterfaces()
+    updateTraductions()
+    ExitLoop
+  Case Else
+    $i = 0
+    for $ctrl in $interfacesEdit
+      if $ctrl == $nMsg Then
+        $pp = $interfacesToUpdate[$i]
+        ShellExecute($pp[0])
+        WinWaitActive("Koda","")
+        WinWaitClose("Koda")
+        updateFile($pp)
+        updateTraductions()
+      EndIf
+      $i += 1
+    Next
+    $i = 0
+    for $ctrl in $interfacesUpdate
+      if $ctrl == $nMsg Then
+        $pp = $interfacesToUpdate[$i]
+        updateFile($pp)
+        updateTraductions()
+      EndIf
+      $i += 1
+    Next
+  EndSwitch
 WEnd
 
 Func updateTraductions()
