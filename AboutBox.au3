@@ -8,7 +8,11 @@
 
 #ce ----------------------------------------------------------------------------
 
-Global $ABOUT_BOX_EXISTS = False
+#include-once
+#include "WindowManager.au3"
+#include "translations.au3"
+
+Global $ABOUT_BOX_EXISTS = False, $AboutBox = 0
 
 Func GenerateAboutBox($main_window_handle)
   If $ABOUT_BOX_EXISTS Then
@@ -57,6 +61,7 @@ Func GenerateAboutBox($main_window_handle)
   Global $ab_ButtonOK = GUICtrlCreateButton($__ok_button__, 144, 166, 75, 25)
   GUICtrlSetOnEvent(-1, "ab_ButtonOKClick")
   #EndRegion ### END Koda GUI section ###
+  WindowManager__registerWindow($AboutBox)
   If WinExists($main_window_handle) Then
     $pos = WinGetPos($main_window_handle, "")
     $pos2 = WinGetPos($AboutBox, "")

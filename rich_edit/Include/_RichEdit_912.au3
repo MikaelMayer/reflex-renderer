@@ -21,7 +21,7 @@ Else
 	$dll = DllOpen("RICHED20.DLL")
     $sRTFClassName = "RichEdit20A"
 EndIf
-
+  
 ;events mask
 Global Const $ENM_CHANGE = 0x1
 Global Const $ENM_CORRECTTEXT = 0x400000
@@ -51,7 +51,7 @@ Global Const $EM_GETTEXTMODE = $WM_USER + 90
 Global Const $EM_GETTEXTRANGE = $WM_USER + 75
 Global Const $EM_GETSCROLLPOS = $WM_USER + 221
 Global Const $EM_HIDESELECTION = ($WM_USER + 63)
-Global Const $EM_SETPASSWORDCHAR = 0xCC
+;Global Const $EM_SETPASSWORDCHAR = 0xCC
 Global Const $EM_SETFONTSIZE = $WM_USER + 223
 Global Const $EM_SETBKGNDCOLOR = ($WM_USER + 67)
 Global Const $EM_GETCHARFORMAT = 1082
@@ -148,7 +148,7 @@ global Const $WB_RIGHTBREAK = 7
 Global Const $WM_LBUTTONDOWN = 0x201
 Global Const $WM_RBUTTONDOWN = 0x204
 Global Const $WM_LBUTTONDBLCLK = 0x203
-Global Const $WM_MOUSEMOVE = 0x200
+;Global Const $WM_MOUSEMOVE = 0x200
 
 Global Const $GT_DEFAULT = 0
 Global Const $GT_SELECTION = 2

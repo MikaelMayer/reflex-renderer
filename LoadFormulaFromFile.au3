@@ -13,6 +13,7 @@
 #include "PngHandling.au3"
 
 Global $LOAD_FORMULA_EXISTS = False
+Global $LOAD_FORMULA_CALLBACK=""
 
 #CS
   Format of the Formula file:
@@ -345,13 +346,6 @@ Func createFormulaEntry(ByRef $formula_items, $tree_control)
   Return $formula_entry
 EndFunc
 
-Func AssertEqual($a, $b)
-  If $a <> $b Then
-    MsgBox(0, "Assertion error", StringFormat("%s != %s and it's bad", $a, $b))
-    Exit
-  EndIf
-EndFunc
-
 Func lookForFormulaFile()
 	$fullpath = UpdateMyDocuments(IniReadSavebox('formulaFile', ''))
   $fullpath = FileOpenDialog($Formula_File, '', $Formula_file____txt__All______, 1+2, $fullpath)
@@ -427,7 +421,7 @@ EndFunc
 
 Func DeleteLoadFormulaBox()
   If $LOAD_FORMULA_EXISTS Then
-    DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $formula_chooser, "int", 100, "long", 0x00050002);slide out to left
+    AnimateToLeft($formula_chooser)
     GUIDelete($formula_chooser)
     $LOAD_FORMULA_EXISTS = False
   EndIf
@@ -502,7 +496,7 @@ Func loadImgContainingReflex($fullpath)
   
   $result = getEverythingAvailableFromFormula($queue)
   ;logging("Retour avec n options: "&size($queue))
-  loadFormulaCallback($result)
+  Call($LOAD_FORMULA_CALLBACK, $result)
 EndFunc
 
 Func getEverythingAvailableFromFormula($formula_items)
@@ -558,7 +552,8 @@ Func getEverythingAvailableFromFormula($formula_items)
   Return $return_value
 EndFunc
 
-Func loadFormula($fp = '')
+Func loadFormula($callback, $fp = '')
+  $LOAD_FORMULA_CALLBACK = $callback
   $lfe_save = $LOAD_FORMULA_EXISTS
   If Not $LOAD_FORMULA_EXISTS Then
     If $fp <> '' Then
@@ -576,7 +571,7 @@ Func loadFormula($fp = '')
   EndIf
 
   If Not $lfe_save Then
-    DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $formula_chooser, "int", 100, "long", 0x00040001);slide in from left
+    AnimateFromLeft($formula_chooser)
   EndIf
   GUISetState(@SW_SHOW)
 EndFunc
@@ -604,7 +599,7 @@ Func lf_OkClick()
       ExitLoop
     EndIf
   Next
-  loadFormulaCallback($return_value)
+  Call($LOAD_FORMULA_CALLBACK, $return_value)
 EndFunc
 
 Func lf_ControlClick()
