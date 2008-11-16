@@ -7,6 +7,7 @@
   The variable window to controll a variable in the Editor of Formula.
 
 #ce ----------------------------------------------------------------------------
+#include-once
 #include "Translations.au3"
 #include "GlobalUtils.au3"
 #include "WindowManager.au3"
@@ -15,6 +16,7 @@
 Global $vm_variable_windows = emptySizedArray(), $Variables__update_function = ""
 Global $vaw_slidermin=0, $vaw_slidermax=100, $Variables__current_window_indice
 Global $vaw_window, $vaw_varmin, $vaw_varmax, $vaw_varcurrent, $vaw_slider
+Global $VARIABLES_PARENT = 0
 
 Global enum $N_VAW_WINDOW = 0, _
             $N_VAW_CURRENT, _
@@ -64,7 +66,7 @@ Func VariableManager__setCurrentVariable($win_handle)
   For $i = 1 To $vm_variable_windows[0]
     Local $vw = $vm_variable_windows[$i]
     If $vw[0] == $win_handle Then
-      logging("Variable "&$i&" loaded")
+      ;logging("Variable "&$i&" loaded")
       $vaw_window = $vw[$N_VAW_WINDOW]
       $vaw_varcurrent = $vw[$N_VAW_CURRENT]
       $vaw_slider     = $vw[$N_VAW_SLIDER] 
@@ -96,7 +98,15 @@ GUISetState(@SW_SHOW)
 Sleep(10000)
 #comments-end
 
-Func GenerateVariableWindow($edit_formula_handle)
+Func Variables__setParentWindow($win_handle)
+  $VARIABLES_PARENT = $win_handle
+EndFunc
+
+Func Variables__setUpdateFunction($update_function)
+  $Variables__update_function = $update_function
+EndFunc
+
+Func GenerateVariableWindow()
   Opt('GUIOnEventMode', 1)
   #Region ### START Koda GUI section ### Form=C:\Documents and Settings\Mikaël\Mes documents\Reflex\LogicielOrdi\RenderReflex\ReflexRendererVariables.kxf
   Global $vaw_window = GUICreate($__variable__, 310, 138, 260, 190, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS))
@@ -143,30 +153,58 @@ Func GenerateVariableWindow($edit_formula_handle)
   GUICtrlSetOnEvent($vaw_decrease_range, "vaw_decrease_rangeClick")
   #EndRegion ### END Koda GUI section ###
 
-  If WinExists($edit_formula_handle) Then
-    $pos = WinGetPos($edit_formula_handle, "")
+  If WinExists($VARIABLES_PARENT) Then
+    $pos = WinGetPos($VARIABLES_PARENT, "")
     WinMove($vaw_window, "", $pos[0], $pos[1]+$pos[3])
   EndIf
   AnimateFromTop($vaw_window)
   GUISetState(@SW_SHOW, $vaw_window)
   GUISetOnEvent($GUI_EVENT_RESIZED, 'vaw_windowResized')
   
-  WindowManager__registerWindow($vaw_window)
+  WindowManager__registerWindow($vaw_window, "Variable")
   VariableManager__registerVariable($vaw_window, $vaw_varcurrent, $vaw_slider, $vaw_varmin, $vaw_varmax, $vaw_varname, $vaw_render, $vaw_set_min, $vaw_set_max, $vaw_increase_range)
+EndFunc
+
+WindowManager__addLoadSaveFunctionForType("Variable", "Variables__LoadFromIni", "Variables__SaveToIni")
+Func Variables__LoadFromIni($value)
+  $parsed = StringRegExp($value, "(?i)([^\s]*)\s?=\s?([^\s]*) from (.*) to (.*)", 1)
+  If @Error<>0 Then
+    logging("Error: variable not loaded ("&$value&")")
+    Return
+  EndIf
+  GenerateVariableWindow()
+  GUICtrlSetData($vaw_varname, $parsed[0])
+  GUICtrlSetData($vaw_varcurrent, $parsed[1])
+  GUICtrlSetData($vaw_varmin, $parsed[2])
+  GUICtrlSetData($vaw_varmax, $parsed[3])
+  vaw_update_slider_raw()
+EndFunc
+Func Variables__SaveToIni($win_handle)
+  loadVariable($win_handle)
+  
+  $name = GUICtrlRead($vaw_varname)
+  $val  = GUICtrlRead($vaw_varcurrent)
+  $min  = GUICtrlRead($vaw_varmin)
+  $max  = GUICtrlRead($vaw_varmax)
+  
+  Return StringFormat("%s = %s from %s to %s", $name, $val, $min, $max)
 EndFunc
 
 Func Variables__updateString($string)
   ;Replace the variables in $string by their value.
-  logging("Variable_replacement")
+  ;logging("Variable_replacement in "&$string)
   For $i = 1 To $vm_variable_windows[0]
     $tab = $vm_variable_windows[$i]
+    loadVariable($tab[$N_VAW_WINDOW])
+    ;logging("Name: "& GUICtrlRead($tab[$N_VAW_VARNAME])&", value: " & GUICtrlRead($tab[$N_VAW_CURRENT]))
     $string = replaceVariableString($string, GUICtrlRead($tab[$N_VAW_VARNAME]), GUICtrlRead($tab[$N_VAW_CURRENT]));
+    ;logging("Replaced:"& $string)
   Next
   Return $string
 EndFunc
 
 Func replaceVariableString($string, $varname, $varvalue)
-  $varname = StringReplace($varname, "$", "\$")
+  $varname = StringReplace(StringStripWS($varname, 3), "$", "\$")
   $string = StringRegExpReplace($string, $varname&"([^[:alnum:]]|\z)", "("&$varvalue&")\1")
   return $string
 EndFunc
@@ -244,6 +282,7 @@ EndFunc
 
 Func vaw_renderClick()
   loadVariable()
+  MsgBox(0, "Sorry", "Feature not available for the moment... coming soon!")
 EndFunc
 Func vaw_set_maxClick()
   loadVariable()
@@ -294,3 +333,6 @@ Func vaw_Label4Click()
 EndFunc
 Func vaw_Label5Click()
 EndFunc
+
+; To run the main program from this file
+#include "ReflexRenderer.au3"

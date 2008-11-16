@@ -52,6 +52,7 @@ V "Libeller la Reflex comme la formule" m'a fait penser au début que ça mettrait
  ===== Done ====
  
 Mik notes : 
+ V Added variable support + saving and loading variables and edit formula state.
  V Keeping the number of rendered pixels constant when changing the resolution
  V Minimizing/Maximizing the main window => do the same for the children
  V Syntax coloring in EditFormula highlights variables and strings containing numbers.
@@ -167,6 +168,7 @@ puis d'y adjoindre les chaînes traduites de &Tools + ' > ' + &Save reflex / form
  _IsPressed can be useful?
  
 #ce ----------------------------------------------------------------------------
+#include-once
 
 Global Const $VERSION_NUMER = "2.7.03 beta"
 Global Const $COPYRIGHT_DATE = "2008"
@@ -214,6 +216,8 @@ Global $rri_out_rendu_pos
 Global Enum $REFLEX_NOT_UP_TO_DATE = 0, $REFLEX_RENDERED_IN_LR, $REFLEX_RENDERED_IN_HR
 Global $REFLEX_RENDERING = $REFLEX_NOT_UP_TO_DATE, $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE, $REFLEX_RENDERED_FINISHED = True
 Global $history_formula_array[19] = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+
+EditFormula__setCallbackFunction("EditFormulaCallBack")
 
 Func loadRRI()
   Opt('GUIOnEventMode', 1)
@@ -444,6 +448,10 @@ Func loadRRI()
    _ArrayCreate('AutoRender', $rri_check_auto_render, 'TRUE'), _
    _ArrayCreate('RealMode', $rri_realmode, 'FALSE') _
   )
+  
+  ;Global $sessionWindowMap = _ArrayCreate( _
+  ; _ArrayCreate('')
+  ;)
 
   Global $resolutionsMap = _ArrayCreate( _
     _ArrayCreate($rri_resolutions_201, '201 x 201'), _
@@ -502,6 +510,10 @@ Func loadRRI()
   repositionneRendu($rri_out_rendu, 0, 0)
   
   AnimateFromTopLeft($rri_win)
+  
+  EditFormula__setParentWindow($rri_win)
+  WindowManager__loadAll()
+
   history_formula_arrayLoad()
 EndFunc
 loadRRI()
@@ -651,7 +663,7 @@ EndFunc
 Func rri_menu_formula_editorClick()
   $formula = GUICtrlRead($rri_in_formula)
   $seed    = GUICtrlRead($rri_seed)
-  EditFormula($rri_win, $formula, $seed, "EditFormulaCallBack")
+  EditFormula($formula, $seed)
 EndFunc
 
 Func EditFormulaCallBack($formula_modified, $seed_modified)
@@ -660,7 +672,7 @@ Func EditFormulaCallBack($formula_modified, $seed_modified)
   updateFormula($formula_modified)
   GUICtrlSetData($rri_seed, $seed_modified)
   ;If ($formula <> $formula_modified Or $seed <> $seed_modified) Then
-    renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRender($rri_out_rendu)
   ;EndIf
 EndFunc
 
@@ -1020,6 +1032,7 @@ Func updateFormula($string)
   ;TODO: Detect if there are some Variable windows somewhere,
   ;and if so, use them to replace the variables by their values.
   $string = Variables__updateString($string)
+  ;logging("updated: "&$string)
   GUICtrlSetData($rri_in_formula, $string)
   ;GUICtrlSetData($rri_in_formula, $string)
 EndFunc
@@ -1720,10 +1733,11 @@ Func LoadSession()
 EndFunc
 
 Func SaveSession()
-  for $singlemap in $sessionParametersMap
+  For $singlemap in $sessionParametersMap
     SaveSessionParameter($singlemap[0], $singlemap[1])
   Next
-  for $singlemap in $sessionCheckBoxMap
+  For $singlemap in $sessionCheckBoxMap
     SaveSessionCheckBox($singlemap[0], $singlemap[1])
   Next
+  WindowManager__saveAll()
 EndFunc

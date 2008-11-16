@@ -16,7 +16,7 @@
 #include <Date.au3>
 
 Global $ERROR_DECODE_HANDLING = ""
-Global $bin_dir = @ScriptDir&'\Release\'
+Global Const $EmptySizedArray = emptySizedArray()
 
 If @Compiled Then
   Opt('TrayIconHide', 1)

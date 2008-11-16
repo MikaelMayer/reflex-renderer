@@ -12,6 +12,7 @@
 
 #include-once
 #include <GUIConstants.au3>
+#include <ComboConstants.au3>
 #include <GDIPlus.au3>
 #include "IniHandling.au3"
 #include "translations.au3"
