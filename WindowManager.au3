@@ -15,7 +15,7 @@
 Global Enum $N_WLS_TYPE, $N_WLS_LOAD, $N_WLS_SAVE, $N_WLS_COUNT
 Global $wm_load_save_methods = emptySizedArray()
 
-Global Enum $N_WIN_HANDLE, $N_WIN_TYPE, $N_WIN_COUNT
+Global Enum $N_WIN_HANDLE, $N_WIN_TYPE, $N_WIN_CLOSE, $N_WIN_COUNT
 Global $wm_registered_windows = emptySizedArray()
 
 ; Registers a window and also the parameters that have to be stored with,
@@ -30,16 +30,17 @@ Global $wm_registered_windows = emptySizedArray()
 ;   * parameter_get_function : A string containing a function returning the value of the field (to be stored in the ini file)
 ;   * ini_section : A string containing the section where the value has to be stored at closing time.
 ;   * ini_variable : The corresponding variable name 
-Func WindowManager__registerWindow($win_handle, $win_type="")
-  ;logging("Registering window type "&$win_type&" ("&$win_handle&")")
+Func WindowManager__registerWindow($win_handle, $win_type="", $win_close="")
+  logging("Registering window type "&$win_type&" ("&$win_handle&")")
   Local $t[$N_WIN_COUNT]
   $t[$N_WIN_HANDLE] = $win_handle
   $t[$N_WIN_TYPE]   = $win_type
+  $t[$N_WIN_CLOSE]  = $win_close
   push($wm_registered_windows, $t)
 EndFunc
 
 Func WindowManager__unregisterWindow($win_handle)
-  ;logging("Unregistering window ("&$win_handle&")")
+  logging("Unregistering window ("&$win_handle&")")
   For $i = 1 To $wm_registered_windows[0]
     $t = $wm_registered_windows[$i]
     If $t[$N_WIN_HANDLE] = $win_handle Then
@@ -78,6 +79,13 @@ Func WindowManager__restoreAll()
   WindowManager__AllWinSetState(@SW_RESTORE)
 EndFunc
 
+Func WindowManager__closeAll()
+  While $wm_registered_windows[0] > 0
+    logging("State : "&toString($wm_registered_windows))
+    $t = $wm_registered_windows[$wm_registered_windows[0]]
+    Call($t[$N_WIN_CLOSE], $t[$N_WIN_HANDLE])
+  WEnd
+EndFunc
 
 ;=== Methods to save and load all small windows from a previous version ===;
 

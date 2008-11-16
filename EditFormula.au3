@@ -417,7 +417,7 @@ Func GenerateEditFormulaBox()
   ;$checkboxes_to_save = _ArrayCreate($IDC_INV)
   ;WindowManager__registerWindow($ID_EDITFORMULA, $elements_to_save)
   Variables__setParentWindow($ID_EDITFORMULA)
-  WindowManager__registerWindow($ID_EDITFORMULA, "EditFormula")
+  WindowManager__registerWindow($ID_EDITFORMULA, "EditFormula", "DeleteEditFormulaBox")
 EndFunc
 
 Func resizeIDC_EDIT1()
@@ -425,13 +425,13 @@ Func resizeIDC_EDIT1()
   WinMove($IDC_EDIT1, "", $pos[0], $pos[1], $pos[2], $pos[3])
 EndFunc
 
-Func DeleteEditFormulaBox()
+Func DeleteEditFormulaBox($win_handle=$ID_EDITFORMULA)
   If $EDIT_FORMULA_EXISTS Then
     DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $ID_EDITFORMULA, "int", 100, "long", 0x00050002);slide out to left
-    GUIDelete($ID_EDITFORMULA)
+    GUIDelete($win_handle)
     $EDIT_FORMULA_EXISTS = False
     GUIRegisterMsg($WM_NOTIFY, "")
-    WindowManager__unregisterWindow($ID_EDITFORMULA)
+    WindowManager__unregisterWindow($win_handle)
     Variables__setParentWindow(0)
   EndIf
 EndFunc
@@ -513,11 +513,8 @@ Func ID_CANCELClick()
 EndFunc
 
 Func ID_EDITFORMULAClose()
-  If WinActive($ID_EDITFORMULA, "") Then
-    DeleteEditFormulaBox()
-  Else
-    WinActivate($ID_EDITFORMULA)
-  EndIf
+  logging("Asking Edit Formula to be closed...")
+  DeleteEditFormulaBox()
 EndFunc
 Func ID_EDITFORMULAMinimize()
 EndFunc

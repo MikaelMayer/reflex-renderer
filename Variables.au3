@@ -62,6 +62,7 @@ Func VariableManager__unregisterVariable($vaw_window)
 EndFunc
 
 Func VariableManager__setCurrentVariable($win_handle)
+  logging("Loading variable "&$win_handle)
   If $vaw_window = $win_handle Then Return
   For $i = 1 To $vm_variable_windows[0]
     Local $vw = $vm_variable_windows[$i]
@@ -161,7 +162,7 @@ Func GenerateVariableWindow()
   GUISetState(@SW_SHOW, $vaw_window)
   GUISetOnEvent($GUI_EVENT_RESIZED, 'vaw_windowResized')
   
-  WindowManager__registerWindow($vaw_window, "Variable")
+  WindowManager__registerWindow($vaw_window, "Variable", "vaw_windowClose")
   VariableManager__registerVariable($vaw_window, $vaw_varcurrent, $vaw_slider, $vaw_varmin, $vaw_varmax, $vaw_varname, $vaw_render, $vaw_set_min, $vaw_set_max, $vaw_increase_range)
 EndFunc
 
@@ -219,11 +220,13 @@ Func vawUpdate()
   EndIf
 EndFunc
 
-Func vaw_windowClose()
-  loadVariable()
+Func vaw_windowClose($win_handle = @GUI_WinHandle)
+  If Not IsDeclared("win_handle") Then $win_handle = @GUI_WinHandle
+  loadVariable($win_handle)
   ;MsgBox(0, "@GUI_CtrlId", @GUI_WinHandle == $vaw_window)
-  VariableManager__unregisterVariable(@GUI_WinHandle)
-  WindowManager__unregisterWindow(@GUI_WinHandle)
+  VariableManager__unregisterVariable($win_handle)
+  WindowManager__unregisterWindow($win_handle)
+  AnimateToTop($vaw_window)
   GUIDelete($vaw_window)
 EndFunc
 Func vaw_windowMinimize()
@@ -237,18 +240,21 @@ Func vaw_windowRestore()
 EndFunc
 Func vaw_windowResized()
   loadVariable()
-  logging("GUI: "&@GUI_WinHandle)
+  ;logging("GUI: "&@GUI_WinHandle)
   $tab = $vm_variable_windows[1]
-  logging("GUI: "&$tab[0])
+  ;logging("GUI: "&$tab[0])
   $p = ControlGetPos($vaw_window, "", $vaw_slider)
   $min = 0
   $max = $p[2]
   GUICtrlSetLimit($vaw_slider, $max, $min)
-  logging("vm:"&$Variables__current_window_indice)
+  ;logging("variable resized:"&$Variables__current_window_indice)
   $tab = $vm_variable_windows[$Variables__current_window_indice]
   $tab[$N_VAW_SLIDERMIN] = $min
   $tab[$N_VAW_SLIDERMAX] = $max
   $vm_variable_windows[$Variables__current_window_indice] = $tab
+  $vaw_slidermin = $min
+  $vaw_slidermax = $max
+  vaw_update_slider_raw()
 EndFunc
 
 Func vaw_update_slider($min, $max, $current)
