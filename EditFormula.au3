@@ -20,8 +20,8 @@
 #include "rich_edit\Include\_RichEdit_912.au3"
 
 Global $EDIT_FORMULA_EXISTS = False, $EDIT_FORMULA_PREVIOUS_TEXT = "", $LOCK_SYNTAX_COLORING = False
-Global $EDIT_FORMULA_CALLBACK = ""
-$Variables__update_function = "ID_DRAWClick"
+Global $EDIT_FORMULA_CALLBACK = "", $EDIT_FORMULA_PARENT_WINDOW = 0
+
 ;EditFormula("13", "0")
 
 ;Compatibility
@@ -179,7 +179,7 @@ Func EditFormulaActivate()
   WinActivate($ID_EDITFORMULA)
 EndFunc
 
-Func GenerateEditFormulaBox($main_window_handle)
+Func GenerateEditFormulaBox()
   If $EDIT_FORMULA_EXISTS Then
     EditFormulaActivate()
     Return
@@ -404,14 +404,20 @@ Func GenerateEditFormulaBox($main_window_handle)
   $IDC_EDIT1 = _GuiCtrl_RichEdit_Create($ID_EDITFORMULA, $pos[0], $pos[1], $pos[2], $pos[3])
   GUICtrlSetOnEvent($IDC_EDIT1, "ef_insertionClick")
   ;logging(GUICtrlSetResizing($IDC_EDIT1, $GUI_DOCKBORDERS))
-  ;-------------------------------------To recieve EN_LINK and $EN_PROTECTED Notifications
+  ;-------------------------------------To receive EN_LINK and $EN_PROTECTED Notifications
   _RichEdit_LimitText($IDC_EDIT1, 512000)
   _GUICtrlEdit_SetMargins ($IDC_EDIT1, BitOR($EC_LEFTMARGIN, $EC_RIGHTMARGIN), 3, 3)
   _RichEdit_SetFont($IDC_EDIT1, 0000, 0x000000, 0xFFFFFF, "Times New Roman", 12, 0)
   _RichEdit_BkColor($IDC_EDIT1, 0xFFFFFF)
   _RichEdit_SetEventMask($IDC_EDIT1 , BitOr($ENM_LINK, $ENM_PROTECTED, $ENM_MOUSEEVENTS, $ENM_KEYEVENTS, $ENM_SELCHANGE))
   GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
-  WindowManager__registerWindow($ID_EDITFORMULA)
+  
+  ;TODO
+  ;$edits_to_save = _ArrayCreate($IDC_EDIT1)
+  ;$checkboxes_to_save = _ArrayCreate($IDC_INV)
+  ;WindowManager__registerWindow($ID_EDITFORMULA, $elements_to_save)
+  Variables__setParentWindow($ID_EDITFORMULA)
+  WindowManager__registerWindow($ID_EDITFORMULA, "EditFormula")
 EndFunc
 
 Func resizeIDC_EDIT1()
@@ -426,20 +432,27 @@ Func DeleteEditFormulaBox()
     $EDIT_FORMULA_EXISTS = False
     GUIRegisterMsg($WM_NOTIFY, "")
     WindowManager__unregisterWindow($ID_EDITFORMULA)
+    Variables__setParentWindow(0)
   EndIf
 EndFunc
 
-Func EditFormula($main_window_handle, $formula, $seed, $callbackfunction)
+Func EditFormula__setCallbackFunction($callbackfunction)
   $EDIT_FORMULA_CALLBACK = $callbackfunction
+EndFunc
+Func EditFormula__setParentWindow($main_window_handle)
+  $EDIT_FORMULA_PARENT_WINDOW = $main_window_handle
+EndFunc
+
+Func EditFormula($formula, $seed)
   ;Opt('GUIOnEventMode', 0)
   $efe_save = $EDIT_FORMULA_EXISTS
-  GenerateEditFormulaBox($main_window_handle)
+  GenerateEditFormulaBox()
   _GUICtrlEdit_SetText($IDC_EDIT1, $formula)
   colorationSyntaxique($IDC_EDIT1)
   GUICtrlSetData($IDC_F_SEED, $seed)
   If Not $efe_save Then
-    If WinExists($main_window_handle) Then
-      $pos = WinGetPos($main_window_handle, "")
+    If WinExists($EDIT_FORMULA_PARENT_WINDOW) Then
+      $pos = WinGetPos($EDIT_FORMULA_PARENT_WINDOW, "")
       WinMove($ID_EDITFORMULA, "", $pos[0]+$pos[2], $pos[1])
     EndIf
     AnimateFromLeft($ID_EDITFORMULA)
@@ -448,6 +461,21 @@ Func EditFormula($main_window_handle, $formula, $seed, $callbackfunction)
   GUISetState(@SW_SHOW, $ID_EDITFORMULA)
   _RichEdit_SetSel($IDC_EDIT1, 0, 0)
   _WinAPI_SetFocus($IDC_EDIT1)
+EndFunc
+
+; Functions to save and load the EditFormula window
+
+WindowManager__addLoadSaveFunctionForType("EditFormula", "EditFormula__LoadFromIni", "EditFormula__SaveKeyValue")
+Func EditFormula__LoadFromIni($value)
+  $values = StringSplit($value, ";;", 1)
+  $formula = pop($values)
+  $seed = pop($values)
+  EditFormula($formula, $seed)
+EndFunc
+Func EditFormula__SaveKeyValue($win_handle)
+  $formula = EditFormula__getFormulaText()
+  $seed = GUICtrlRead($IDC_F_SEED)
+  Return $formula&";;"&$seed
 EndFunc
 
 ; randh()*$x => randh()*0.10 => cos(sin(x))*0.10 => 
@@ -469,13 +497,14 @@ Func EditFormula__getFormulaText()
   return $formula
 EndFunc
 
+Variables__setUpdateFunction("ID_DRAWClick")
 Func ID_DRAWClick()
   $result_formula  = EditFormula__getFormulaText()
   
   $result_seed = GUICtrlRead($IDC_F_SEED)
   $result = _ArrayCreate(2, $result_formula, $result_seed)
   
-  logging("Going to callback on "&$result_formula)
+  ;logging("Going to callback on "&$result_formula)
   
   Call($EDIT_FORMULA_CALLBACK, $result_formula, $result_seed)
 EndFunc
@@ -614,7 +643,7 @@ Func ef_insertionClick()
       Next
       _WinAPI_SetFocus($IDC_EDIT1)
     Case $IDC_INSERTVAR
-      GenerateVariableWindow($ID_EDITFORMULA)
+      GenerateVariableWindow()
     Case $ID_RANDSEED
       GUICtrlSetState($IDC_F_SEED, _Iif($randseed, $GUI_DISABLE, $GUI_ENABLE))
     Case $ID_DRAW

@@ -14,6 +14,7 @@
 Global $ini_file = @ScriptDir&'\ReflexRenderer.ini'
 Global $ini_file_session = 'Session'
 Global $ini_file_default = 'Default'
+Global $ini_file_windows = 'Windows'
 Global Const $options_line_string = '@Options:'
 
 Func LoadParameter($type, $name, $control, $default='')
