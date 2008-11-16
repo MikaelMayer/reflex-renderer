@@ -218,6 +218,7 @@ Func translationFile($str)
 EndFunc
 
 Func listLanguages()
+  $languages = emptySizedArray()
   FileChangeDir(@ScriptDir&"\"&$lang_folder)
   $search = FileFindFirstFile(translationFile("*"))
   ; Check if the search was successful

@@ -241,17 +241,21 @@ Func AnimateFromTopLeft($win)
   GUISetState(@SW_SHOW, $win)
 EndFunc
 
-Func AnimateFromTop($win)
-  DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $win, "int", 200, "long", 0x00040004);diag slide-in from Top-left
-  GUISetState(@SW_SHOW, $win)
-EndFunc
-
 Func AnimateToTopRight($win)
   DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $win, "int", 200, "long", 0x00050009);diag slide-out to Top-Right
 EndFunc
 
 Func AnimateToBottomRight($win)
   DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $win, "int", 200, "long", 0x00050005);diag slide-out to Bottom-right
+EndFunc
+
+Func AnimateFromTop($win)
+  DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $win, "int", 100, "long", 0x00040004);diag slide-in from Top
+  GUISetState(@SW_SHOW, $win)
+EndFunc
+
+Func AnimateToTop($win)
+  DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $win, "int", 100, "long", 0x00050008);slide-out to Top
 EndFunc
 
 Func AnimateFromLeft($win)

@@ -52,6 +52,10 @@ V "Libeller la Reflex comme la formule" m'a fait penser au début que ça mettrait
  ===== Done ====
  
 Mik notes : 
+ V Added a close methods for registered windows
+ V Corrected a language changing bug.
+ V Added closing animation to top for variables
+ V Corrected redimensionnal bug for variable windows.
  V Added variable support + saving and loading variables and edit formula state.
  V Keeping the number of rendered pixels constant when changing the resolution
  V Minimizing/Maximizing the main window => do the same for the children
@@ -1624,6 +1628,7 @@ Func menu_setLang()
   EndIf
   IniWrite($ini_file, $ini_file_session, "language", $res_string)
   SaveSession()
+  WindowManager__closeAll()
   LoadTranslations()
   Local $old_rri_win = $rri_win
   AnimateToBottomRight($old_rri_win)
