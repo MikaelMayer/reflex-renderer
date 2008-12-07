@@ -432,7 +432,15 @@ Func loadFormulaFromReflex()
   loadJpegReflex($fullpath)
 EndFunc
 
-Func loadImgContainingReflex($fullpath)
+Func LoadFormulaFromFile__setCallbackFunction($callbackfunction)
+  $LOAD_FORMULA_CALLBACK = $callbackfunction
+EndFunc
+Func LoadFormulaFromFile__setParentWindow($main_window_handle)
+  $LOAD_FORMULA_PARENT_WINDOW = $main_window_handle
+EndFunc
+
+
+Func LoadFormulaFromFile__LoadImgContainingReflex($fullpath)
   If $fullpath =='' Then Return
   $isJpeg = StringEndsWith($fullpath, '.jpeg') Or StringEndsWith($fullpath, '.jpg')
   $isPng =  StringEndsWith($fullpath, '.png')
@@ -450,7 +458,7 @@ Func loadImgContainingReflex($fullpath)
     Return
   EndIf
   Dim $comment = ""
-  ;logging("tags:"&$text_tags_found[0])
+  ;logging("tags:"&toString($text_tags_found))
   For $i = 1 To $text_tags_found[0]
     $current_tag = $text_tags_found[$i]
     If StringCompare($current_tag[0], "comment")==0 Then
@@ -466,8 +474,9 @@ Func loadImgContainingReflex($fullpath)
   $file = StringSplit($comment, @CRLF, 1)
   _ArrayDelete($file, 0) ;Supprime le compteur
   ;logging("File splité")
-  $queue = _ArrayCreate(0)
+  $queue = emptyQueue()
   if @error == -1 Then
+    logging("Error while creating queue")
     Return -1
   EndIf
   ;logging("queue créée")
@@ -496,6 +505,7 @@ Func loadImgContainingReflex($fullpath)
   
   $result = getEverythingAvailableFromFormula($queue)
   ;logging("Retour avec n options: "&size($queue))
+  ;logging("calling back load formula callback : "&$LOAD_FORMULA_CALLBACK)
   Call($LOAD_FORMULA_CALLBACK, $result)
 EndFunc
 
@@ -552,7 +562,7 @@ Func getEverythingAvailableFromFormula($formula_items)
   Return $return_value
 EndFunc
 
-Func loadFormula($callback, $fp = '')
+Func loadFormula($fp = '')
   $LOAD_FORMULA_CALLBACK = $callback
   $lfe_save = $LOAD_FORMULA_EXISTS
   If Not $LOAD_FORMULA_EXISTS Then

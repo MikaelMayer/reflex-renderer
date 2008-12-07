@@ -412,10 +412,6 @@ Func GenerateEditFormulaBox()
   _RichEdit_SetEventMask($IDC_EDIT1 , BitOr($ENM_LINK, $ENM_PROTECTED, $ENM_MOUSEEVENTS, $ENM_KEYEVENTS, $ENM_SELCHANGE))
   GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
   
-  ;TODO
-  ;$edits_to_save = _ArrayCreate($IDC_EDIT1)
-  ;$checkboxes_to_save = _ArrayCreate($IDC_INV)
-  ;WindowManager__registerWindow($ID_EDITFORMULA, $elements_to_save)
   Variables__setParentWindow($ID_EDITFORMULA)
   WindowManager__registerWindow($ID_EDITFORMULA, "EditFormula", "DeleteEditFormulaBox")
 EndFunc
@@ -443,6 +439,13 @@ Func EditFormula__setParentWindow($main_window_handle)
   $EDIT_FORMULA_PARENT_WINDOW = $main_window_handle
 EndFunc
 
+Func EditFormula__stickToParentWindow()
+  If WinExists($EDIT_FORMULA_PARENT_WINDOW) Then
+    $pos = WinGetPos($EDIT_FORMULA_PARENT_WINDOW, "")
+    WinMove($ID_EDITFORMULA, "", $pos[0]+$pos[2], $pos[1])
+  EndIf
+EndFunc
+
 Func EditFormula($formula, $seed)
   ;Opt('GUIOnEventMode', 0)
   $efe_save = $EDIT_FORMULA_EXISTS
@@ -451,10 +454,7 @@ Func EditFormula($formula, $seed)
   colorationSyntaxique($IDC_EDIT1)
   GUICtrlSetData($IDC_F_SEED, $seed)
   If Not $efe_save Then
-    If WinExists($EDIT_FORMULA_PARENT_WINDOW) Then
-      $pos = WinGetPos($EDIT_FORMULA_PARENT_WINDOW, "")
-      WinMove($ID_EDITFORMULA, "", $pos[0]+$pos[2], $pos[1])
-    EndIf
+    EditFormula__stickToParentWindow()    
     AnimateFromLeft($ID_EDITFORMULA)
   EndIf
   _WinAPI_RedrawWindow($IDC_EDIT1)

@@ -91,6 +91,27 @@ Func toBasicArray(ByRef $queue)
   _ArrayDelete($queue, 0)
 EndFunc
 
+Func arrayDiff($t1, $t2)
+  Local $result[UBound($t1)]
+  For $i = 0 To UBound($t1) - 1
+    $result[$i] = $t1[$i] - $t2[$i]
+  Next
+  Return $result
+EndFunc
+
+Func leftTopWithHeight_to_leftTopRightBottom($pos)
+  $pos[2] = $pos[2] + $pos[0]
+  $pos[3] = $pos[3] + $pos[1]
+  Return $pos
+EndFunc
+
+Func leftTopRightBottom_to_leftTopWithHeight($pos)
+  $pos[2] = $pos[2] - $pos[0]
+  $pos[3] = $pos[3] - $pos[1]
+  Return $pos
+EndFunc
+
+
 Func toString(ByRef $element)
   Local $res = ""
   If IsArray($element) Then
@@ -230,11 +251,20 @@ EndFunc
 
 ; String management
 
+;Returns a boolean indicating if the string ends with a certain postfix (case insensitive)
 Func StringEndsWith($str, $end)
   Return StringCompare(StringRight($str, StringLen($end)), $end)==0
 EndFunc
 
-; Animation
+;Return a boolean indicating if the $str contains some characters present in $char_str
+Func StringContains($str, $char_str)
+  For $i = 1 To StringLen($str)
+    If StringInStr($char_str, StringMid($str, $i, 1)) Then Return True
+  Next
+  Return False
+EndFunc
+
+; Animation and windows
 
 Func AnimateFromTopLeft($win)
   DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $win, "int", 200, "long", 0x00040005);diag slide-in from Top-left
@@ -265,6 +295,34 @@ EndFunc
 Func AnimateToLeft($win)
   DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $win, "int", 100, "long", 0x00050002);slide out to left
 EndFunc
+
+
+;Moves a LTRB (left/top/right/bottom) rectangle $pos_child_ltrb given that a rectangle moved from $pos_before_ltrb to $pos_after_ltrb
+Func move_ltrb(ByRef $pos_child_ltrb, ByRef $pos_before_ltrb, ByRef $pos_after_ltrb)
+  
+  Local $x_dep = 0, $y_dep = 0
+  
+  ;If the window can be hit if the window moves left or right
+  ;logging(toString($pos_child_ltrb)&","&toString($pos_before_ltrb)&","&toString($pos_after_ltrb))
+  If Not ($pos_child_ltrb[3] <= $pos_before_ltrb[1] Or $pos_child_ltrb[1] >= $pos_before_ltrb[3]) Then
+    If $pos_child_ltrb[2] <= $pos_before_ltrb[0] Then $x_dep = $pos_after_ltrb[0] - $pos_before_ltrb[0]
+    If $pos_child_ltrb[0] >= $pos_before_ltrb[2] Then $x_dep = $pos_after_ltrb[2] - $pos_before_ltrb[2]
+  Else
+    $x_dep = ($pos_after_ltrb[0] - $pos_before_ltrb[0] + $pos_after_ltrb[2] - $pos_before_ltrb[2])/2
+  EndIf
+  ;If the window can be hit if the window moves top or bottom
+  If Not ($pos_child_ltrb[2] <= $pos_before_ltrb[0] Or $pos_child_ltrb[0] >= $pos_before_ltrb[2]) Then
+    If $pos_child_ltrb[3] <= $pos_before_ltrb[1] Then $y_dep = $pos_after_ltrb[1] - $pos_before_ltrb[1]
+    If $pos_child_ltrb[1] >= $pos_before_ltrb[3] Then $y_dep = $pos_after_ltrb[3] - $pos_before_ltrb[3]
+  Else
+    $y_dep = ($pos_after_ltrb[1] - $pos_before_ltrb[1] + $pos_after_ltrb[3] - $pos_before_ltrb[3])/2
+  EndIf
+  $pos_child_ltrb[0] += $x_dep
+  $pos_child_ltrb[2] += $x_dep
+  $pos_child_ltrb[1] += $y_dep
+  $pos_child_ltrb[3] += $y_dep
+EndFunc
+
 
 ;Testing
 

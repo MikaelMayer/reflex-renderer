@@ -8,8 +8,6 @@
 
  Wish List:
 
- - Find how to store that there are some variables : [Variables], and when loading a session, loading these variables.
- - Moving the main window => do the same for the children
  - Better locate the main window.
  - Add the possibility of adding 1 special variable name, and a slider for the interpolation + a "render along variable" button.
  - 'Reset all' button
@@ -52,6 +50,9 @@ V "Libeller la Reflex comme la formule" m'a fait penser au début que ça mettrait
  ===== Done ====
  
 Mik notes : 
+ V Move/resize the main window => Move the children
+ V Find how to store that there are some variables : [Variables], and when loading a session, loading these variables.
+ V Corrected: BUG: file drag&drop does not work anymore.
  V Added a close methods for registered windows
  V Corrected a language changing bug.
  V Added closing animation to top for variables
@@ -220,8 +221,10 @@ Global $rri_out_rendu_pos
 Global Enum $REFLEX_NOT_UP_TO_DATE = 0, $REFLEX_RENDERED_IN_LR, $REFLEX_RENDERED_IN_HR
 Global $REFLEX_RENDERING = $REFLEX_NOT_UP_TO_DATE, $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE, $REFLEX_RENDERED_FINISHED = True
 Global $history_formula_array[19] = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+Global $rri_win_pos[4]
 
 EditFormula__setCallbackFunction("EditFormulaCallBack")
+LoadFormulaFromFile__setCallbackFunction("loadFormulaCallback")
 
 Func loadRRI()
   Opt('GUIOnEventMode', 1)
@@ -468,11 +471,11 @@ Func loadRRI()
     _ArrayCreate($rri_resolutions_16000, '16000 x 16000') _
   )
 
-  GUISetOnEvent($GUI_EVENT_RESIZED, 'rri_winResize')
-  GUISetOnEvent($GUI_EVENT_PRIMARYDOWN, 'rri_winMouseLeftDown')
-  GUISetOnEvent($GUI_EVENT_PRIMARYUP, 'rri_winMouseLeftUp')
-  GUISetOnEvent($GUI_EVENT_SECONDARYUP, 'rri_winMouseRightUp')
-  GUISetOnEvent($GUI_EVENT_DROPPED, "loadImgDropped")
+  GUISetOnEvent($GUI_EVENT_RESIZED, 'rri_winResize', $rri_win)
+  GUISetOnEvent($GUI_EVENT_PRIMARYDOWN, 'rri_winMouseLeftDown', $rri_win)
+  GUISetOnEvent($GUI_EVENT_PRIMARYUP, 'rri_winMouseLeftUp', $rri_win)
+  GUISetOnEvent($GUI_EVENT_SECONDARYUP, 'rri_winMouseRightUp', $rri_win)
+  GUISetOnEvent($GUI_EVENT_DROPPED, "loadImgDropped", $rri_win)
   GUICtrlSetState($rri_out_rendu, $GUI_DROPACCEPTED)
   GUICtrlSetState($rri_rendering_text, $GUI_HIDE)
   GUICtrlSetState($rri_progress, $GUI_HIDE)
@@ -516,6 +519,8 @@ Func loadRRI()
   AnimateFromTopLeft($rri_win)
   
   EditFormula__setParentWindow($rri_win)
+  LoadFormulaFromFile__setParentWindow($rri_win)
+  $rri_win_pos = WinGetPos($rri_win)
   WindowManager__loadAll()
 
   history_formula_arrayLoad()
@@ -605,7 +610,7 @@ Func rri_heightChange()
   $height_new = Number(GUICtrlRead($rri_height))
   $percent = Number(GUICtrlRead($rri_percent))
   If Not isChecked($rri_preview) Then $percent = 100
-  logging("Percent: "&$percent)
+  ;logging("Percent: "&$percent)
   $percent *= Sqrt($height_pred / $height_new)
   setPreviewPercent(Round($percent*4)/4)
   calculateWidthHeight()
@@ -618,7 +623,7 @@ Func rri_widthChange()
   $width_new = Number(GUICtrlRead($rri_width))
   $percent = Number(GUICtrlRead($rri_percent))
   If Not isChecked($rri_preview) Then $percent = 100
-  logging("Percent: "&$percent)
+  ;logging("Percent: "&$percent)
   $percent *= Sqrt($width_pred / $width_new)
   setPreviewPercent(Round($percent*4)/4)
   calculateWidthHeight()
@@ -681,11 +686,11 @@ Func EditFormulaCallBack($formula_modified, $seed_modified)
 EndFunc
 
 Func rri_menu_import_formulaClick()
-  loadFormula("loadFormulaCallback")
+  loadFormula()
 EndFunc
 Func loadImgDropped()
   ;logging(@GUI_DRAGFILE)
-  loadImgContainingReflex(@GUI_DRAGFILE)
+  LoadFormulaFromFile__LoadImgContainingReflex(@GUI_DRAGFILE)
 EndFunc
 Func rri_menu_import_reflexClick()
   loadFormulaFromReflex()
@@ -804,8 +809,16 @@ Func rri_winMouseLeftDown()
   EndIf
 EndFunc
 Func rri_winMouseLeftUp()
-  ;$pos = ControlGetPos($rri_win, '', $rri_out_rendu)
-  ;$mpos = MouseGetPos()
+  ;Detect window movement
+  $rri_win_pos2 = WinGetPos($rri_win)
+  
+  If $rri_win_pos2[0] <> $rri_win_pos[0] or $rri_win_pos2[1] <> $rri_win_pos[1] or $rri_win_pos2[2] <> $rri_win_pos[2] or $rri_win_pos2[3] <> $rri_win_pos[3] Then
+    ;logging("Window moved to "&toString($rri_win_pos2)&", previous="&toString($rri_win_pos))
+    WindowManager__resizeAll($rri_win_pos, $rri_win_pos2)
+    $rri_win_pos = $rri_win_pos2
+  EndIf
+  
+  ;Detect complex window shift
   If $moving Then
     $moving = False
     $xy = MouseGetPos()
@@ -1646,7 +1659,7 @@ Func rri_realmodeClick()
 EndFunc
 
 Func rri_menu_formula_historyClick()
-  loadFormula("loadFormulaCallback", $history_formula_filename)
+  loadFormula($history_formula_filename)
 EndFunc
 
 ;============================= Color code ==================================;

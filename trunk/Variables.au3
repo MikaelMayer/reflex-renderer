@@ -62,7 +62,7 @@ Func VariableManager__unregisterVariable($vaw_window)
 EndFunc
 
 Func VariableManager__setCurrentVariable($win_handle)
-  logging("Loading variable "&$win_handle)
+  ;logging("Loading variable "&$win_handle)
   If $vaw_window = $win_handle Then Return
   For $i = 1 To $vm_variable_windows[0]
     Local $vw = $vm_variable_windows[$i]
@@ -110,25 +110,30 @@ EndFunc
 Func GenerateVariableWindow()
   Opt('GUIOnEventMode', 1)
   #Region ### START Koda GUI section ### Form=C:\Documents and Settings\Mikaël\Mes documents\Reflex\LogicielOrdi\RenderReflex\ReflexRendererVariables.kxf
-  Global $vaw_window = GUICreate($__variable__, 310, 138, 260, 190, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS))
+  Global $vaw_window = GUICreate($__variable__, 310, 138, 639, 162, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS))
   GUISetOnEvent($GUI_EVENT_CLOSE, "vaw_windowClose")
   GUISetOnEvent($GUI_EVENT_MINIMIZE, "vaw_windowMinimize")
   GUISetOnEvent($GUI_EVENT_MAXIMIZE, "vaw_windowMaximize")
   GUISetOnEvent($GUI_EVENT_RESTORE, "vaw_windowRestore")
   Global $vaw_Label5 = GUICtrlCreateLabel($__variable_editor__, 8, 8, 177, 17, $SS_CENTER)
   GUICtrlSetOnEvent($vaw_Label5, "vaw_Label5Click")
-  Global $vaw_render = GUICtrlCreateButton($__render_along_variable__, 196, 4, 97, 25, 0)
-  GUICtrlSetResizing($vaw_render, $GUI_DOCKAUTO)
-  GUICtrlSetOnEvent($vaw_render, "vaw_renderClick")
   Global $vaw_Label1 = GUICtrlCreateLabel($__variable_name__, 6, 34, 73, 17, $SS_RIGHT)
   GUICtrlSetOnEvent($vaw_Label1, "vaw_Label1Click")
-  Global $vaw_varname = GUICtrlCreateInput("$x", 81, 32, 33, 21, BitOR($ES_RIGHT,$ES_AUTOHSCROLL))
-  GUICtrlSetOnEvent($vaw_varname, "vaw_varnameChange")
   Global $vaw_Label2 = GUICtrlCreateLabel("=", 117, 33, 13, 24)
   GUICtrlSetFont($vaw_Label2, 12, 400, 0, "MS Sans Serif")
   GUICtrlSetOnEvent($vaw_Label2, "vaw_Label2Click")
   Global $vaw_varcurrent = GUICtrlCreateInput("0.5", 130, 32, 56, 21, BitOR($ES_CENTER,$ES_AUTOHSCROLL))
   GUICtrlSetOnEvent($vaw_varcurrent, "vaw_varcurrentChange")
+  Global $vaw_varmin = GUICtrlCreateInput("-1", 130, 56, 56, 21)
+  GUICtrlSetOnEvent($vaw_varmin, "vaw_varminChange")
+  Global $vaw_varmax = GUICtrlCreateInput("1", 130, 80, 56, 21, BitOR($ES_RIGHT,$ES_AUTOHSCROLL))
+  GUICtrlSetOnEvent($vaw_varmax, "vaw_varmaxChange")
+  Global $vaw_slider = GUICtrlCreateSlider(8, 104, 292, 25)
+  GUICtrlSetData($vaw_slider, 75)
+  GUICtrlSetOnEvent($vaw_slider, "vaw_sliderChange")
+  Global $vaw_render = GUICtrlCreateButton($__render_along_variable__, 196, 4, 97, 25, 0)
+  GUICtrlSetResizing($vaw_render, $GUI_DOCKAUTO)
+  GUICtrlSetOnEvent($vaw_render, "vaw_renderClick")
   Global $vaw_set_min = GUICtrlCreateButton($__set_min__, 189, 30, 57, 25, 0)
   GUICtrlSetResizing($vaw_set_min, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($vaw_set_min, "vaw_set_minClick")
@@ -137,21 +142,16 @@ Func GenerateVariableWindow()
   GUICtrlSetOnEvent($vaw_set_max, "vaw_set_maxClick")
   Global $vaw_Label3 = GUICtrlCreateLabel($__minimum__, 37, 58, 92, 17, $SS_RIGHT)
   GUICtrlSetOnEvent($vaw_Label3, "vaw_Label3Click")
-  Global $vaw_varmin = GUICtrlCreateInput("-1", 130, 56, 56, 21)
-  GUICtrlSetOnEvent($vaw_varmin, "vaw_varminChange")
   Global $vaw_increase_range = GUICtrlCreateButton($__increase_range__, 189, 55, 115, 25, 0)
   GUICtrlSetResizing($vaw_increase_range, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($vaw_increase_range, "vaw_increase_rangeClick")
   Global $vaw_Label4 = GUICtrlCreateLabel($__maximum__, 37, 82, 92, 17, $SS_RIGHT)
   GUICtrlSetOnEvent($vaw_Label4, "vaw_Label4Click")
-  Global $vaw_varmax = GUICtrlCreateInput("1", 130, 80, 56, 21, BitOR($ES_RIGHT,$ES_AUTOHSCROLL))
-  GUICtrlSetOnEvent($vaw_varmax, "vaw_varmaxChange")
-  Global $vaw_slider = GUICtrlCreateSlider(8, 104, 292, 25)
-  GUICtrlSetData($vaw_slider, 75)
-  GUICtrlSetOnEvent($vaw_slider, "vaw_sliderChange")
   Global $vaw_decrease_range = GUICtrlCreateButton($__decrease_range__, 189, 79, 115, 25, 0)
   GUICtrlSetResizing($vaw_decrease_range, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($vaw_decrease_range, "vaw_decrease_rangeClick")
+  Global $vaw_varname = GUICtrlCreateInput("$x", 81, 32, 33, 21, BitOR($ES_RIGHT,$ES_AUTOHSCROLL))
+  GUICtrlSetOnEvent($vaw_varname, "vaw_varnameChange")
   #EndRegion ### END Koda GUI section ###
 
   If WinExists($VARIABLES_PARENT) Then
@@ -161,7 +161,6 @@ Func GenerateVariableWindow()
   AnimateFromTop($vaw_window)
   GUISetState(@SW_SHOW, $vaw_window)
   GUISetOnEvent($GUI_EVENT_RESIZED, 'vaw_windowResized')
-  
   WindowManager__registerWindow($vaw_window, "Variable", "vaw_windowClose")
   VariableManager__registerVariable($vaw_window, $vaw_varcurrent, $vaw_slider, $vaw_varmin, $vaw_varmax, $vaw_varname, $vaw_render, $vaw_set_min, $vaw_set_max, $vaw_increase_range)
 EndFunc
@@ -191,14 +190,16 @@ Func Variables__SaveToIni($win_handle)
   Return StringFormat("%s = %s from %s to %s", $name, $val, $min, $max)
 EndFunc
 
-Func Variables__updateString($string)
+Func Variables__updateString($string, $except_variable=0)
   ;Replace the variables in $string by their value.
   ;logging("Variable_replacement in "&$string)
   For $i = 1 To $vm_variable_windows[0]
     $tab = $vm_variable_windows[$i]
-    loadVariable($tab[$N_VAW_WINDOW])
-    ;logging("Name: "& GUICtrlRead($tab[$N_VAW_VARNAME])&", value: " & GUICtrlRead($tab[$N_VAW_CURRENT]))
-    $string = replaceVariableString($string, GUICtrlRead($tab[$N_VAW_VARNAME]), GUICtrlRead($tab[$N_VAW_CURRENT]));
+    ;loadVariable($tab[$N_VAW_WINDOW])
+    ;logging("Name: "& GUICtrlRead($tab[$N_VAW_VARNAME])&"=="&$except_variable&":"&(GUICtrlRead($tab[$N_VAW_VARNAME]) == $except_variable)&", value: " & GUICtrlRead($tab[$N_VAW_CURRENT]))
+    If Not (GUICtrlRead($tab[$N_VAW_VARNAME]) == $except_variable) Then
+      $string = replaceVariableString($string, GUICtrlRead($tab[$N_VAW_VARNAME]), GUICtrlRead($tab[$N_VAW_CURRENT]));
+    EndIf
     ;logging("Replaced:"& $string)
   Next
   Return $string
@@ -206,7 +207,8 @@ EndFunc
 
 Func replaceVariableString($string, $varname, $varvalue)
   $varname = StringReplace(StringStripWS($varname, 3), "$", "\$")
-  $string = StringRegExpReplace($string, $varname&"([^[:alnum:]]|\z)", "("&$varvalue&")\1")
+  If StringContains($varvalue, "+*-/()") Then $varvalue = "("&$varvalue&")"
+  $string = StringRegExpReplace($string, $varname&"([^[:alnum:]]|\z)", $varvalue&"\1")
   return $string
 EndFunc
 
@@ -288,7 +290,9 @@ EndFunc
 
 Func vaw_renderClick()
   loadVariable()
-  MsgBox(0, "Sorry", "Feature not available for the moment... coming soon!")
+  $formula = EditFormula__getFormulaText()
+  $formula = Variables__updateString($formula, GUICtrlRead($vaw_varname))
+  MsgBox(0, "Sorry", "Feature not available for the moment... coming soon!"&@CRLF&$formula)
 EndFunc
 Func vaw_set_maxClick()
   loadVariable()

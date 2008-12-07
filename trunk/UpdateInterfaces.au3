@@ -10,6 +10,8 @@
 
 ; Script Start - Add your code below here
 #include <Array.au3>
+#include <GUIConstantsEx.au3>
+
 Opt('TrayIconDebug', 1)
 
 Global $interfacesToUpdate = _ArrayCreate( _
@@ -27,22 +29,24 @@ Global $interfacesToUpdate = _ArrayCreate( _
 Dim $interfacesEdit[UBound($interfacesToUpdate)]
 Dim $interfacesUpdate[UBound($interfacesToUpdate)]
 Dim $title = "Update interfaces"
+Dim $step = 41, $offset = 10
 $width = 150
 $width2 = 150
 GUICreate($title, $width + $width2, 500)
 $i = 0
-$all_button = GUICtrlCreateButton("Update all!", 20, 30*$i+10, $width-40)
+$all_button = GUICtrlCreateButton("Update all!", 20, $step*$i+$offset, $width-40)
 $i += 1
-GUICtrlCreateLabel("Edit", 20, 30*$i+10, $width-40)
-GUICtrlCreateLabel("Update", 20+$width, 30*$i+10, $width2-40)
+GUICtrlCreateLabel("Edit", 20, $step*$i+$offset, $width-40)
+GUICtrlCreateLabel("Update", 20+$width, $step*$i+$offset, $width2-40)
 $i += 1
 $i0 = $i
 For $interface in $interfacesToUpdate
-	$interfacesEdit[$i-$i0] = GUICtrlCreateButton($interface[1], 10, 30*$i+10, $width-20)
-	$interfacesUpdate[$i-$i0] = GUICtrlCreateButton($interface[1], 10+$width, 30*$i+10, $width2-20)
+  ConsoleWrite("Position: "&($step*$i+$offset)&@CRLF)
+	$interfacesEdit[$i-$i0] = GUICtrlCreateButton($interface[1], $offset, $step*$i+$offset, $width-20)
+	$interfacesUpdate[$i-$i0] = GUICtrlCreateButton($interface[1], $offset+$width, $step*$i+$offset, $width2-20)
 	$i += 1
 Next
-WinMove($title, "", Default, Default, $width + $width2, ($i+1)*30+10)
+WinMove($title, "", Default, Default, $width + $width2, ($i+1)*$step+$offset)
 GUISetState(@SW_SHOW)
 
 While True
