@@ -18,7 +18,7 @@ Global $interfacesToUpdate = _ArrayCreate( _
  _ArrayCreate("ReflexRendererInterface.kxf",   "ReflexRenderer.au3",      True), _
  _ArrayCreate("ReflexRendererEditFormula.kxf", "EditFormula.au3",         True), _
  _ArrayCreate("ReflexRendererFormulaList.kxf", "LoadFormulaFromFile.au3", True), _
- _ArrayCreate("ReflexRendererSaveBox.kxf",     "SaveBox.au3",             False), _
+ _ArrayCreate("ReflexRendererSaveBox.kxf",     "SaveBox.au3",             True), _
  _ArrayCreate("ReflexRendererAboutBox.kxf",    "AboutBox.au3",            True), _
  _ArrayCreate("ReflexRendererVariables.kxf",   "Variables.au3",           True) _
 )

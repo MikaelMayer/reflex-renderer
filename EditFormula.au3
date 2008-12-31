@@ -422,8 +422,9 @@ Func resizeIDC_EDIT1()
 EndFunc
 
 Func DeleteEditFormulaBox($win_handle=$ID_EDITFORMULA)
+  logging("EditFormula.au3 : "&$win_handle)
   If $EDIT_FORMULA_EXISTS Then
-    DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $ID_EDITFORMULA, "int", 100, "long", 0x00050002);slide out to left
+    AnimateToLeft($win_handle)
     GUIDelete($win_handle)
     $EDIT_FORMULA_EXISTS = False
     GUIRegisterMsg($WM_NOTIFY, "")
@@ -498,7 +499,7 @@ Func EditFormula__getFormulaText()
 EndFunc
 
 Variables__setUpdateFunction("ID_DRAWClick")
-Func ID_DRAWClick()
+Func ID_DRAWClick($history_save = True)
   $result_formula  = EditFormula__getFormulaText()
   
   $result_seed = GUICtrlRead($IDC_F_SEED)
@@ -506,7 +507,7 @@ Func ID_DRAWClick()
   
   ;logging("Going to callback on "&$result_formula)
   
-  Call($EDIT_FORMULA_CALLBACK, $result_formula, $result_seed)
+  Call($EDIT_FORMULA_CALLBACK, $result_formula, $result_seed, $history_save)
 EndFunc
 Func ID_CANCELClick()
   ID_EDITFORMULAClose()

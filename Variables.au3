@@ -216,9 +216,9 @@ Func loadVariable($window = @GUI_WinHandle)
   VariableManager__setCurrentVariable($window)
 EndFunc
 
-Func vawUpdate()
+Func vawUpdate($history_save)
   If $Variables__update_function <> "" Then
-    Call($Variables__update_function)
+    Call($Variables__update_function, $history_save)
   EndIf
 EndFunc
 
@@ -311,7 +311,7 @@ Func vaw_sliderChange()
   Local $max = GUICtrlRead($vaw_varmax)
   Local $newcurrent = complex_calculate(StringFormat("%s*(%s)+%s*(%s)", 1-$part, $min, $part, $max))
   GUICtrlSetData($vaw_varcurrent, $newcurrent)
-  vawUpdate()
+  vawUpdate(False)
 EndFunc
 Func vaw_varcurrentChange()
   loadVariable()

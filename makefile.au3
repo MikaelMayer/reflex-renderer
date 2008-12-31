@@ -11,9 +11,9 @@
 #include <Array.au3>
 #include "GlobalUtils.au3"
 
-$zip_file = "ReflexRendererv2.1.zip"
+$zip_file = "Versions\ReflexRendererv2.8.0beta.zip"
 
-$folderout = "ReflexRendererv2.7.03beta"
+$folderout = "Versions\ReflexRendererv2.8.0beta"
 
 $filescript1 = "ReflexRenderer.au3"
 $filescript2 = "LoadFormulaFromFile.au3"
@@ -110,6 +110,7 @@ EndFunc
 Func copyAllDirectories($arrayDirs, $folder)
   For $dirname In $arrayDirs
     DirCopy($dirname, $folder&"\"&$dirname, 1)
+    DirRemove($folder&"\"&$dirname&"\.svn", 1)
   Next
 EndFunc
 
@@ -136,18 +137,6 @@ Func copyAllMissingIniConfig($arrayIniFiles, $folder)
 EndFunc
 
 Func compressAll($folderout, $zip_file)
+  RunWait("zip.exe -r "&$zip_file&" "&$folderout)
   Return
-  Run("explorer.exe"&" "&@ScriptDir)
-  WinWaitActive("RenderReflex")
-  Exit
-  Send("!f")
-  Send("n")
-  Send("{UP}")
-  Send("{ENTER}")
-  Send($zip_file)
-  Send("{ENTER}")
-  Exit
-  If FileExists($zip_file) Then
-    FileDelete($zip_file)
-  EndIf
 EndFunc
