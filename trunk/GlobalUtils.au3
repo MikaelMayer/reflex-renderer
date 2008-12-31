@@ -17,6 +17,7 @@
 
 Global $ERROR_DECODE_HANDLING = ""
 Global Const $EmptySizedArray = emptySizedArray()
+Global Const $LENGTH_SIZED_ARRAY_INDEX = 0
 
 If @Compiled Then
   Opt('TrayIconHide', 1)
@@ -167,9 +168,9 @@ Func reflexFileNameFromComment($formula_comment, $formula_filename, $reflex_exte
 EndFunc
 
 Func Logging($str, $line = @ScriptLineNumber)
-  ;ConsoleWrite(_NowCalc()&" line "&$line&": "&$str&@CRLF)
-  ConsoleWrite("Line:"&$line&": "&_NowCalc()&" : "&$str&@CRLF)
-  ;ConsoleWrite(_NowCalc()&" line "&$line&": "&$str&@CRLF)
+  If Not @Compiled Then
+    ConsoleWrite("Line:"&$line&": "&_NowCalc()&" : "&$str&@CRLF)
+  EndIf
 EndFunc
 
 Func isChecked($ctrl)

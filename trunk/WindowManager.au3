@@ -146,6 +146,7 @@ EndFunc
 
 Func WindowManager__loadAll()
   Local $windows_to_restore = IniReadSection($ini_file, $ini_file_windows)
+  If @error Then Return
   For $i = 1 To $windows_to_restore[0][0]
     _WindowManager__loadWindow($windows_to_restore[$i][0], $windows_to_restore[$i][1])
   Next

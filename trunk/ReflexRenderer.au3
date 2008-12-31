@@ -6,9 +6,11 @@
  Script Function:
   A user-friendly interface for the RenderReflex programm
 
+Doing:
+ - Animated zoom. To be threaded & exponential
+
  Wish List:
 
- - Better locate the main window.
  - Add the possibility of adding 1 special variable name, and a slider for the interpolation + a "render along variable" button.
  - 'Reset all' button
  - Save/open session(s) in ini files
@@ -50,6 +52,7 @@ V "Libeller la Reflex comme la formule" m'a fait penser au début que ça mettrait
  ===== Done ====
  
 Mik notes : 
+ V Parallelized the save window.
  V Move/resize the main window => Move the children
  V Find how to store that there are some variables : [Variables], and when loading a session, loading these variables.
  V Corrected: BUG: file drag&drop does not work anymore.
@@ -175,7 +178,7 @@ puis d'y adjoindre les chaînes traduites de &Tools + ' > ' + &Save reflex / form
 #ce ----------------------------------------------------------------------------
 #include-once
 
-Global Const $VERSION_NUMER = "2.7.03 beta"
+Global Const $VERSION_NUMER = "2.8.0 beta"
 Global Const $COPYRIGHT_DATE = "2008"
 
 HotKeySet('{ESC}', 'cancelDrag')
@@ -222,9 +225,11 @@ Global Enum $REFLEX_NOT_UP_TO_DATE = 0, $REFLEX_RENDERED_IN_LR, $REFLEX_RENDERED
 Global $REFLEX_RENDERING = $REFLEX_NOT_UP_TO_DATE, $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE, $REFLEX_RENDERED_FINISHED = True
 Global $history_formula_array[19] = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
 Global $rri_win_pos[4]
+Global $auto_save_formula = True
 
 EditFormula__setCallbackFunction("EditFormulaCallBack")
 LoadFormulaFromFile__setCallbackFunction("loadFormulaCallback")
+SaveBox__setCallbackFunction("SaveBoxCallback")
 
 Func loadRRI()
   Opt('GUIOnEventMode', 1)
@@ -520,6 +525,8 @@ Func loadRRI()
   
   EditFormula__setParentWindow($rri_win)
   LoadFormulaFromFile__setParentWindow($rri_win)
+  SaveBox__setParentWindow($rri_win)
+
   $rri_win_pos = WinGetPos($rri_win)
   WindowManager__loadAll()
 
@@ -675,14 +682,18 @@ Func rri_menu_formula_editorClick()
   EditFormula($formula, $seed)
 EndFunc
 
-Func EditFormulaCallBack($formula_modified, $seed_modified)
+Func EditFormulaCallBack($formula_modified, $seed_modified, $history_save)
   ;$formula = GUICtrlRead($rri_in_formula)
   ;$seed    = GUICtrlRead($rri_seed)
+  $auto_save_formula_sav = $auto_save_formula
+  $auto_save_formula = $history_save
+  
   updateFormula($formula_modified)
   GUICtrlSetData($rri_seed, $seed_modified)
-  ;If ($formula <> $formula_modified Or $seed <> $seed_modified) Then
+  
   renderIfAutoRender($rri_out_rendu)
-  ;EndIf
+  
+  $auto_save_formula = $auto_save_formula_sav
 EndFunc
 
 Func rri_menu_import_formulaClick()
@@ -721,10 +732,13 @@ EndFunc
 Func rri_menu_resolutionsClick()
 EndFunc
 Func rri_menu_saveClick()
-  $savingParameters = savebox()
-  If $savingParameters <> 1 Then Return
-  saveboxSave()
+  $savingParameters = SaveBox__createInstance()
 EndFunc
+Func SaveBoxCallback($savingParameters)
+  If $savingParameters <> 1 Then Return
+  saveboxSave()  
+EndFunc
+
 Func rri_quicksaveClick()
   ;Only prompt the comment.
   $defaultComment = IniReadSavebox('formulaComment', $My_nice_function)
@@ -1400,6 +1414,13 @@ Func AnimateZoomForward($pos, $xmin, $ymin, $xmax, $ymax)
   ;Logging("Animation to size "&$dx&","&$dy)
   $limite_taille = 3000
   If $dx > $limite_taille Or $dy > $limite_taille Then Return
+  $pos = ControlGetPos($rri_win, "", $rri_out_rendu)
+  For $i = 0 To 5
+    $c = $i / 5
+    $m = 1 - $c
+    GUICtrlSetPos($rri_out_rendu, $c * $xmin + $m * $pos[0], $c * $ymin + $m * $pos[1], $c * $dx + $m * $pos[2], $c * $dy + $m * $pos[3])
+    WinSetState($rri_win, 0, @SW_SHOW)
+  Next
   GUICtrlSetPos($rri_out_rendu, $xmin, $ymin, $dx, $dy)
   ;logging("Animated.")
   Return
