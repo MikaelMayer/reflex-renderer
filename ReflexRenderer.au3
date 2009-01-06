@@ -8,6 +8,7 @@
 
 Doing:
  - Animated zoom. To be threaded & exponential
+ - Reflex renderer video: Generate program to generate images, should be able to be loaded back
 
  Wish List:
 
@@ -25,7 +26,7 @@ Doing:
  - Ok - Appliquer - Annuler dans Savebox + indicateur s'il faut sauvegarder ou non + indépendance de la fenêtre.
  
  Difficult/long:
- - Export to a readable OpenOffice formula string (renderreflex.exe exportooffice formula="")
+ - Export to a readable OpenOffice formula string (renderreflex.exe --exportooffice formula="")
  - Press "plus" more times should do something.
  
  ===== Need feed-back or bug reproduction ====
@@ -81,7 +82,7 @@ Mik notes :
  V Fonctions réelles!! (c'était le gros plus. Trouvé comment le faire en rendu graphique ;)
  V Zooming out/in by factor is more precise (used "simplify" function)
  V Customize default complex color for NaN
- V Set up a calculator inside ReflexRenderer (renderreflex.exe simplify formula="(1+i)*3")
+ V Set up a calculator inside ReflexRenderer (renderreflex.exe --simplify formula="(1+i)*3")
  V Do not always save the session at the end.
  V Highlight the problem in the formula when there is an error.
  V 1/z^ is crashing (and a lot of other bugs)
@@ -198,6 +199,7 @@ Opt('MouseCoordMode', 2)
 
 #include <Array.au3>
 #Include <GuiEdit.au3>
+#include 'GlobalUtils.au3'
 #include 'AboutBox.au3'
 #include 'EditFormula.au3'
 #include 'IniHandling.au3'
@@ -1119,9 +1121,8 @@ Func render($id_rendu)
   addFlag($flags, "winmax", getWinmax())
   addFlag($flags, "output", GUICtrlRead($rri_output))
   addFlag($flags, "seed",   GUICtrlRead($rri_seed))
-  addFlag($flags, "realmode",_Iif(isChecked($rri_realmode), 1, 0))
+  If isChecked($rri_realmode) Then addFlag($flags, "realmode","")
   addFlag($flags, "colornan", $color_NaN_complex)
-  ;$flags = $formula_flag&$width_flag&$height_flag&$winmin_flag&$winmax_flag&$output_flag&$seed_flag
   $RENDERING_IMAGE_TO_UPDATE = $id_rendu
   startRendering($flags)
 EndFunc
@@ -1136,7 +1137,7 @@ Func startRendering($flags)
   EndIf
   $REFLEX_RENDERING = _Iif(isChecked($rri_preview), $REFLEX_RENDERED_IN_LR, $REFLEX_RENDERED_IN_HR)
   $REFLEX_RENDERED_FINISHED = False
-  $pid_rendering = Run($bin_dir&'RenderReflex.exe render'&$flags, '', @SW_HIDE, 2+4)
+  $pid_rendering = runReflexWithArguments('--render'&$flags)
   $rendering_thread = True
 EndFunc
 
@@ -1281,9 +1282,8 @@ Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Then
       addFlag($flags, "output", IniRead($ini_file, $ini_file_session, 'outputFile', ''))
     EndIf
 	addFlag($flags, "seed",     GUICtrlRead($rri_seed))
-    addFlag($flags, "realmode",_Iif(isChecked($rri_realmode), 1, 0))
+    If $isChecked($rri_realmode) Then addFlag($flags, "realmode")
     addFlag($flags, "colornan", $color_NaN_complex)
-    ;$flags = $formula_flag&$width_flag&$height_flag&$winmin_flag&$winmax_flag&$output_flag&$seed_flag
     If renderWithFlags($flags, $highres) Then
       repositionneRendu($rri_out_rendu, 0, 0)
       GUICtrlSetImage($rri_out_rendu,  GUICtrlRead($rri_output))
@@ -1349,16 +1349,15 @@ EndFunc
 
 Func getWinMinMaxMoved($delta_x, $delta_y)
   Dim $flags = ""
-  addFlag($flags, "formula", GUICtrlRead($rri_in_formula))
+  ;addFlag($flags, "formula", GUICtrlRead($rri_in_formula))
   addFlag($flags, "width",  $width_percent)
   addFlag($flags, "height", $height_percent)
   addFlag($flags, "winmin", getWinmin())
   addFlag($flags, "winmax", getWinmax())
-  addFlag($flags, "output", GUICtrlRead($rri_output))
+  ;addFlag($flags, "output", GUICtrlRead($rri_output))
   addFlag($flags, "delta_x", $delta_x)
   addFlag($flags, "delta_y", $delta_y)
-  ;$flags = $formula_flag&$width_flag&$height_flag&$winmin_flag&$winmax_flag&$output_flag&$deltax_flag&$deltay_flag
-  $pid = Run($bin_dir&'RenderReflex.exe new_window'&$flags, '', @SW_HIDE, 2+4)
+  $pid = runReflexWithArguments('--new_window'&$flags)
   Dim $lines = '';
   While True
     $text = StdoutRead($pid)

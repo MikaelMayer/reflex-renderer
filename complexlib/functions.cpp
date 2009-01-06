@@ -42,7 +42,7 @@ Function *FunctionUnary::simplifie() {
 	if(!simplifieArgFunctionUnary()) return this;
 	//Ici, cela veut dire que l'argument est constant.
 	//On fait donc simple... on garde la constante de l'argument, modifiée, et on se supprime.
-	cplx res = this->eval((dynamic_cast<Constante*>(argument))->valeur);
+	cplx res = eval((dynamic_cast<Constante*>(argument))->valeur);
 	kill();//On tue récursivement le noeud et son fils.
 	return new Constante(res);//Et on retourne une nouvelle constante.
 }
@@ -71,7 +71,7 @@ bool FunctionBinary::simplifieArgFunctionBinary() {
 }
 Function *FunctionBinary::simplifie() {
 	if(!simplifieArgFunctionBinary()) return this;
-	cplx res = this->eval((dynamic_cast<Constante*>(argument))->valeur);
+	cplx res = eval((dynamic_cast<Constante*>(argument))->valeur);
 	kill();						//On tue récurivement le noeud et son fils.
 	return new Constante(res);	//On récupère une nouvelle constante.
 }
@@ -84,7 +84,7 @@ Function *Compose::simplifie() {
 		kill();
 		return new Constante(res);
 	} else if(argument2->isConstant()) {
-		cplx res = this->eval(cplx(0));//Peu importe l'endroit où on l'évalue.
+		cplx res = eval(cplx(0));//Peu importe l'endroit où on l'évalue.
 		kill();
 		return new Constante(res);
 	} else if(argument == Identity::get()) {
@@ -116,10 +116,6 @@ void Identity::killf () {
 cplx Identity::eval(cplx & z) {
 	return z;
 }
-TCHAR *Identity::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(espace!=finEspace)
-		*(espace++)=L'z'; return espace;
-}
 Identity_x* Identity_x::get() {
 	if(Id == NULL)
 		Id = new Identity_x();
@@ -132,9 +128,6 @@ void Identity_x::killf () {
 cplx Identity_x::eval(cplx & z) {
 	return z.realcplx();
 }
-TCHAR *Identity_x::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(espace!=finEspace) *(espace++)=L'x'; return espace;
-}
 Identity_y* Identity_y::get() {
 	if(Id == NULL)
 		Id = new Identity_y();
@@ -146,9 +139,6 @@ void Identity_y::killf () {
 }
 cplx Identity_y::eval(cplx & z) {
 	return z.imagcplx();
-}
-TCHAR *Identity_y::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(espace!=finEspace) *(espace++)=L'y'; return espace;
 }
 Identity *Identity::Id=NULL;
 Identity_x *Identity_x::Id=NULL;
@@ -171,14 +161,14 @@ cplx ExposantComplexe::evalFast()     {return exp(argument2->evalFast()*ln(argum
 
 cplx CompositionRecursive::eval(cplx & z) {
 	cplx resultat=z;
-	int i=this->nbCompose;
+	int i=nbCompose;
 	while(i>0) {resultat=argument->eval(resultat); i--;}//si i<0, on laisse l'identité (l'inverse n'est pas défini)
 	return resultat;
 }
 cplx CompositionRecursive::evalFast() {
 	cplx resultat = Identity::current;
   cplx current_sauv = resultat;
-	int i=this->nbCompose;
+	int i=nbCompose;
 	while(i>0) {
     Identity::setCurrentComplex(resultat);
     resultat = argument->evalFast();
@@ -188,15 +178,15 @@ cplx CompositionRecursive::evalFast() {
 	return resultat;
 }
 
-Constante::Constante(double valeur):valeur(valeur) {
-  if(this->valeur.real() != this->valeur.real()) {
-    this->valeur = 1;
+Constante::Constante(double _valeur):valeur(_valeur) {
+  if(valeur.real() != valeur.real()) {
+    valeur = 1;
   }
 }
 
-Constante::Constante(cplx valeur):valeur(valeur) {
-  if(this->valeur.real()!=this->valeur.real() || this->valeur.imag() != this->valeur.imag()) {
-    this->valeur = 1;
+Constante::Constante(cplx _valeur):valeur(_valeur) {
+  if(valeur.real()!=valeur.real() || valeur.imag() != valeur.imag()) {
+    valeur = 1;
   }
 }
 
@@ -282,7 +272,7 @@ Function* FunctionMultiple::simplifie() {
   if(!simplifieArgFunctionMultiple()) return this;
 	//Ici, cela veut dire que l'argument est constant.
 	//On fait donc simple... on garde la constante de l'argument, modifiée, et on se supprime.
-	cplx res = this->eval((dynamic_cast<Constante*>(argument))->valeur);
+	cplx res = eval((dynamic_cast<Constante*>(argument))->valeur);
 	kill();//On tue récursivement le noeud et son fils.
 	return new Constante(res);//Et on retourne une nouvelle constante.
 }
@@ -421,321 +411,3 @@ Variable* VariableListe::getVariable(TCHAR *nom){
 }
 
 VariableListe *VariableListe::varList=NULL;
-
-// Les fonction toString:
-
-
-TCHAR *Somme::toString(TCHAR *espace, TCHAR *finEspace) {
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L'+';
-	espace = this->argument2->toString(espace, finEspace);
-	return espace;
-}
-
-TCHAR *Soustraction::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(argument->priorite()<priorite() && espace!=finEspace) *(espace++)=L'(';
-	espace = this->argument->toString(espace, finEspace);
-	if(argument->priorite()<priorite() && espace!=finEspace) *(espace++)=L')';
-	if(espace!=finEspace) *(espace++)=L'-';
-	if(argument2->priorite()<=priorite() && espace!=finEspace) *(espace++)=L'(';
-	espace = this->argument2->toString(espace, finEspace);
-	if(argument2->priorite()<=priorite() && espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Multiplication::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(argument->priorite()<priorite() && espace!=finEspace) *(espace++)=L'(';
-	espace = this->argument->toString(espace, finEspace);
-	if(argument->priorite()<priorite() && espace!=finEspace) *(espace++)=L')';
-	if(espace!=finEspace) *(espace++)=L'*';
-	if(argument2->priorite()<priorite() && espace!=finEspace) *(espace++)=L'(';
-	espace = this->argument2->toString(espace, finEspace);
-	if(argument2->priorite()<priorite() && espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Division::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(argument->priorite()<priorite() && espace!=finEspace) *(espace++)=L'(';
-	espace = this->argument->toString(espace, finEspace);
-	if(argument->priorite()<priorite() && espace!=finEspace) *(espace++)=L')';
-	if(espace!=finEspace) *(espace++)=L'/';
-	if(argument2->priorite()<=priorite() && espace!=finEspace) *(espace++)=L'(';
-	espace = this->argument2->toString(espace, finEspace);
-	if(argument2->priorite()<=priorite() && espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *ExposantComplexe::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(espace!=finEspace) *(espace++)=L'(';
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	if(espace!=finEspace) *(espace++)=L'^';
-	if(espace!=finEspace) *(espace++)=L'(';
-	espace = this->argument2->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Compose::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(espace!=finEspace) *(espace++)=L'o';
-	if(espace!=finEspace) *(espace++)=L'(';
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L',';
-	espace = this->argument2->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *CompositionRecursive::toString(TCHAR *espace, TCHAR *finEspace) {
-	TCHAR nombre[256];
-	if(espace!=finEspace) *(espace++)=L'o';
-	if(espace!=finEspace) *(espace++)=L'o';
-	if(espace!=finEspace) *(espace++)=L'(';
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L',';
-	_stprintf(nombre, TEXT("%d"), nbCompose);
-	if(2*_tcslen(nombre)<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace,nombre);
-	espace += _tcslen(nombre);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-
-TCHAR *Exposant::toString(TCHAR *espace, TCHAR *finEspace) {
-	TCHAR nombre[256];
-	if(espace!=finEspace) *(espace++)=L'(';
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	if(espace!=finEspace) *(espace++)=L'^';
-	_stprintf(nombre, TEXT("%d"), this->exposant);
-	if(2*_tcslen(nombre)<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace,nombre);
-	espace += _tcslen(nombre);
-	return espace;
-}
-
-TCHAR *Constante::toString(TCHAR *espace, TCHAR *finEspace) {
-	TCHAR nombre[256];
-	this->valeur.toString(nombre);
-  // if(_tcschr(nombre, L'#') != NULL) {
-  //   *(espace++)=L'1';
-  //   return espace;
-  // }
-	if((_tcschr(nombre, L'+')!=NULL || _tcschr(nombre, L'-')!=NULL)
-      && espace != finEspace) *(espace++)=L'(';
-	if(2*_tcslen(nombre)<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, nombre);
-	espace+=_tcslen(nombre);
-	if((_tcschr(nombre, L'+')!=NULL || _tcschr(nombre, L'-')!=NULL)
-      && espace != finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Oppose::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(2*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("-("));
-	espace+=2;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Sin::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(4*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("sin("));
-	espace+=4;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Cos::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(4*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("cos("));
-	espace+=4;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-TCHAR *Tan::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(4*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("tan("));
-	espace+=4;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Exp::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(4*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("exp("));
-	espace+=4;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Cosh::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(5*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("cosh("));
-	espace+=5;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Sinh::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(5*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("sinh("));
-	espace+=5;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Tanh::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(5*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("tanh("));
-	espace+=5;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Ln::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(3*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("ln("));
-	espace+=3;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Sqrt::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(5*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("sqrt("));
-	espace+=5;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Argsh::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(6*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("argsh("));
-	espace+=6;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Argch::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(6*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("argch("));
-	espace+=6;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Argth::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(6*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("argth("));
-	espace+=6;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Arcsin::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(7*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("arcsin("));
-	espace+=7;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Arccos::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(7*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("arccos("));
-	espace+=7;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Arctan::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(7*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("arctan("));
-	espace+=7;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Real::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(5*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("real("));
-	espace+=5;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Imag::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(5*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("imag("));
-	espace+=5;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Conj::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(5*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("conj("));
-	espace+=5;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Circle::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(7*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("circle("));
-	espace+=7;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *Variable::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(2*_tcslen(this->nom)<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, nom);
-	espace+=_tcslen(this->nom);
-	return espace;
-}
-
-TCHAR *SommeMultiple::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(4*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("sum("));
-	espace+=4;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L',';
-	espace = this->var->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L',';
-  espace = this->debut->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L',';
-  espace = this->fin->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L',';
-  espace = this->step->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *ProduitMultiple::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(5*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("prod("));
-	espace+=5;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L',';
-	espace = this->var->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L',';
-  espace = this->debut->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L',';
-  espace = this->fin->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L',';
-  espace = this->step->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-	return espace;
-}
-
-TCHAR *CompositionMultiple::toString(TCHAR *espace, TCHAR *finEspace) {
-	if(5*2<(unsigned int)finEspace-(unsigned int)espace) _tcscpy(espace, TEXT("comp("));
-	espace+=5;
-	espace = this->argument->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L',';
-	espace = this->var->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L',';
-  espace = this->debut->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L',';
-  espace = this->fin->toString(espace, finEspace);
-	if(espace!=finEspace) *(espace++)=L')';
-  return espace;
-}
