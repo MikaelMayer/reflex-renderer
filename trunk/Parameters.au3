@@ -21,10 +21,12 @@ push($Global_Parameters, _ArrayCreate("bin_dir",                $PARAM_STRING,  
 push($Global_Parameters, _ArrayCreate("color_out_zooming_box",  $PARAM_DROPDOWN,    "gray.bmp", _ArrayCreate("black.bmp", "gray.bmp")))
 push($Global_Parameters, _ArrayCreate("color_in_zooming_box",   $PARAM_DROPDOWN,    "black.bmp", _ArrayCreate("black.bmp", "gray.bmp")))
 push($Global_Parameters, _ArrayCreate("history_formula_filename", $PARAM_STRING,    "history_formulas.txt"))
-push($Global_Parameters, _ArrayCreate("color_NaN_complex",      $PARAM_STRING,      "FFFFFF"))
+push($Global_Parameters, _ArrayCreate("color_NaN_complex",      $PARAM_STRING,      "0xFFFFFF"))
 
 GetParameters()
 AssignParameters()
+
+Global $RenderReflexExe = $bin_dir&"\RenderReflex.exe"
 
 ;Open ini file and read it.
 Func GetParameters()

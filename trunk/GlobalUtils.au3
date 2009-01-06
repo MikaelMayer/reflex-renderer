@@ -196,10 +196,18 @@ EndFunc
 ; Flag and complex management
 
 Func createFlag($flag, $value)
-  Return StringFormat(' "%s=%s"', $flag, $value)
+  If $value <> "" Then
+    If StringLeft($value, 1) == "-" Then
+      Return StringFormat(' --%s " %s"', $flag, $value)
+    Else
+      Return StringFormat(' --%s "%s"', $flag, $value)
+    EndIf
+  Else
+    Return StringFormat(' --%s', $flag)
+  EndIf
 EndFunc
 
-Func addFlag(ByRef $flags, $new_flag, $new_value)
+Func addFlag(ByRef $flags, $new_flag, $new_value="")
   $flags = $flags&createFlag($new_flag, $new_value)
 EndFunc
 
@@ -218,12 +226,18 @@ Func simplifyParenthesis($complex_number)
   return $complex_number
 EndFunc
 
+Func runReflexWithArguments($args)
+  $cmd = StringFormat("%s %s", $RenderReflexExe, $args)
+  logging("Running "&$cmd)
+  Return Run($cmd, '', @SW_HIDE, 2+4)
+EndFunc
+
 Func complex_calculate($expr)
   ;logging("Calculating "&$expr)
   Dim $flags = ""
   addFlag($flags, "formula", $expr)
   ;$flags = $formula_flag&$seed_flag
-  $p = Run(StringFormat("%sRenderReflex.exe simplify%s", $bin_dir, $flags), '', @SW_HIDE, 2+4)
+  $p = runReflexWithArguments("--simplify"&$flags)
   $found = False
   $result = 0
   While True
@@ -333,3 +347,5 @@ Func AssertEqual($a, $b)
     Exit
   EndIf
 EndFunc
+
+#include "ReflexRenderer.au3"
