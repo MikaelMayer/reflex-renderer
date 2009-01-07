@@ -216,7 +216,7 @@ Func loadVariable($window = @GUI_WinHandle)
   VariableManager__setCurrentVariable($window)
 EndFunc
 
-Func vawUpdate($history_save)
+Func vawUpdate($history_save=True)
   If $Variables__update_function <> "" Then
     Call($Variables__update_function, $history_save)
   EndIf

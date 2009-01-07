@@ -7,7 +7,6 @@
   A user-friendly interface for the RenderReflex programm
 
 Doing:
- - Animated zoom. To be threaded & exponential
  - Reflex renderer video: Generate program to generate images, should be able to be loaded back
 
  Wish List:
@@ -53,6 +52,7 @@ V "Libeller la Reflex comme la formule" m'a fait penser au début que ça mettrait
  ===== Done ====
  
 Mik notes : 
+ V Animated zoom. Threaded & exponential + parameter
  V Parallelized the save window.
  V Move/resize the main window => Move the children
  V Find how to store that there are some variables : [Variables], and when loading a session, loading these variables.
@@ -228,6 +228,8 @@ Global $REFLEX_RENDERING = $REFLEX_NOT_UP_TO_DATE, $REFLEX_RENDERED = $REFLEX_NO
 Global $history_formula_array[19] = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
 Global $rri_win_pos[4]
 Global $auto_save_formula = True
+Global $zooming = 0
+Global $zoomvars[8]
 
 EditFormula__setCallbackFunction("EditFormulaCallBack")
 LoadFormulaFromFile__setCallbackFunction("loadFormulaCallback")
@@ -1142,7 +1144,7 @@ Func startRendering($flags)
 EndFunc
 
 Func handleRenderingAndIsFinished()
-  Local $lines
+  Local $lines, $p = -1
   $text = StdoutRead($pid_rendering)
   If @error Then
     Return True
@@ -1162,10 +1164,33 @@ Func handleRenderingAndIsFinished()
       Else
         $progress = StringSplit($current_line, '/')
         If $progress[0]>=2 Then
-          GUICtrlSetData($rri_progress, 100*Int($progress[1])/Int($progress[2]))
+          $p = 100*Int($progress[1])/Int($progress[2])
+
         EndIf
       EndIf
     Next
+    If $p >= 0 Then
+      GUICtrlSetData($rri_progress, $p)
+    EndIf
+    If $zooming > 0 and $p >= 0 Then
+      Local $growing = $zoomvars[2]/$zoomvars[6]
+      Local $k = Exp($p/100 * log($zoomvars[6]))*Exp((1-$p/100) * log($zoomvars[2]))/$zoomvars[6]
+      Local $c = ($k - 1)/($growing - 1)
+      Local $m = 1 - $c
+      GUICtrlSetPos($rri_out_rendu, _
+          $c * $zoomvars[0] + $m * $zoomvars[4], $c * $zoomvars[1] + $m *  $zoomvars[5], _
+          $c * $zoomvars[2] + $m * $zoomvars[6], $c * $zoomvars[3] + $m *  $zoomvars[7])
+    EndIf
+    If $zooming < 0 and $p >= 0 Then
+      Local $growing = $zoomvars[6]/$zoomvars[2]
+      Local $k = Exp($p/100 * log($zoomvars[6]))*Exp((1-$p/100) * log($zoomvars[2]))/$zoomvars[2]
+      Local $c = ($k - 1)/($growing - 1)
+      Local $m = 1 - $c
+      GUICtrlSetPos($rri_out_rendu, _
+          $c * $zoomvars[0] + $m * $zoomvars[4], $c * $zoomvars[1] + $m *  $zoomvars[5], _
+          $c * $zoomvars[2] + $m * $zoomvars[6], $c * $zoomvars[3] + $m *  $zoomvars[7])
+      ;WinSetState($rri_win, 0, @SW_SHOW)
+    EndIf
   EndIf
   Return False
 EndFunc
@@ -1176,6 +1201,11 @@ Func handleFinishedRendering()
   GUICtrlSetState($rri_rendering_text, $GUI_HIDE)
   GUICtrlSetState($rri_progress, $GUI_HIDE)
   $REFLEX_RENDERED_FINISHED = True
+  
+  If $zooming <> 0 Then
+    $zooming = 0
+  EndIf
+  
   if $errors_pid <> '' Then
     MsgBox(0, $Errors, $errors_pid);
     If $EDIT_FORMULA_EXISTS Then
@@ -1414,13 +1444,13 @@ Func AnimateZoomForward($pos, $xmin, $ymin, $xmax, $ymax)
   $limite_taille = 3000
   If $dx > $limite_taille Or $dy > $limite_taille Then Return
   $pos = ControlGetPos($rri_win, "", $rri_out_rendu)
-  For $i = 0 To 5
-    $c = $i / 5
-    $m = 1 - $c
-    GUICtrlSetPos($rri_out_rendu, $c * $xmin + $m * $pos[0], $c * $ymin + $m * $pos[1], $c * $dx + $m * $pos[2], $c * $dy + $m * $pos[3])
-    WinSetState($rri_win, 0, @SW_SHOW)
-  Next
-  GUICtrlSetPos($rri_out_rendu, $xmin, $ymin, $dx, $dy)
+  If Not $animated_zoom Then
+    GUICtrlSetPos($rri_out_rendu, $xmin, $ymin, $dx, $dy)
+    Return
+  Else
+    $zooming = 1
+    $zoomvars = _ArrayCreate($pos[0], $pos[1], $pos[2], $pos[3], $xmin, $ymin, $dx, $dy)
+  EndIf
   ;logging("Animated.")
   Return
 EndFunc
@@ -1432,7 +1462,14 @@ Func AnimateZoomBackward($pos, $xmin, $ymin, $xmax, $ymax)
   ;logging("Animation back to size "&$dx&","&$dy)
   $limite_taille = 3000
   If $dx > $limite_taille Or $dy > $limite_taille Then Return
-  GUICtrlSetPos($rri_out_rendu, $xmin, $ymin, $dx, $dy)
+  $pos = ControlGetPos($rri_win, "", $rri_out_rendu)
+  If Not $animated_zoom Then
+    GUICtrlSetPos($rri_out_rendu, $xmin, $ymin, $dx, $dy)
+    Return
+  Else
+    $zooming = -1
+    $zoomvars = _ArrayCreate($pos[0], $pos[1], $pos[2], $pos[3], $xmin, $ymin, $dx, $dy)
+  EndIf
   ;logging("Animated.")
   Return
 EndFunc
