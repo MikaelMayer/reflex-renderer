@@ -119,7 +119,7 @@ TCHAR *CompositionRecursive::toString(TCHAR* &data, TCHAR *max_data) {
 
 
 TCHAR *Exposant::toString(TCHAR* &data, TCHAR *max_data) {
-  addString(data, max_data, TEXT("oo("));
+  addString(data, max_data, TEXT("("));
 	argument->toString(data, max_data);
   addString(data, max_data, TEXT(")^"));
   addInt(data, max_data, exposant);

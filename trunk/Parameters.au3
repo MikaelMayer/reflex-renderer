@@ -13,7 +13,7 @@
 #include "GlobalUtils.au3"
 
 Global $Global_Parameters = emptySizedArray()
-Global Enum $PARAM_STRING, $PARAM_DROPDOWN
+Global Enum $PARAM_STRING, $PARAM_DROPDOWN, $PARAM_BOOL
 Global Enum $N_PARAM_VANAME, $N_PARAM_TYPE, $N_PARAM_DEFAULTVALUE
 
 push($Global_Parameters, _ArrayCreate("lang_folder",            $PARAM_STRING,      "lang"))
@@ -22,6 +22,7 @@ push($Global_Parameters, _ArrayCreate("color_out_zooming_box",  $PARAM_DROPDOWN,
 push($Global_Parameters, _ArrayCreate("color_in_zooming_box",   $PARAM_DROPDOWN,    "black.bmp", _ArrayCreate("black.bmp", "gray.bmp")))
 push($Global_Parameters, _ArrayCreate("history_formula_filename", $PARAM_STRING,    "history_formulas.txt"))
 push($Global_Parameters, _ArrayCreate("color_NaN_complex",      $PARAM_STRING,      "0xFFFFFF"))
+push($Global_Parameters, _ArrayCreate("animated_zoom",          $PARAM_BOOL,        True))
 
 GetParameters()
 AssignParameters()
