@@ -49,7 +49,7 @@ class Function {
 /// a une priorité de 4
 //^ a une priorité de 5
 //sin a une priorité de 6 comme les autres fonctions.
-//Les variables et constantes ont une priorité de 10.
+//Les variables et constantes ont une priorité de 10 (pas besoin de parenthèses).
 //Les constantes se mettent automatiquement des parenthèses.
 
 //class singleton: Only One Identity

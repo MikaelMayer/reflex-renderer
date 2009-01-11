@@ -7,7 +7,6 @@
 
 #include "stdafx.h"
 #include "functions.h"
-#include <iostream>
 
 TCHAR *Function::toStringConst(TCHAR* const data_const, TCHAR *max_data, STRING_TYPE string_type) {
   TCHAR* data = data_const;
@@ -27,20 +26,27 @@ void FunctionUnary::toString_name(StringRendering &s,
                                   TCHAR* function_name, bool parenthesis) {
   if(parenthesis)
     s << function_name << TEXT('(') << argument << TEXT(')');
+  else if(s.type() == OPENOFFICE3_TYPE)
+    s << function_name << TEXT('{') << argument << TEXT('}');
   else
     s << function_name << argument;
 }
 
 void FunctionBinary::toString_symbol(StringRendering &s, TCHAR* symbol) {
-  if(argument->priorite()<priorite())
+  if(argument->priorite() < priorite()) {
     s << TEXT('(') << argument << TEXT(')');
-  else
+  } else if(s.type() == OPENOFFICE3_TYPE) {
+    s << TEXT('{') << argument << TEXT('}');
+  } else {
     s << argument;
+  }
 
   s << symbol;
 
-	if(argument2->priorite()<=priorite())
+	if(argument2->priorite() <= priorite())
     s << TEXT('(') << argument2 << TEXT(')');
+  else if(s.type() == OPENOFFICE3_TYPE)
+    s << TEXT('{') << argument2 << TEXT('}');
   else
     s << argument2;
 }
@@ -67,7 +73,7 @@ void Soustraction::toString(StringRendering &s) {
 
 void Multiplication::toString(StringRendering &s) {
 	if(s.type() == OPENOFFICE3_TYPE)
-  	toString_symbol(s, TEXT(" times ")); //TODO: ameliore
+  	toString_symbol(s, TEXT(" cdot ")); //TODO: ameliore
   else
   	toString_symbol(s, TEXT("*"));
 }
@@ -285,7 +291,6 @@ StringRendering& StringRendering::operator<<(Function* const f) {
 }
 
 StringRendering& StringRendering::operator<<(TCHAR tch) {
-  std::cout << tch << std::endl;
   if(notReachedEnd()) {
     *(data++) = tch;
   }
@@ -327,9 +332,11 @@ StringRendering& StringRenderingOpenOffice::operator<<(Function* const f) {
 StringRendering& StringRenderingOpenOffice::operator<<(TCHAR tch) {
   if(notReachedEnd()) {
     if(tch == TEXT('(')) {
-      StringRendering::operator<< (TEXT(" left ("));
+      StringRendering::operator <<(TEXT(" left "));
+      StringRendering::operator <<(TEXT('('));
     } else if(tch == TEXT(')')) {
-      StringRendering::operator<< (TEXT(" right )"));
+      StringRendering::operator <<(TEXT(" right "));
+      StringRendering::operator <<(TEXT(')'));
     } else {
       *(data++) = tch;
     }
