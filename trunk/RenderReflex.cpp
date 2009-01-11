@@ -337,7 +337,7 @@ int calculateNewWindow(int width, int height, const char* winmin_string,
   return 0;
 }
 
-int simplify_formula(const char* formula_string, int seed_init) {
+int simplify_formula(const char* formula_string, int seed_init, bool openoffice_formula) {
   bool fine = true;
   int errpos = 0;
 
@@ -355,7 +355,7 @@ int simplify_formula(const char* formula_string, int seed_init) {
     funcString = new TCHAR[size_func + 1];
     TCHAR* funcStringMax = funcString+size_func;
 
-    funcStringEnd = f_formula->toStringConst(funcString, funcStringMax);
+    funcStringEnd = f_formula->toStringConst(funcString, funcStringMax, openoffice_formula?OPENOFFICE3_TYPE: DEFAULT_TYPE);
     if(funcStringEnd == funcStringMax) {
       delete funcString;
       size_func *= 2;
@@ -433,7 +433,8 @@ int main(int argc, char** argv) {
   int seed   = 1;
   string colornan_string = "0xFFFFFF";
   unsigned int colornan = 0xFFFFFF;
-  bool realmode = false;
+  bool realmode;
+  bool openoffice_formula;
 
   as >> parameter('f', "formula", formula_string, "A formula like (1+2-x)/sin(z)", false)
      >> parameter('w', "width", width, "The rendering width in pixels", false)
@@ -446,6 +447,7 @@ int main(int argc, char** argv) {
      >> option('r', "realmode", realmode, "If it only renders the real part")
      >> parameter('d', "delta_x", deltax_string, "The horizontal shift", false)
      >> parameter('e', "delta_y", deltay_string, "The vertical shift", false)
+     >> option("openoffice", openoffice_formula, "If it outputs the formule using OpenOffice style")
      >> help();
 
   sscanf_s(deltax_string.c_str(), "%d", &delta_x);
@@ -468,7 +470,7 @@ int main(int argc, char** argv) {
                      );
   }
   if(simplify_mode) {
-    return simplify_formula(formula_string.c_str(), seed);
+    return simplify_formula(formula_string.c_str(), seed, openoffice_formula);
   }
   if(new_window) {
     //cout << width << ", " << height << ", " << delta_x << ", " << delta_y << endl;
