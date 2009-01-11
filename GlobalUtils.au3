@@ -12,8 +12,14 @@
 ; Script Start - Add your code below here
 #include-once
 #include "IniHandling.au3"
+#Include <GDIPlus.au3>
 #include <Array.au3>
 #include <Date.au3>
+
+Global Const $VERSION_NUMER = "2.8.1 beta"
+Global Const $COPYRIGHT_DATE = "2009"
+
+
 
 Global $ERROR_DECODE_HANDLING = ""
 Global Const $EmptySizedArray = emptySizedArray()
@@ -38,6 +44,7 @@ Func emptySizedArray()
   Return _ArrayCreate(0)
 EndFunc
 
+;Removes the first element of the sized array
 Func pop(ByRef $queue)
   $tmp = $queue[1]
   _ArrayDelete($queue, 1)
@@ -113,7 +120,7 @@ Func leftTopRightBottom_to_leftTopWithHeight($pos)
 EndFunc
 
 
-Func toString(ByRef $element)
+Func toString($element)
   Local $res = ""
   If IsArray($element) Then
     Local $first = True
@@ -165,6 +172,18 @@ Func reflexFileNameFromComment($formula_comment, $formula_filename, $reflex_exte
     Return $basefilename&$comment&$extension
   WEnd
   Return IniReadSaveBox('reflexFile', '')
+EndFunc
+
+Func BaseFileName($longFileName)
+  Return StringRegExpReplace($longFileName, ".*\\", "")
+EndFunc
+
+Func ImageConvert($previous_image, $after_image)
+  _GDIPlus_Startup ()
+  $hImage = _GDIPlus_ImageLoadFromFile($previous_image)
+  _GDIPlus_ImageSaveToFile($hImage, $after_image)
+  _GDIPlus_ImageDispose ($hImage)
+  _GDIPlus_ShutDown ()
 EndFunc
 
 Func Logging($str, $line = @ScriptLineNumber)
@@ -226,18 +245,20 @@ Func simplifyParenthesis($complex_number)
   return $complex_number
 EndFunc
 
+;$RenderReflexExe should be declared outside in global (like in Parameters.au3)
 Func runReflexWithArguments($args)
   $cmd = StringFormat("%s %s", $RenderReflexExe, $args)
-  logging("Running "&$cmd)
+  ;logging("Running "&$cmd)
   Return Run($cmd, '', @SW_HIDE, 2+4)
 EndFunc
 
 Func complex_calculate($expr)
   ;logging("Calculating "&$expr)
   Dim $flags = ""
+  addFlag($flags, "simplify")
   addFlag($flags, "formula", $expr)
   ;$flags = $formula_flag&$seed_flag
-  $p = runReflexWithArguments("--simplify"&$flags)
+  $p = runReflexWithArguments($flags)
   $found = False
   $result = 0
   While True
@@ -263,8 +284,17 @@ Func complex_calculate($expr)
   Return $result
 EndFunc
 
+; Returns the number of processors of this machine
+Func getNumberOfProcessors()
+  $test = 0
+  While RegRead("HKLM\HARDWARE\DESCRIPTION\System\CentralProcessor\"&$test, "~MHz") <> ""
+    $test += 1
+  WEnd
+  return $test
+EndFunc
 
-; String management
+
+;=============== String management =============== 
 
 ;Returns a boolean indicating if the string ends with a certain postfix (case insensitive)
 Func StringEndsWith($str, $end)
@@ -277,6 +307,13 @@ Func StringContains($str, $char_str)
     If StringInStr($char_str, StringMid($str, $i, 1)) Then Return True
   Next
   Return False
+EndFunc
+
+Func replaceVariableString($string, $varname, $varvalue)
+  $varname = StringReplace(StringStripWS($varname, 3), "$", "\$")
+  If StringContains($varvalue, "+*-/()") Then $varvalue = "("&$varvalue&")"
+  $string = StringRegExpReplace($string, $varname&"([^[:alnum:]]|\z)", $varvalue&"\1")
+  return $string
 EndFunc
 
 ; Animation and windows
@@ -341,11 +378,10 @@ EndFunc
 
 ;Testing
 
-Func AssertEqual($a, $b)
+Func AssertEqual($a, $b, $e="")
   If $a <> $b Then
-    MsgBox(0, "Assertion error", StringFormat("%s != %s and it's bad", $a, $b))
+    If $e <> "" Then $e = " : "&$e
+    MsgBox(0, "Assertion error", StringFormat("%s != %s"&$e, $a, $b))
     Exit
   EndIf
 EndFunc
-
-#include "ReflexRenderer.au3"

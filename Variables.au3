@@ -205,13 +205,6 @@ Func Variables__updateString($string, $except_variable=0)
   Return $string
 EndFunc
 
-Func replaceVariableString($string, $varname, $varvalue)
-  $varname = StringReplace(StringStripWS($varname, 3), "$", "\$")
-  If StringContains($varvalue, "+*-/()") Then $varvalue = "("&$varvalue&")"
-  $string = StringRegExpReplace($string, $varname&"([^[:alnum:]]|\z)", $varvalue&"\1")
-  return $string
-EndFunc
-
 Func loadVariable($window = @GUI_WinHandle)
   VariableManager__setCurrentVariable($window)
 EndFunc

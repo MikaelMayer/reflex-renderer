@@ -398,7 +398,7 @@ Func saveFormulaString($formula, $comment, $save_comment, $save_resolution, $sav
       EndIf
     EndIf
     If $result[0] <> 0 Then
-      _ArrayDelete($result, 0)
+      toBasicArray($result)
       $optline = $options_line_string&" "&_ArrayToString($result, "; ")
       addLine($formula_string, $optline)
     EndIf
