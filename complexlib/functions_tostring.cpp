@@ -7,259 +7,333 @@
 
 #include "stdafx.h"
 #include "functions.h"
+#include <iostream>
 
-TCHAR *Function::toStringConst(TCHAR* const data_const, TCHAR *max_data) {
+TCHAR *Function::toStringConst(TCHAR* const data_const, TCHAR *max_data, STRING_TYPE string_type) {
   TCHAR* data = data_const;
-  toString(data, max_data);
-  return data;
-}
+  if(string_type == DEFAULT_TYPE) {
+    StringRendering s(data_const, max_data);
+    s << this;
+    return s.data;
 
-TCHAR* Function::addString(TCHAR* &data, TCHAR *max_data, TCHAR* str) {
-  size_t required_tchars = _tcslen(str);
-  while(required_tchars > 0 && data != max_data) {
-    *(data++) = *(str++);
-    required_tchars--;
+  } else { //if(string_type == OPENOFFICE3_TYPE){
+    StringRenderingOpenOffice s(data_const, max_data);
+    s << this;
+    return s.data;
   }
-  return data;
 }
 
-TCHAR* Function::addTchar(TCHAR* &data, TCHAR *max_data, TCHAR tch) {
-  if(data != max_data) *(data++) = tch;
-  return data;
+void FunctionUnary::toString_name(StringRendering &s,
+                                  TCHAR* function_name, bool parenthesis) {
+  if(parenthesis)
+    s << function_name << TEXT('(') << argument << TEXT(')');
+  else
+    s << function_name << argument;
 }
 
-TCHAR* Function::addInt(TCHAR* &data, TCHAR *max_data, int number) {
-  TCHAR nombre[256];
-	_stprintf_s(nombre, TEXT("%d"), number);
-  addString(data, max_data, nombre);
-  return data;
-}
-TCHAR* Function::addDouble(TCHAR* &data, TCHAR *max_data, double number) {
-  TCHAR nombre[256];
-	_stprintf_s(nombre, TEXT("%g"), number);
-  addString(data, max_data, nombre);
-  return data;
-}
+void FunctionBinary::toString_symbol(StringRendering &s, TCHAR* symbol) {
+  if(argument->priorite()<priorite())
+    s << TEXT('(') << argument << TEXT(')');
+  else
+    s << argument;
 
-TCHAR* FunctionUnary::toString_name(TCHAR* &data, TCHAR *max_data,
-                                    TCHAR* function_name, bool parenthesis) {
-  addString(data, max_data, function_name);
-  if(parenthesis) addTchar(data, max_data, '(');
-	argument->toString(data, max_data);
-  if(parenthesis) addTchar(data, max_data, ')');
-	return data;
-}
+  s << symbol;
 
-
-TCHAR* FunctionBinary::toString_symbol(TCHAR* &data, TCHAR *max_data, TCHAR symbol) {
-  if(argument->priorite()<priorite()) addTchar(data, max_data, L'(');
-	argument->toString(data, max_data);
-	if(argument->priorite()<priorite()) addTchar(data, max_data, L')');
-	if(data!=max_data) *(data++) = symbol;
-	if(argument2->priorite()<=priorite()) addTchar(data, max_data, L'(');
-	argument2->toString(data, max_data);
-	if(argument2->priorite()<=priorite()) addTchar(data, max_data, L')');
-	return data;
+	if(argument2->priorite()<=priorite())
+    s << TEXT('(') << argument2 << TEXT(')');
+  else
+    s << argument2;
 }
-TCHAR *Identity::toString(TCHAR* &data, TCHAR *max_data) {
-	addTchar(data, max_data, L'z'); return data;
+void Identity::toString(StringRendering &s) {
+	s << TEXT('z');
 }
-TCHAR *Identity_x::toString(TCHAR* &data, TCHAR *max_data) {
-	addTchar(data, max_data, L'x'); return data;
+void Identity_x::toString(StringRendering &s) {
+	s << TEXT('x');
 }
-TCHAR *Identity_y::toString(TCHAR* &data, TCHAR *max_data) {
-	addTchar(data, max_data, L'y'); return data;
+void Identity_y::toString(StringRendering &s) {
+	s << TEXT('y');
 }
 
 
 // Les fonction toString:
 
-TCHAR *Somme::toString(TCHAR* &data, TCHAR *max_data) {
-  return toString_symbol(data, max_data, L'+');
+void Somme::toString(StringRendering &s) {
+  toString_symbol(s, TEXT("+"));
 }
 
-TCHAR *Soustraction::toString(TCHAR* &data, TCHAR *max_data) {
-  return toString_symbol(data, max_data, L'-');
+void Soustraction::toString(StringRendering &s) {
+  toString_symbol(s, TEXT("-"));
 }
 
-TCHAR *Multiplication::toString(TCHAR* &data, TCHAR *max_data) {
-	return toString_symbol(data, max_data, L'*');
+void Multiplication::toString(StringRendering &s) {
+	if(s.type() == OPENOFFICE3_TYPE)
+  	toString_symbol(s, TEXT(" times ")); //TODO: ameliore
+  else
+  	toString_symbol(s, TEXT("*"));
 }
 
-TCHAR *Division::toString(TCHAR* &data, TCHAR *max_data) {
-	return toString_symbol(data, max_data, L'/');
+void Division::toString(StringRendering &s) {
+  if(s.type() == OPENOFFICE3_TYPE)
+  	toString_symbol(s, TEXT(" over "));
+  else
+  	toString_symbol(s, TEXT("/"));
 }
 
-TCHAR *ExposantComplexe::toString(TCHAR* &data, TCHAR *max_data) {
-	addTchar(data, max_data, L'(');
-	argument->toString(data, max_data);
-	addString(data, max_data, TEXT(")^("));
-	argument2->toString(data, max_data);
-	addTchar(data, max_data, L')');
-	return data;
+void ExposantComplexe::toString(StringRendering &s) {
+	s << TEXT('(') << argument << TEXT(')');
+  s << TEXT('^');
+  if(s.type() == OPENOFFICE3_TYPE)
+    s << TEXT('{') << argument2 << TEXT('}');
+  else
+	  s << TEXT('(') << argument2 << TEXT(')');
 }
 
-TCHAR *Compose::toString(TCHAR* &data, TCHAR *max_data) {
-	addString(data, max_data, TEXT("o("));
-	argument->toString(data, max_data);
-	addTchar(data, max_data, L',');
-	argument2->toString(data, max_data);
-	addTchar(data, max_data, L')');
-	return data;
+void Compose::toString(StringRendering &s) {
+  s << TEXT("o");
+  s << TEXT('(') << argument << TEXT(',') << argument2 << TEXT(')');
 }
 
-TCHAR *CompositionRecursive::toString(TCHAR* &data, TCHAR *max_data) {
-	addString(data, max_data, TEXT("oo("));
-	argument->toString(data, max_data);
-	addTchar(data, max_data, L',');
-  addInt(data, max_data, nbCompose);
-	addTchar(data, max_data, L')');
-	return data;
+void CompositionRecursive::toString(StringRendering &s) {
+  s << TEXT("oo");
+  s << TEXT('(') << argument << TEXT(',') << nbCompose << TEXT(')');
 }
 
 
-TCHAR *Exposant::toString(TCHAR* &data, TCHAR *max_data) {
-  addString(data, max_data, TEXT("("));
-	argument->toString(data, max_data);
-  addString(data, max_data, TEXT(")^"));
-  addInt(data, max_data, exposant);
-	return data;
+void Exposant::toString(StringRendering &s) {
+  s << TEXT('(');
+	  s << argument;
+  s << TEXT(')') << TEXT('^') << exposant;
 }
 
-TCHAR *Constante::toString(TCHAR* &data, TCHAR *max_data) {
+void Constante::toString(StringRendering &s) {
 	TCHAR nombre[256];
 	valeur.toString(nombre);
-  bool parenthesis = (_tcschr(nombre, L'+')!=NULL || _tcschr(nombre, L'-')!=NULL);
-	if(parenthesis) addTchar(data, max_data, L'(');
-  addString(data, max_data, nombre);
-	if(parenthesis) addTchar(data, max_data, L')');
-	return data;
+  bool parenthesis = (_tcschr(nombre, TEXT('+'))!=NULL || _tcschr(nombre, TEXT('-'))!=NULL);
+	if(parenthesis) s << TEXT('(');
+  s << nombre;
+	if(parenthesis) s << TEXT(')');
 }
 
-TCHAR *Oppose::toString(TCHAR* &data, TCHAR *max_data) {
-  return FunctionUnary::toString_name(data, max_data, TEXT("-"));
+void Oppose::toString(StringRendering &s) {
+  FunctionUnary::toString_name(s, TEXT("-"));
 }
 
-TCHAR *Sin::toString(TCHAR* &data, TCHAR *max_data) {
-  return FunctionUnary::toString_name(data, max_data, TEXT("sin"));
+void Sin::toString(StringRendering &s) {
+  FunctionUnary::toString_name(s, TEXT("sin"));
 }
 
-TCHAR *Cos::toString(TCHAR* &data, TCHAR *max_data) {
-  return FunctionUnary::toString_name(data, max_data, TEXT("cos"));
+void Cos::toString(StringRendering &s) {
+  FunctionUnary::toString_name(s, TEXT("cos"));
 }
-TCHAR *Tan::toString(TCHAR* &data, TCHAR *max_data) {
-	return FunctionUnary::toString_name(data, max_data, TEXT("tan"));
-}
-
-TCHAR *Exp::toString(TCHAR* &data, TCHAR *max_data) {
-  return FunctionUnary::toString_name(data, max_data, TEXT("exp"));
+void Tan::toString(StringRendering &s) {
+	FunctionUnary::toString_name(s, TEXT("tan"));
 }
 
-TCHAR *Cosh::toString(TCHAR* &data, TCHAR *max_data) {
-  return FunctionUnary::toString_name(data, max_data, TEXT("cosh"));
+void Exp::toString(StringRendering &s) {
+  if(s.type() == OPENOFFICE3_TYPE) {
+    s << TEXT("e^{") << argument << TEXT("}");
+  } else
+    FunctionUnary::toString_name(s, TEXT("exp"));
 }
 
-TCHAR *Sinh::toString(TCHAR* &data, TCHAR *max_data) {
-	return FunctionUnary::toString_name(data, max_data, TEXT("sinh"));
+void Cosh::toString(StringRendering &s) {
+  FunctionUnary::toString_name(s, TEXT("cosh"));
 }
 
-TCHAR *Tanh::toString(TCHAR* &data, TCHAR *max_data) {
-  return FunctionUnary::toString_name(data, max_data, TEXT("tanh"));
+void Sinh::toString(StringRendering &s) {
+	FunctionUnary::toString_name(s, TEXT("sinh"));
 }
 
-TCHAR *Ln::toString(TCHAR* &data, TCHAR *max_data) {
-  return FunctionUnary::toString_name(data, max_data, TEXT("ln"));
+void Tanh::toString(StringRendering &s) {
+  FunctionUnary::toString_name(s, TEXT("tanh"));
 }
 
-TCHAR *Sqrt::toString(TCHAR* &data, TCHAR *max_data) {
-  return FunctionUnary::toString_name(data, max_data, TEXT("sqrt"));
+void Ln::toString(StringRendering &s) {
+  FunctionUnary::toString_name(s, TEXT("ln"));
 }
 
-TCHAR *Argsh::toString(TCHAR* &data, TCHAR *max_data) {
-	return FunctionUnary::toString_name(data, max_data, TEXT("argsh"));
+void Sqrt::toString(StringRendering &s) {
+  if(s.type() == OPENOFFICE3_TYPE) {
+    s << TEXT("sqrt{") << argument << TEXT("}");
+  } else
+    FunctionUnary::toString_name(s, TEXT("sqrt"));
 }
 
-TCHAR *Argch::toString(TCHAR* &data, TCHAR *max_data) {
-  return FunctionUnary::toString_name(data, max_data, TEXT("argch"));
+void Argsh::toString(StringRendering &s) {
+	FunctionUnary::toString_name(s, TEXT("argsh"));
 }
 
-TCHAR *Argth::toString(TCHAR* &data, TCHAR *max_data) {
-	return FunctionUnary::toString_name(data, max_data, TEXT("argth"));
+void Argch::toString(StringRendering &s) {
+  FunctionUnary::toString_name(s, TEXT("argch"));
 }
 
-TCHAR *Arcsin::toString(TCHAR* &data, TCHAR *max_data) {
-	return FunctionUnary::toString_name(data, max_data, TEXT("arcsin"));
+void Argth::toString(StringRendering &s) {
+	FunctionUnary::toString_name(s, TEXT("argth"));
 }
 
-TCHAR *Arccos::toString(TCHAR* &data, TCHAR *max_data) {
-	return FunctionUnary::toString_name(data, max_data, TEXT("arccos"));
+void Arcsin::toString(StringRendering &s) {
+	FunctionUnary::toString_name(s, TEXT("arcsin"));
 }
 
-TCHAR *Arctan::toString(TCHAR* &data, TCHAR *max_data) {
-	return FunctionUnary::toString_name(data, max_data, TEXT("arctan"));
+void Arccos::toString(StringRendering &s) {
+	FunctionUnary::toString_name(s, TEXT("arccos"));
 }
 
-TCHAR *Real::toString(TCHAR* &data, TCHAR *max_data) {
-	return FunctionUnary::toString_name(data, max_data, TEXT("real"));
+void Arctan::toString(StringRendering &s) {
+	FunctionUnary::toString_name(s, TEXT("arctan"));
 }
 
-TCHAR *Imag::toString(TCHAR* &data, TCHAR *max_data) {
-	return FunctionUnary::toString_name(data, max_data, TEXT("imag"));
+
+void Real::toString(StringRendering &s) {
+  if(s.type() == OPENOFFICE3_TYPE) {
+    s << TEXT("Re(") << argument << TEXT(")");
+  } else
+	  FunctionUnary::toString_name(s, TEXT("real"));
 }
 
-TCHAR *Conj::toString(TCHAR* &data, TCHAR *max_data) {
-	return FunctionUnary::toString_name(data, max_data, TEXT("conj"));
+void Imag::toString(StringRendering &s) {
+	if(s.type() == OPENOFFICE3_TYPE) {
+    s << TEXT("Im(") << argument << TEXT(")");
+  } else
+	  FunctionUnary::toString_name(s, TEXT("imag"));
 }
 
-TCHAR *Circle::toString(TCHAR* &data, TCHAR *max_data) {
-	return FunctionUnary::toString_name(data, max_data, TEXT("circle"));
+void Conj::toString(StringRendering &s) {
+	if(s.type() == OPENOFFICE3_TYPE) {
+    s << TEXT("Bar{") << argument << TEXT("}");
+  } else
+	  FunctionUnary::toString_name(s, TEXT("conj"));
 }
 
-TCHAR *Variable::toString(TCHAR* &data, TCHAR *max_data) {
-  addString(data, max_data, nom);
-	return data;
+void Circle::toString(StringRendering &s) {
+	FunctionUnary::toString_name(s, TEXT("circle"));
 }
 
-TCHAR *SommeMultiple::toString(TCHAR* &data, TCHAR *max_data) {
-	addString(data, max_data, TEXT("sum("));
-  argument->toString(data, max_data);
-  addTchar(data, max_data, L',');
-	var->toString(data, max_data);
-	addTchar(data, max_data, L',');
-  debut->toString(data, max_data);
-	addTchar(data, max_data, L',');
-  fin->toString(data, max_data);
-	addTchar(data, max_data, L',');
-  step->toString(data, max_data);
-	addTchar(data, max_data, L')');
-	return data;
+void Variable::toString(StringRendering &s) {
+  s << nom;
 }
 
-TCHAR *ProduitMultiple::toString(TCHAR* &data, TCHAR *max_data) {
-	addString(data, max_data, TEXT("prod("));
-	argument->toString(data, max_data);
-	addTchar(data, max_data, L',');
-	var->toString(data, max_data);
-	addTchar(data, max_data, L',');
-  debut->toString(data, max_data);
-	addTchar(data, max_data, L',');
-  fin->toString(data, max_data);
-	addTchar(data, max_data, L',');
-  step->toString(data, max_data);
-	addTchar(data, max_data, L')');
-	return data;
+void FunctionMultiple::toString_multiple(StringRendering s, TCHAR* function_name) {
+  if(s.type() == OPENOFFICE3_TYPE) {
+    s << function_name << TEXT(" from {");
+    s << var << TEXT("=") << debut;
+    if(!(step->isConstant() && step->evalFast().real() == 1 && step->evalFast().imag() == 0)) {
+      s << var << TEXT("+=") << step;
+    }
+    s << TEXT("} to {");
+    s << fin;
+    s << TEXT("} {");
+    s << argument;
+    s << TEXT("}");
+    return;
+  }
+	s << function_name;
+  s << TEXT('(');
+    s << argument;
+  s << TEXT(',');
+	  s << var;
+	s << TEXT(',');
+    s << debut;
+	s << TEXT(',');
+    s << fin;
+	s << TEXT(',');
+    s << step;
+	s << TEXT(')');
 }
 
-TCHAR *CompositionMultiple::toString(TCHAR* &data, TCHAR *max_data) {
-	addString(data, max_data, TEXT("comp("));
-	data = argument->toString(data, max_data);
-	addTchar(data, max_data, L',');
-	data = var->toString(data, max_data);
-	addTchar(data, max_data, L',');
-  data = debut->toString(data, max_data);
-	addTchar(data, max_data, L',');
-  data = fin->toString(data, max_data);
-	addTchar(data, max_data, L')');
-  return data;
+void SommeMultiple::toString(StringRendering &s) {
+  //sum from{i=1} to{3} {}
+  if(s.type() == OPENOFFICE3_TYPE)
+    toString_multiple(s, TEXT("sum"));
+  else
+    toString_multiple(s, TEXT("sum"));
+}
+
+void ProduitMultiple::toString(StringRendering &s) {
+  if(s.type() == OPENOFFICE3_TYPE)
+    toString_multiple(s, TEXT("prod"));
+  else
+    toString_multiple(s, TEXT("prod"));
+}
+
+//Open Office model?
+void CompositionMultiple::toString(StringRendering &s) {
+	s << TEXT("comp");
+  s << TEXT('(');
+    s << argument;
+	s << TEXT(',');
+	  s << var;
+	s << TEXT(',');
+    s << debut;
+	s << TEXT(',');
+    s << fin;
+	s << TEXT(')');
+}
+
+StringRendering::StringRendering(TCHAR* const data_, TCHAR* const max_data_):
+  data(data_), max_data(max_data_)
+ {
+}
+
+bool StringRendering::notReachedEnd() {
+  return data != max_data;
+}
+
+StringRendering& StringRendering::operator<<(Function* const f) {
+  if(f) f->toString(*this);
+  return *this;
+}
+
+StringRendering& StringRendering::operator<<(TCHAR tch) {
+  std::cout << tch << std::endl;
+  if(notReachedEnd()) {
+    *(data++) = tch;
+  }
+  return *this;
+}
+
+StringRendering& StringRendering::operator<<(TCHAR* str) {
+  size_t required_tchars = _tcslen(str);
+  while(required_tchars > 0) {
+    *this << *(str++);
+    required_tchars--;
+  }
+  return *this;
+}
+
+StringRendering& StringRendering::operator<<(int number) {
+  TCHAR number_string[256];
+	_stprintf_s(number_string, TEXT("%d"), number);
+  *this << number_string;
+  return *this;
+}
+StringRendering& StringRendering::operator<<(double number) {
+  TCHAR number_string[256];
+	_stprintf_s(number_string, TEXT("%g"), number);
+  *this << number_string;
+  return *this;
+}
+
+StringRenderingOpenOffice::StringRenderingOpenOffice(
+  TCHAR* const data, TCHAR* const max_data):
+    StringRendering(data, max_data) {
+}
+
+StringRendering& StringRenderingOpenOffice::operator<<(Function* const f) {
+  StringRendering::operator <<(f);
+  return *this;
+}
+
+StringRendering& StringRenderingOpenOffice::operator<<(TCHAR tch) {
+  if(notReachedEnd()) {
+    if(tch == TEXT('(')) {
+      StringRendering::operator<< (TEXT(" left ("));
+    } else if(tch == TEXT(')')) {
+      StringRendering::operator<< (TEXT(" right )"));
+    } else {
+      *(data++) = tch;
+    }
+  }
+  return *this;
 }
 
