@@ -14,9 +14,16 @@
 #define FUNCTIONS_H
 #include "complex.h"
 class Variable;
+class StringRendering;
+
+enum STRING_TYPE {
+  DEFAULT_TYPE,
+  OPENOFFICE3_TYPE,
+};
 
 class Function {
 	public:
+
 		virtual bool isConstant() {return false;}
 		virtual bool isVariable() {return false;}
 		virtual Function* simplifie() {return this;}
@@ -24,18 +31,14 @@ class Function {
     //TODO: When all functions will have evalFast implemented,
     //      make this method abstract
     virtual cplx evalFast()=0;
-		virtual TCHAR *toString(TCHAR *&data, TCHAR *max_data)=0;
-    TCHAR *toStringConst(TCHAR* const data, TCHAR *max_data);
+		virtual void toString(StringRendering &s)=0;
+
+    TCHAR *toStringConst(TCHAR* const data, TCHAR *max_data, STRING_TYPE type=DEFAULT_TYPE);
 		virtual Function* kill()=0;	//Fonction récursive.
 		virtual int priorite()=0;
 		virtual ~Function() {}
 		Function() {}
 
-    // Static methods
-    static TCHAR* addString(TCHAR* &data, TCHAR *max_data, TCHAR* str);
-    static TCHAR* addTchar(TCHAR* &data, TCHAR *max_data, TCHAR tch);
-    static TCHAR* addInt(TCHAR* &data, TCHAR *max_data, int number);
-    static TCHAR* addDouble(TCHAR* &data, TCHAR *max_data, double number);
 };
 //La priorité est utilisée pour mettre des parenthèses dans la fonction toString().
 //si un argument a une priorité plus grande, pas la peine de le mettre en parenthèses.
@@ -63,7 +66,7 @@ public:
 	static void killf ();
 	cplx eval(cplx & z);
   cplx evalFast() {return current;}
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	Function* kill() { return NULL; }
 	int priorite() { return 10; }
 private:
@@ -79,7 +82,7 @@ public:
 	static void killf ();
 	cplx eval(cplx & z);
   cplx evalFast() {return Identity::current.real();}
-	virtual TCHAR *toString(TCHAR* &espace, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	Function* kill() { return NULL; }
 	int priorite() { return 10; }
 private:
@@ -95,7 +98,7 @@ public:
 	static void killf ();
 	cplx eval(cplx & z);
   cplx evalFast() {return Identity::current.imag();}
-	virtual TCHAR *toString(TCHAR* &espace, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	Function* kill() { return NULL; }
 	int priorite() { return 10; }
 private:
@@ -111,7 +114,7 @@ public:
 	virtual Function* kill();
 	void setArgument(Function* theArgument);
 	virtual Function* simplifie();
-  TCHAR* toString_name(TCHAR* &data, TCHAR* max_data, TCHAR* function_name, bool parenthesis = true);
+  void toString_name(StringRendering &s, TCHAR* function_name, bool parenthesis = true);
 	bool simplifieArgFunctionUnary();
 };
 
@@ -124,7 +127,7 @@ public:
 	virtual Function* kill();
 	void setArgument2(Function* theArgument2);
 	virtual Function* simplifie();
-  TCHAR* toString_symbol(TCHAR* &data, TCHAR *max_data, TCHAR symbol);
+  void toString_symbol(StringRendering &s, TCHAR *symbol);
 	bool simplifieArgFunctionBinary();
 };
 
@@ -133,7 +136,7 @@ public:
 	Somme(Function* argument, Function* argument2):FunctionBinary(argument, argument2){}
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 1;}
 };
 
@@ -142,7 +145,7 @@ public:
 	Multiplication(Function* argument, Function* argument2):FunctionBinary(argument, argument2){}
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 3;}
 };
 
@@ -151,7 +154,7 @@ public:
 	Soustraction(Function* argument, Function* argument2):FunctionBinary(argument, argument2){}
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 2;}
 };
 
@@ -160,7 +163,7 @@ public:
 	Division(Function* argument, Function* argument2):FunctionBinary(argument, argument2){}
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 4;}
 };
 
@@ -170,7 +173,7 @@ public:
 	virtual Function *simplifie();
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -179,7 +182,7 @@ public:
 	ExposantComplexe(Function* argument, Function* argument2):FunctionBinary(argument, argument2) {}
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 5;}
 };
 
@@ -189,7 +192,7 @@ public:
 	int exposant;
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 5;}
 };
 
@@ -199,7 +202,7 @@ public:
 	int nbCompose;
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -216,7 +219,7 @@ public:
 	Function* kill() { delete this; return NULL; }
 	cplx eval(cplx & z) {return valeur;}
   cplx evalFast() {return valeur;}
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 10;}
 };
 
@@ -225,7 +228,7 @@ public:
 	Oppose(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx &z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -234,7 +237,7 @@ public:
 	Sin(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -244,7 +247,7 @@ public:
 	Cos(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -253,7 +256,7 @@ public:
 	Tan(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -262,7 +265,7 @@ public:
 	Exp(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -271,7 +274,7 @@ public:
 	Sinh(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -280,7 +283,7 @@ public:
 	Cosh(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -289,7 +292,7 @@ public:
 	Tanh(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -298,7 +301,7 @@ public:
 	Ln(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -307,7 +310,7 @@ public:
 	Sqrt(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -316,7 +319,7 @@ public:
 	Argsh(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -325,7 +328,7 @@ public:
 	Argch(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -334,7 +337,7 @@ public:
 	Argth(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -343,7 +346,7 @@ public:
 	Arcsin(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -352,7 +355,7 @@ public:
 	Arccos(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -361,7 +364,7 @@ public:
 	Arctan(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -370,7 +373,7 @@ public:
 	Real(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -379,7 +382,7 @@ public:
 	Imag(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -388,7 +391,7 @@ public:
 	Conj(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -397,7 +400,7 @@ public:
 	Circle(Function* argument):FunctionUnary(argument) {};
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -417,7 +420,7 @@ public:
 	bool isVariable() {return true;}
 	cplx eval(cplx & z) {return val;}
   cplx evalFast() {return val;}
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 10;}
 	Function* kill() { return NULL; }
 	void set(cplx & z) {val=z;}
@@ -437,6 +440,7 @@ public:
 	virtual ~FunctionMultiple();
 	virtual Function* kill();
 	virtual Function* simplifie();
+  void toString_multiple(StringRendering s, TCHAR* symbol);
 	bool simplifieArgFunctionMultiple();
 };
 
@@ -447,7 +451,7 @@ public:
 	SommeMultiple(Function* argument, Variable *theVar, Function* theDebut, Function* theFin);
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -457,7 +461,7 @@ public:
 	ProduitMultiple(Function* argument, Variable *theVar, Function* theDebut, Function* theFin);
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -468,7 +472,7 @@ public:
 	CompositionMultiple(Function* argument, Variable *theVar, Function* theDebut, Function* theFin);
 	cplx eval(cplx & z);
   cplx evalFast();
-	virtual TCHAR *toString(TCHAR* &data, TCHAR *max_data);
+	virtual void toString(StringRendering &s);
 	int priorite() {return 6;}
 };
 
@@ -487,4 +491,30 @@ public:
 	//If the variable doesn't exist, it is created.
 	Variable* getVariable(TCHAR* nom);
 };
+
+class StringRendering {
+public:
+  TCHAR* data;
+  const TCHAR* max_data;
+
+  StringRendering(TCHAR* const data, TCHAR* const max_data);
+  bool notReachedEnd();
+  virtual StringRendering& operator<<(Function *const f);
+  virtual StringRendering& operator<<(TCHAR tch);
+  virtual StringRendering& operator<<(TCHAR* tch);
+  virtual StringRendering& operator<<(int number);
+  virtual StringRendering& operator<<(double number);
+  virtual STRING_TYPE type() { return DEFAULT_TYPE; }
+};
+
+class StringRenderingOpenOffice:public StringRendering {
+public:
+  StringRenderingOpenOffice(TCHAR* const data, TCHAR* const max_data);
+
+  /// Override
+  StringRendering& operator<<(Function *const f);
+  StringRendering& operator<<(TCHAR tch);
+  STRING_TYPE type() { return OPENOFFICE3_TYPE; }
+};
+
 #endif
