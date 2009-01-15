@@ -174,8 +174,25 @@ Func reflexFileNameFromComment($formula_comment, $formula_filename, $reflex_exte
   Return IniReadSaveBox('reflexFile', '')
 EndFunc
 
-Func BaseFileName($longFileName)
+Func FileBaseName($longFileName)
   Return StringRegExpReplace($longFileName, ".*\\", "")
+EndFunc
+
+Func FileFolder($longFileName)
+  Return StringLeft($longFileName, StringLen($longFileName) - StringLen(FileBaseName($longFileName)))
+EndFunc
+
+Func FileReplaceContent($file_name, $file_name_after, $to_search, $to_replace)
+  $fi = FileOpen($file_name, 0)
+  $fo = FileOpen($file_name_after&"_tmp", 2)
+  While True
+    $l = FileReadLine($fi)
+    If @error <> 0 Then ExitLoop
+    FileWriteLine($fo, StringReplace($l, $to_search, $to_replace))
+  WEnd
+  FileClose($fi)
+  FileClose($fo)
+  FileMove($file_name_after&"_tmp", $file_name_after, 1)
 EndFunc
 
 Func ImageConvert($previous_image, $after_image)
@@ -264,6 +281,7 @@ Func complex_calculate($expr)
   While True
     $text = StdoutRead($p)
     If @error Then ExitLoop
+    ;BUG / TODO: Error if the std output is truncated.
     $lines = StringSplit($text, @CRLF, 1)
     For $i = 1 To $lines[0]
       $current_line = $lines[$i]

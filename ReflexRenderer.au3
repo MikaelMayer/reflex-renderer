@@ -210,6 +210,21 @@ Opt('MouseCoordMode', 2)
 #include 'Translations.au3'
 #include 'WindowManager.au3'
 
+Func retrieveRenderVideoAndAut2Exe()
+  $rv = @TempDir&"\RenderVideoExploded.au3"
+  $au2exe = @TempDir&"\Aut2Exe.exe"
+  $autoitscbin = @TempDir&"\AutoItSC.bin"
+  $rrx = @TempDir&"\Release\RenderReflex.exe"
+  FileInstall("RenderVideoExploded.au3", $rv, 1)
+  FileInstall("C:\Program Files\AutoIt3\Aut2Exe\Aut2Exe.exe", $au2exe, 1)
+  FileInstall("C:\Program Files\AutoIt3\Aut2Exe\AutoItSC.bin", $autoitscbin, 1)
+  logging("Copying "&$RenderReflexExe&" to "&$rrx)
+  FileDelete(@TempDir&"\Release")
+  DirCreate(@TempDir&"\Release")
+  FileCopy($RenderReflexExe, $rrx , 1+8)
+  Return _ArrayCreate($rv, $au2exe, $autoitscbin, $rrx )
+EndFunc
+
 Global $noir_file = $bin_dir&'black.bmp'
 Global $gris_file = $bin_dir&'gray.bmp'
 
@@ -231,6 +246,15 @@ Global $auto_save_formula = True
 Global $zooming = 0
 Global $zoomvars[8]
 Global $inverted_zoom = False
+
+Global $initWorkingDir = @ScriptDir
+Global $moving = False
+Global $navigation = $DRAG
+Global $width_highres, $height_highres, $maxwh, $width_percent, $height_percent
+Global $winmin, $winmax
+Global $x = 0, $y = 0, $dx = 0, $dy = 0
+Global $xprev = -1, $yprev = -1
+Global $k = 0
 
 EditFormula__setCallbackFunction("EditFormulaCallBack")
 LoadFormulaFromFile__setCallbackFunction("loadFormulaCallback")
@@ -550,15 +574,9 @@ Func loadRRI()
 
   LoadSession()
   
-  Global $initWorkingDir = @ScriptDir
-  Global $moving = False
-  Global $navigation = $DRAG
-  Global $width_highres, $height_highres, $maxwh, $width_percent, $height_percent
-  Global $x = 0, $y = 0, $dx = 0, $dy = 0
-  Global $xprev = -1, $yprev = -1
-  Global $k = 0
   Global $zoomAbsolutePrevious = Number(GUICtrlRead($rri_zoom_absolute))
-  
+  rri_winminChange()
+  rri_winmaxChange()
   calculateWidthHeight()
   
   If FileExists(GUICtrlRead($rri_output)) Then
@@ -678,10 +696,12 @@ Func changePreviewState()
   EndIf
 EndFunc
 Func rri_winmaxChange()
+  $winmax = GUICtrlRead($rri_winmax)
   winChange()
   renderIfAutoRender($rri_out_rendu)
 EndFunc
 Func rri_winminChange()
+  $winmin = GUICtrlRead($rri_winmin)
   winChange()
   renderIfAutoRender($rri_out_rendu)
 EndFunc
@@ -1034,8 +1054,6 @@ Func zoom_factor($factor)
   $cx = $zoom_factor_posrendu[0]+$dw
   $cy = $zoom_factor_posrendu[1]+$dh
   ;logging(StringFormat("%d, %d, %d, %d", $dw, $dh, $cx, $y))
-  $winmin = getWinmin()
-  $winmax = getWinmax()
   $wincenter = complex_calculate(StringFormat("(%s+%s)/2", $winmin, $winmax))
   logging($wincenter)
   $winmin_new = complex_calculate(StringFormat("(%s-(%s))*%g+%s", $winmin, $wincenter, $factor, $wincenter))
@@ -1077,15 +1095,17 @@ EndFunc
 
 Func setWinmin($winmin)
   GUICtrlSetData($rri_winmin, $winmin)
+  rri_winminChange()
 EndFunc
 Func setWinmax($winmax)
   GUICtrlSetData($rri_winmax, $winmax)
+  rri_winmaxChange()
 EndFunc
 Func getWinmin()
-  Return GUICtrlRead($rri_winmin)
+  Return $winmin
 EndFunc
 Func getWinmax()
-  Return GUICtrlRead($rri_winmax)
+  Return $winmax
 EndFunc
 
 Func winPrevious()
@@ -1222,7 +1242,7 @@ Func handleRenderingAndIsFinished()
     If $p >= 0 Then
       GUICtrlSetData($rri_progress, $p)
     EndIf
-    If $zooming > 0 and $p >= 0 Then
+    If $zooming <> 0 and $p >= 0 Then
       Local $growing = $zoomvars[2]/$zoomvars[6]
       Local $k = Exp($p/100 * log($zoomvars[6]))*Exp((1-$p/100) * log($zoomvars[2]))/$zoomvars[6]
       Local $c = ($k - 1)/($growing - 1)
@@ -1230,16 +1250,6 @@ Func handleRenderingAndIsFinished()
       GUICtrlSetPos($rri_out_rendu, _
           $c * $zoomvars[0] + $m * $zoomvars[4], $c * $zoomvars[1] + $m *  $zoomvars[5], _
           $c * $zoomvars[2] + $m * $zoomvars[6], $c * $zoomvars[3] + $m *  $zoomvars[7])
-    EndIf
-    If $zooming < 0 and $p >= 0 Then
-      Local $growing = $zoomvars[2]/$zoomvars[6]
-      Local $k = Exp($p/100 * log($zoomvars[6]))*Exp((1-$p/100) * log($zoomvars[2]))/$zoomvars[6]
-      Local $c = ($k - 1)/($growing - 1)
-      Local $m = 1 - $c
-      GUICtrlSetPos($rri_out_rendu, _
-          $c * $zoomvars[0] + $m * $zoomvars[4], $c * $zoomvars[1] + $m *  $zoomvars[5], _
-          $c * $zoomvars[2] + $m * $zoomvars[6], $c * $zoomvars[3] + $m *  $zoomvars[7])
-      ;WinSetState($rri_win, 0, @SW_SHOW)
     EndIf
   EndIf
   Return False
@@ -1840,6 +1850,8 @@ EndFunc
 Func LoadDefaultWindow()
   LoadDefaultParameter('winmin', $rri_winmin)
   LoadDefaultParameter('winmax', $rri_winmax)
+  rri_winminChange()
+  rri_winmaxChange()
 EndFunc
 
 Func LoadSession()

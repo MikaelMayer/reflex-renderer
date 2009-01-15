@@ -10,6 +10,12 @@
 
 
 Wish list:
+- Which frames we are rendering?
+- Remaining time + finish time
+
+- Custom button language
+- Cancel button while rendering
+- Output errors if there are some and stop to render the script.
 - Align the "=" signs in the config file
 
 #ce ----------------------------------------------------------------------------
@@ -22,9 +28,10 @@ Wish list:
 #include "RenderVideoIniConfig.au3"
 #include <Math.au3>
 
-$RenderReflexExe = "RenderReflex.exe"
+$RenderReflexExe = "RenderReflex.exe";@TempDir&"\RenderReflex.exe"
 
 FileInstall("Release\RenderReflex.exe", $RenderReflexExe, 1)
+
 Func OnAutoItExit()
   FileDelete($RenderReflexExe)
 EndFunc
@@ -33,8 +40,8 @@ Global Enum $INI_N_VARNAME, $INI_N_SECTION, $INI_N_SECTIONVAR, $INI_N_DEFAULT
 Global Const $TOCALCULATE_STRING = "TOCALC"
 Global Const $WAIT_CYCLE = 250
 
-;Global $ini_file = getIniFile()
-Global $ini_file = "C:\Documents and Settings\Mikaël\Mes documents\Mes images\Reflex\Videos\TestI\Test1.ini"
+Global $ini_file = getIniFile()
+;Global $ini_file = "C:\Documents and Settings\Mikaël\Mes documents\Mes images\Reflex\Videos\TestI\Test1.ini"
 Global $total_of_frames = 0 ; Set up in ConvertAndCheckEverything()
 
 Global $ini_video_parameters = emptySizedArray()
@@ -47,7 +54,7 @@ push($ini_video_parameters, _ArrayCreate("video_lastframe", $INI_VIDEO, $INI_VID
 push($ini_video_parameters, _ArrayCreate("video_numframes", $INI_VIDEO, $INI_VIDEO_NUMFRAMES, $TOCALCULATE_STRING))
 push($ini_video_parameters, _ArrayCreate("video_framestorender", $INI_VIDEO, $INI_VIDEO_RENDEREDFRAMES, $TOCALCULATE_STRING))
 
-push($ini_video_parameters, _ArrayCreate("video_inclastframe", $INI_VIDEO, $INI_VIDEO_INCLASTFRAME, "TRUE"))
+push($ini_video_parameters, _ArrayCreate("video_inclastframe", $INI_VIDEO, $INI_VIDEO_INCLASTFRAME, "1"))
 push($ini_video_parameters, _ArrayCreate("video_output_model", $INI_VIDEO, $INI_VIDEO_OUTPUT_MODEL, ""))
 push($ini_video_parameters, _ArrayCreate("video_output_type", $INI_VIDEO, $INI_VIDEO_OUTPUT_TYPE, ""))
 
@@ -81,7 +88,7 @@ Func RenderVideo()
   $maintext = "Rendering video " 
   $subtext = "Rendering video, please wait."
   
-  ProgressOn($maintext, $subtext )
+  ProgressOn($maintext, $maintext, $subtext, Default, Default, 16)
   ProgressSet(0)
   
   While Not ($list_frames_to_render = "" and size($thread_pid) = 0)
@@ -234,13 +241,13 @@ Func AssignVideoParameters($ini_file, $ini_video_parameters)
     $value = IniRead($ini_file, $section, $sectionvar, $default)
     ;logging("new value:"&$value)
     If $value == "" Then
-      push($errors, "Missing required field "&$section&">"&$sectionvar&" in "&BaseFileName($ini_file))
+      push($errors, "Missing required field "&$section&">"&$sectionvar&" in "&FileBaseName($ini_file))
     EndIf
     Assign($varname, $value, 2)
   Next
   If size($errors)>0 Then
     toBasicArray($errors)
-    MsgBox(0, "Errors while generating", _ArrayToString($errors, @CRLF))
+    MsgBox(0, "Errors while generating", _ArrayToString($errors, @CRLF)&@CRLF&@CRLF&"If you remove this ini file, this programm will automatically generate a new correct one.")
     Return False
   EndIf
   Return True
@@ -362,8 +369,18 @@ Func getIniFile()
     ;TODO:Find itself the first ini file in this directory
     $search = FileFindFirstFile("*.ini")
     $default = FileFindNextFile($search)
+    If @error <> 0 Then
+      FileInstall("___INI_VIDEO_FULLFILE___", "___INI_VIDEO_FILE_BASENAME___")
+      Return "___INI_VIDEO_FILE_BASENAME___" ; No file terminating with *.ini, so we install the one that we contains
+    Else
+      FileFindNextFile($search)
+      If @error <> 0 Then ; Only one file, we take it without asking.
+        Return $default
+      EndIf
+    EndIf
     FileClose($search)
     $result = FileOpenDialog("Render Video ini file", @ScriptDir, "ini file (*.ini)|All files (*.*)", 1, $default)
+    FileChangeDir(@SCriptDir)
     If @error = 1 Then Exit
     FileChangeDir(@ScriptDir)
     $ini_file = $result

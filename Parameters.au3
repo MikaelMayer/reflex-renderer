@@ -30,7 +30,7 @@ push($Global_Parameters, _ArrayCreate("history_formula_filename",$PARAM_STRING, 
 GetParameters()
 AssignParameters()
 
-Global $RenderReflexExe = $bin_dir&"\RenderReflex.exe"
+Global $RenderReflexExe = $bin_dir&"RenderReflex.exe"
 
 ;Open ini file and read it.
 Func GetParameters()

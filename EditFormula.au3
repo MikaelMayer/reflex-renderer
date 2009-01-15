@@ -500,6 +500,7 @@ EndFunc
 
 Variables__setUpdateFunction("ID_DRAWClick")
 Func ID_DRAWClick($history_save = True)
+  If Not IsDeclared($history_save) Then $history_save = True
   $result_formula  = EditFormula__getFormulaText()
   
   $result_seed = GUICtrlRead($IDC_F_SEED)

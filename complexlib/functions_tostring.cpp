@@ -32,8 +32,8 @@ void FunctionUnary::toString_name(StringRendering &s,
     s << function_name << argument;
 }
 
-void FunctionBinary::toString_symbol(StringRendering &s, TCHAR* symbol) {
-  if(argument->priorite() < priorite()) {
+void FunctionBinary::toString_symbol(StringRendering &s, TCHAR* symbol, bool parentheses_possibles) {
+  if(argument->priorite() < priorite() && parentheses_possibles) {
     s << TEXT('(') << argument << TEXT(')');
   } else if(s.type() == OPENOFFICE3_TYPE) {
     s << TEXT('{') << argument << TEXT('}');
@@ -80,7 +80,7 @@ void Multiplication::toString(StringRendering &s) {
 
 void Division::toString(StringRendering &s) {
   if(s.type() == OPENOFFICE3_TYPE)
-  	toString_symbol(s, TEXT(" over "));
+  	toString_symbol(s, TEXT(" over "), false);
   else
   	toString_symbol(s, TEXT("/"));
 }
@@ -106,9 +106,14 @@ void CompositionRecursive::toString(StringRendering &s) {
 
 
 void Exposant::toString(StringRendering &s) {
-  s << TEXT('(');
-	  s << argument;
-  s << TEXT(')') << TEXT('^') << exposant;
+  if(argument->priorite() > priorite()) {
+	    s << argument;
+  } else {
+    s << TEXT('(');
+	    s << argument;
+    s << TEXT(')')
+  }
+  s << TEXT('^') << exposant;
 }
 
 void Constante::toString(StringRendering &s) {

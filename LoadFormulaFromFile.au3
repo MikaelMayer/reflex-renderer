@@ -347,18 +347,17 @@ Func createFormulaEntry(ByRef $formula_items, $tree_control)
 EndFunc
 
 Func lookForFormulaFile()
-	$fullpath = UpdateMyDocuments(IniReadSavebox('formulaFile', ''))
+  $fullpath = UpdateMyDocuments(IniReadSavebox('formulaFile', ''))
   $fullpath = FileOpenDialog($Formula_File, '', $Formula_file____txt__All______, 1+2, $fullpath)
   FileChangeDir(@ScriptDir)
   return $fullpath
 EndFunc
 
 Func lookForReflexFile()
-	;TODO: put something else
-	$fullpath = UpdateMyDocuments(IniReadSavebox('formulaFile', ''))
+  $fullpath = UpdateMyDocuments(IniReadSavebox('formulaFile', ''))
   $fullpath = FileOpenDialog($Jpeg_Reflex_File, '', $Jpeg_Reflex_File____jpg__All______, 1+2, $fullpath)
   FileChangeDir(@ScriptDir)
-	return $fullpath
+  return $fullpath
 EndFunc
 
 Func formula_chooserClose()
