@@ -23,6 +23,10 @@ $filescript6 = "EditFormula.au3"
 $filescript5 = "IniHandling.au3"
 $filescript7 = "translations.au3"
 $filescript8 = "JpegHandling.au3"
+$filescript9 = "RenderVideo.au3"
+$filescript10= "RenderVideoIniConfig.au3"
+
+$filescript9_exploded = "RenderVideoExploded.au3"
 
 $filebinout  = $folderout&"\ReflexRenderer.exe"
 $fileini     = "ReflexRenderer.ini"
@@ -45,6 +49,8 @@ _ArrayAdd($dependencies, $filescript5)
 _ArrayAdd($dependencies, $filescript6)
 _ArrayAdd($dependencies, $filescript7)
 _ArrayAdd($dependencies, $filescript8)
+_ArrayAdd($dependencies, $filescript9)
+_ArrayAdd($dependencies, $filescript10)
 ;_ArrayAdd($dependencies, $filetrad)
 ;_ArrayAdd($dependencies, $filetrad_en)
 _ArrayAdd($dependencies, $fileini)
@@ -78,6 +84,8 @@ assertAllFilesExist($dependencies)
 If Not FileExists($folderout) Then
   DirCreate($folderout)
 EndIf
+
+ShellExecute("ExplodeIncludes.au3"); Creates RenderVideoExploded.au3
 
 $Aut2Exe = StringReplace(@AutoItExe, "AutoIt3.exe", "Aut2Exe\Aut2Exe.exe")
 $cmd = StringFormat('%s /in "%s" /out "%s" /icon "%s" /nopack', $Aut2Exe, @ScriptDir&'\'&$filescript1, @ScriptDir&'\'&$filebinout, @ScriptDir&'\'&$fileico)

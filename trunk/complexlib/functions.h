@@ -43,11 +43,11 @@ class Function {
 //La priorité est utilisée pour mettre des parenthèses dans la fonction toString().
 //si un argument a une priorité plus grande, pas la peine de le mettre en parenthèses.
 //Sinon, parenthèses obligatoire.
-//+ a une priorité de 1
-//- a une priorité de 2
-//* a une priorité de 3
-/// a une priorité de 4
-//^ a une priorité de 5
+// + a une priorité de 1
+// - a une priorité de 2
+// * a une priorité de 3
+// / a une priorité de 4
+// ^ a une priorité de 5
 //sin a une priorité de 6 comme les autres fonctions.
 //Les variables et constantes ont une priorité de 10 (pas besoin de parenthèses).
 //Les constantes se mettent automatiquement des parenthèses.
@@ -127,7 +127,7 @@ public:
 	virtual Function* kill();
 	void setArgument2(Function* theArgument2);
 	virtual Function* simplifie();
-  void toString_symbol(StringRendering &s, TCHAR *symbol);
+  void toString_symbol(StringRendering &s, TCHAR *symbol, , bool parentheses_possibles=true);
 	bool simplifieArgFunctionBinary();
 };
 
@@ -229,7 +229,7 @@ public:
 	cplx eval(cplx &z);
   cplx evalFast();
 	virtual void toString(StringRendering &s);
-	int priorite() {return 6;}
+	int priorite() {return 0;}
 };
 
 class Sin:public FunctionUnary {

@@ -11,6 +11,7 @@
 #include "Translations.au3"
 #include "GlobalUtils.au3"
 #include "WindowManager.au3"
+#include "RenderingBox.au3"
 #include <GuiConstants.au3>
 
 Global $vm_variable_windows = emptySizedArray(), $Variables__update_function = ""
@@ -85,19 +86,6 @@ Func VariableManager__setCurrentVariable($win_handle)
     EndIf
   Next
 EndFunc
-
-;$string = "$xy, $x1, $x+, $x"
-;logging(replaceVariableString($string, "$x", "1-3i"))
-
-;GenerateVariableWindow()
-;AnimateFromLeft($vaw_window)
-;GUISetState(@SW_SHOW)
-#comments-start
-GenerateVariableWindow()
-AnimateFromLeft($vaw_window)
-GUISetState(@SW_SHOW)
-Sleep(10000)
-#comments-end
 
 Func Variables__setParentWindow($win_handle)
   $VARIABLES_PARENT = $win_handle
@@ -274,29 +262,38 @@ Func vaw_multiply_range($coef)
   GUICtrlSetData($vaw_varmax, $newmax)
   vaw_update_slider($newmin, $newmax, GUICtrlRead($vaw_varcurrent))
 EndFunc
+
 Func vaw_increase_rangeClick()
   vaw_multiply_range(2)
 EndFunc
+
 Func vaw_decrease_rangeClick()
   vaw_multiply_range(0.5)
 EndFunc
 
 Func vaw_renderClick()
   loadVariable()
-  $formula = EditFormula__getFormulaText()
+  Local $formula = EditFormula__getFormulaText()
   $formula = Variables__updateString($formula, GUICtrlRead($vaw_varname))
-  MsgBox(0, "Sorry", "Feature not available for the moment... coming soon!"&@CRLF&$formula)
+  Local $varname = GUICtrlRead($vaw_varname)
+  Local $varmin = GUICtrlRead($vaw_varmin)
+  Local $varmax = GUICtrlRead($vaw_varmax)
+  RenderingBox__create($formula, $varname, $varmin, $varmax)
+  ;MsgBox(0, "Sorry", "Feature not available for the moment... coming soon!"&@CRLF&$formula)
 EndFunc
+
 Func vaw_set_maxClick()
   loadVariable()
   GUICtrlSetData($vaw_varmax, GUICtrlRead($vaw_varcurrent))
   vaw_update_slider_raw()
 EndFunc
+
 Func vaw_set_minClick()
   loadVariable()
   GUICtrlSetData($vaw_varmin, GUICtrlRead($vaw_varcurrent))
   vaw_update_slider_raw()
 EndFunc
+
 Func vaw_sliderChange()
   loadVariable()
   Local $part = (GUICtrlRead($vaw_slider)-$vaw_slidermin)/($vaw_slidermax - $vaw_slidermin)
