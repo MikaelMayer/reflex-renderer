@@ -16,7 +16,7 @@ Translations.
 #include "GlobalUtils.au3"
 #include "RenderVideoIniConfig.au3"
 #include <GUIConstants.au3>
-#include <WindowsConstants.au3>
+;#include <WindowsConstants.au3>
 #include <StaticConstants.au3>
 #include <EditConstants.au3>
 

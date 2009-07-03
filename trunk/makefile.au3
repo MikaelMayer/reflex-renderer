@@ -11,9 +11,9 @@
 #include <Array.au3>
 #include "GlobalUtils.au3"
 
-$zip_file = "Versions\ReflexRendererv2.8.0beta.zip"
+$zip_file = "Versions\ReflexRendererv"&$VERSION_NUMER&".zip"
 
-$folderout = "Versions\ReflexRendererv2.8.0beta"
+$folderout = "Versions\ReflexRendererv"&$VERSION_NUMER
 
 $filescript1 = "ReflexRenderer.au3"
 $filescript2 = "LoadFormulaFromFile.au3"

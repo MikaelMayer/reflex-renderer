@@ -127,7 +127,7 @@ public:
 	virtual Function* kill();
 	void setArgument2(Function* theArgument2);
 	virtual Function* simplifie();
-  void toString_symbol(StringRendering &s, TCHAR *symbol, , bool parentheses_possibles=true);
+  void toString_symbol(StringRendering &s, TCHAR *symbol, bool parentheses_possibles=true);
 	bool simplifieArgFunctionBinary();
 };
 

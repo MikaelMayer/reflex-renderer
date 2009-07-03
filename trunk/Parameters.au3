@@ -15,6 +15,8 @@
 Global $Global_Parameters = emptySizedArray()
 Global Enum $PARAM_STRING, $PARAM_DROPDOWN, $PARAM_BOOL, $PARAM_INT
 Global Enum $N_PARAM_VANAME, $N_PARAM_TYPE, $N_PARAM_DEFAULTVALUE, $N_PARAM_PRIORITY ; Priority to determine (for useless properties for example)
+; Serves to disregard warnings
+Global $lang_folder, $bin_dir, $color_out_zooming_box, $color_in_zooming_box, $history_formula_filename, $color_NaN_complex, $animated_zoom, $threshold_zoom_drag, $history_formula_filename
 
 push($Global_Parameters, _ArrayCreate("lang_folder",            $PARAM_STRING,      "lang"))
 push($Global_Parameters, _ArrayCreate("bin_dir",                $PARAM_STRING,      @ScriptDir&'\Release\'))

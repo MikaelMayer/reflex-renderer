@@ -111,26 +111,26 @@ Func _DllCallBack($sFunction, $sParameters = "", Const $nOptions = 0)
 		$pSendMessage = DllCall("kernel32.dll", "ptr", "GetProcAddress", "ptr", $gh_DllCallBack_hUser32, "str", "SendMessage")
 		If @error Then Return SetError(3, 0, 0)
 		If $pSendMessage[0] = 0 Then
-			If @Unicode Then
+			;If @Unicode Then
 				$pSendMessage = DllCall("kernel32.dll", "ptr", "GetProcAddress", "ptr", $gh_DllCallBack_hUser32, "str", "SendMessageW")
 				If @error Then Return SetError(3, 0, 0)
-			Else
-				$pSendMessage = DllCall("kernel32.dll", "ptr", "GetProcAddress", "ptr", $gh_DllCallBack_hUser32, "str", "SendMessageA")
-				If @error Then Return SetError(3, 0, 0)
-			EndIf
+			;Else
+			;	$pSendMessage = DllCall("kernel32.dll", "ptr", "GetProcAddress", "ptr", $gh_DllCallBack_hUser32, "str", "SendMessageA")
+			;	If @error Then Return SetError(3, 0, 0)
+			;EndIf
 		EndIf
 		If $pSendMessage[0] = 0 Then Return SetError(3, 0, 0)
 		$gp_DllCallBack_SendMessage = $pSendMessage[0]
 		$pCallWindowProc = DllCall("kernel32.dll", "ptr", "GetProcAddress", "ptr", $gh_DllCallBack_hUser32, "str", "CallWindowProc")
 		If @error Then Return SetError(3, 0, 0)
 		If $pCallWindowProc[0] = 0 Then
-			If @Unicode Then
+			;If @Unicode Then
 				$pCallWindowProc = DllCall("kernel32.dll", "ptr", "GetProcAddress", "ptr", $gh_DllCallBack_hUser32, "str", "CallWindowProcW")
 				If @error Then Return SetError(3, 0, 0)
-			Else
-				$pCallWindowProc = DllCall("kernel32.dll", "ptr", "GetProcAddress", "ptr", $gh_DllCallBack_hUser32, "str", "CallWindowProcA")
-				If @error Then Return SetError(3, 0, 0)
-			EndIf
+			;Else
+			;	$pCallWindowProc = DllCall("kernel32.dll", "ptr", "GetProcAddress", "ptr", $gh_DllCallBack_hUser32, "str", "CallWindowProcA")
+			;	If @error Then Return SetError(3, 0, 0)
+			;EndIf
 		EndIf
 		If $pCallWindowProc[0] = 0 Then Return SetError(3, 0, 0)
 		$gp_DllCallBack_CallWindowProc = $pCallWindowProc[0]

@@ -8,6 +8,7 @@
     Defines the interface for *.ini files to render a video.
 
 #ce ----------------------------------------------------------------------------
+#include-once
 
 Global $INI_VIDEO               = "Video"
 Global $INI_IMAGE               = "Image"

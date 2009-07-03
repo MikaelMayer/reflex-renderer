@@ -20,7 +20,8 @@ Global $interfacesToUpdate = _ArrayCreate( _
  _ArrayCreate("ReflexRendererFormulaList.kxf", "LoadFormulaFromFile.au3", True), _
  _ArrayCreate("ReflexRendererSaveBox.kxf",     "SaveBox.au3",             True), _
  _ArrayCreate("ReflexRendererAboutBox.kxf",    "AboutBox.au3",            True), _
- _ArrayCreate("ReflexRendererVariables.kxf",   "Variables.au3",           True) _
+ _ArrayCreate("ReflexRendererVariables.kxf",   "Variables.au3",           True), _
+ _ArrayCreate("ReflexRendererTutorial.kxf",    "Tutorial.au3",            True) _
 )
 
 ;updateInterfaces()
@@ -67,24 +68,28 @@ While True
         WinWaitActive("Koda","")
         WinWaitClose("Koda")
         updateFile($pp)
-        updateTraductions()
+        updateTraductions($pp[1])
       EndIf
       $i += 1
     Next
     $i = 0
-    for $ctrl in $interfacesUpdate
+    For $ctrl in $interfacesUpdate
       if $ctrl == $nMsg Then
         $pp = $interfacesToUpdate[$i]
         updateFile($pp)
-        updateTraductions()
+        updateTraductions($pp[1])
       EndIf
       $i += 1
     Next
   EndSwitch
 WEnd
 
-Func updateTraductions()
-	RunWait(@AutoItExe&' "'&@ScriptDir&'\GenerateLanguageFile2.au3"')
+Func updateTraductions($pp="")
+  If $pp=="" Then
+    RunWait(@AutoItExe&' "'&@ScriptDir&'\GenerateLanguageFile2.au3" ')
+  Else
+    RunWait(@AutoItExe&' "'&@ScriptDir&'\GenerateLanguageFile2.au3" '&$pp)
+  EndIf
 EndFunc
 
 Func updateInterfaces()
