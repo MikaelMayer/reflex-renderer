@@ -185,6 +185,16 @@ Func LoadTranslations()
   add($affectations, "__insert_var__", $gui_section, 'Insert variable', 'Insert variable')
   add($affectations, "__randomize_seed__", $gui_section, 'Randomize seed', 'Randomize seed')
   add($affectations, "__decrease_range__", $gui_section, 'Decrease range', 'Decrease range')
+  add($affectations, "__export_formula__", $gui_section, 'Export formula...', 'Export formula...')
+  add($affectations, "__formula_exported__", $gui_section, 'Formule exportée', 'Formule exportée')
+  add($affectations, "__formula_correctly_exported_to_clipboard__", $gui_section, 'La formule a été mise dans le presse-papier au format OpenOffice.', 'La formule a été mise dans le presse-papier au format OpenOffice.')
+  add($affectations, "__next__", $gui_section, 'Next', 'Next')
+  add($affectations, "__play__", $gui_section, 'Play', 'Play')
+  add($affectations, "__previous__", $gui_section, 'Previous', 'Previous')
+  add($affectations, "__stop__", $gui_section, 'Stop', 'Stop')
+  add($affectations, "__tutorial__", $gui_section, 'Reflex Renderer Tutorial', 'Reflex Renderer Tutorial')
+  add($affectations, "__tutorial_sections__", $gui_section, 'Tut1|Tut2|Tut3|Tut4|Tut5|Tut6|Tut7', 'Zooming|Navigation|Saving options|Discover the Reflex concept|Formula Editor|Browsing formulas|Video recording')
+  add($affectations, "__autoplay__", $gui_section, 'Autoplay', 'Autoplay')
   ;ADD_AFFECTATION
 
   If $updates and Not @Compiled Then

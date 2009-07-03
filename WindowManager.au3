@@ -81,7 +81,7 @@ EndFunc
 
 Func WindowManager__closeAll()
   While $wm_registered_windows[0] > 0
-    logging("State : "&toString($wm_registered_windows))
+    ;logging("State : "&toString($wm_registered_windows))
     $t = $wm_registered_windows[$wm_registered_windows[0]]
     Call($t[$N_WIN_CLOSE], $t[$N_WIN_HANDLE])
   WEnd
@@ -96,7 +96,7 @@ EndFunc
 
 Func _WindowManager__resizeOne($win_handle, $pos_before, $pos_after)    
     $pos_child = WinGetPos($win_handle)
-    
+    ;logging("Resize one:"&toString($pos_before)&";"&toString($pos_after)&";"&toString($pos_child))
     $pos_after_ltrb        = leftTopWithHeight_to_leftTopRightBottom($pos_after)
     $pos_before_ltrb = leftTopWithHeight_to_leftTopRightBottom($pos_before)
     $pos_child_ltrb     = leftTopWithHeight_to_leftTopRightBottom($pos_child)
@@ -150,6 +150,7 @@ Func WindowManager__loadAll()
   For $i = 1 To $windows_to_restore[0][0]
     _WindowManager__loadWindow($windows_to_restore[$i][0], $windows_to_restore[$i][1])
   Next
+  WinActivate($rri_win)
 EndFunc
 
 Func WindowManager__saveAll()

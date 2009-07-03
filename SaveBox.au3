@@ -244,7 +244,7 @@ Func sb_cancel_buttonClick()
 EndFunc
 
 Func sb_formula_commentChange()
-
+  sb_save_withClick()
 EndFunc
 
 Func sb_formula_filenameChange()
@@ -271,7 +271,7 @@ Func sb_open_formula_fileClick()
 EndFunc
 
 Func sb_reflex_extensionChange()
-
+  sb_save_withClick()
 EndFunc
 
 Func sb_reflex_filenameChange()

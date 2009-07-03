@@ -111,7 +111,7 @@ void Exposant::toString(StringRendering &s) {
   } else {
     s << TEXT('(');
 	    s << argument;
-    s << TEXT(')')
+    s << TEXT(')');
   }
   s << TEXT('^') << exposant;
 }
@@ -217,7 +217,11 @@ void Conj::toString(StringRendering &s) {
 }
 
 void Circle::toString(StringRendering &s) {
-	FunctionUnary::toString_name(s, TEXT("circle"));
+  if(s.type() == OPENOFFICE3_TYPE) {
+	  FunctionUnary::toString_name(s, TEXT("\"circle\""));
+  } else {
+    FunctionUnary::toString_name(s, TEXT("circle"));
+  }
 }
 
 void Variable::toString(StringRendering &s) {

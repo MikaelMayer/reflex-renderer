@@ -11,15 +11,14 @@
 
 ; Script Start - Add your code below here
 #include-once
+#include "Parameters.au3"
 #include "IniHandling.au3"
-#Include <GDIPlus.au3>
+#include <GDIPlus.au3>
 #include <Array.au3>
 #include <Date.au3>
 
-Global Const $VERSION_NUMER = "2.8.1 beta"
+Global Const $VERSION_NUMER = "2.8.2 beta"
 Global Const $COPYRIGHT_DATE = "2009"
-
-
 
 Global $ERROR_DECODE_HANDLING = ""
 Global Const $EmptySizedArray = emptySizedArray()
@@ -55,6 +54,10 @@ EndFunc
 Func push(ByRef $queue, $element)
   _ArrayAdd($queue, $element)
   $queue[0] += 1
+EndFunc
+
+Func insert(ByRef $queue, $element, $index)
+  insertAfter($queue, $element, $index-1)
 EndFunc
 
 Func insertAfter(ByRef $queue, $element, $index)
@@ -232,7 +235,7 @@ EndFunc
 ; Flag and complex management
 
 Func createFlag($flag, $value)
-  If $value <> "" Then
+  If $value <> "" Or Not IsString($value) Then
     If StringLeft($value, 1) == "-" Then
       Return StringFormat(' --%s " %s"', $flag, $value)
     Else
@@ -314,6 +317,11 @@ EndFunc
 
 ;=============== String management =============== 
 
+;Returns a boolean indicating if the string starts with a certain prefix (case insensitive)
+Func StringStartsWith($str, $start)
+  REturn StringCompare(StringLeft($str, StringLen($start)), $start)==0
+EndFunc
+
 ;Returns a boolean indicating if the string ends with a certain postfix (case insensitive)
 Func StringEndsWith($str, $end)
   Return StringCompare(StringRight($str, StringLen($end)), $end)==0
@@ -331,7 +339,14 @@ Func replaceVariableString($string, $varname, $varvalue)
   $varname = StringReplace(StringStripWS($varname, 3), "$", "\$")
   If StringContains($varvalue, "+*-/()") Then $varvalue = "("&$varvalue&")"
   $string = StringRegExpReplace($string, $varname&"([^[:alnum:]]|\z)", $varvalue&"\1")
-  return $string
+  Return $string
+EndFunc
+
+Func StringSizeMin($str, $length, $add_char = " ")
+  While StringLen($str) < $length
+    $str = $str & $add_char
+  WEnd
+  Return $str
 EndFunc
 
 ; Animation and windows

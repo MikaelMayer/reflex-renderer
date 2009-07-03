@@ -213,8 +213,22 @@ void cplx::toStringRight(TCHAR *ibuff, int size) {
 void cplx::toString(TCHAR *ibuff) {
 	if(i==0)
 		_stprintf(ibuff, TEXT("%Lg"), r);
-	else if(r==0)
-		_stprintf(ibuff, TEXT("%Lgi"), i);
-	else
-		_stprintf(ibuff, TEXT("%Lg%+Lgi"), r, i);
+  else if(r==0) {
+    if(i==1) {
+		  _stprintf(ibuff, TEXT("i"));
+    } else if(i==-1) {
+      _stprintf(ibuff, TEXT("-i"));
+    } else {
+      _stprintf(ibuff, TEXT("%Lgi"), i);
+    }
+  } else {
+    if(i==1) {
+		  _stprintf(ibuff, TEXT("%Lg+i"), r, i);
+    } else if(i==-1) {
+      _stprintf(ibuff, TEXT("%Lg-i"), r, i);
+    } else {
+      _stprintf(ibuff, TEXT("%Lg%+Lgi"), r, i);
+    }
+		
+  }
 }
