@@ -62,12 +62,29 @@ EndFunc
 
 Func insertAfter(ByRef $queue, $element, $index)
   ;Logging("inserting "&formulaItemToString($element)&" into a queue")
-  If $index+1 > $queue[0] Then 
+  If $index+1 > size($queue) Then 
     push($queue, $element)
   Else
     _ArrayInsert($queue, $index+1, $element)
     $queue[0] += 1
   EndIf
+EndFunc
+
+;Inserts the obj = [a, b, c] in queue sorted on the first element
+Func insertSortedObj(ByRef $queue, $obj, $increasing=True)
+  ; Linear insertion... not that bad.
+  For $i = 1 to size($queue)
+    $el = $queue[$i]
+    If $el[0] > $obj[0] and $increasing Then
+      insert($queue, $obj, $i)
+      Return
+    EndIf
+    If $el[0] < $obj[0] and Not $increasing Then
+      insert($queue, $obj, $i)
+      Return
+    EndIf
+  Next
+  push($queue, $obj)
 EndFunc
 
 Func deleteAt(ByRef $queue, $index)
@@ -408,8 +425,83 @@ Func move_ltrb(ByRef $pos_child_ltrb, ByRef $pos_before_ltrb, ByRef $pos_after_l
   $pos_child_ltrb[3] += $y_dep
 EndFunc
 
+; =============== Timeout control =================;
 
-;Testing
+Global Const $global_timer = TimerInit()
+Global $global_timeout_functions = emptySizedArray()
+
+; Timeout class declaration
+; Timeout:Timer,FunctionName
+Global Enum $N_Timeout_Timer, $N_Timeout_FunctionName, $N_Timeout_size
+
+Func setTimeout_Timer(ByRef $obj, $value)
+  $obj[$N_Timeout_Timer] = $value
+EndFunc ;==> setTimeout_Timer
+Func getTimeout_Timer($obj)
+  Return $obj[$N_Timeout_Timer]
+EndFunc ;==> getTimeout_Timer
+
+Func setTimeout_FunctionName(ByRef $obj, $value)
+  $obj[$N_Timeout_FunctionName] = $value
+EndFunc ;==> setTimeout_FunctionName
+Func getTimeout_FunctionName($obj)
+  Return $obj[$N_Timeout_FunctionName]
+EndFunc ;==> getTimeout_FunctionName
+
+; Timeout constructor
+Func newTimeout($Timer, $FunctionName)
+  Local $result[$N_Timeout_size]
+  $result[$N_Timeout_Timer]        = $Timer
+  $result[$N_Timeout_FunctionName] = $FunctionName
+  Return $result
+EndFunc ;==> newTimeout
+
+Func setTimeout($function_name, $timeout)
+  $now = TimerDiff($global_timer)
+  insertSortedObj($global_timeout_functions, newTimeout($now + $timeout, $function_name))
+EndFunc
+
+Func setTimeout_external($command, $timeout)
+  Local $arguments = ' timeout '&$timeout&' "'&$command&'"'
+  If @Compiled Then
+    Run(@ScriptFullPath&$arguments)
+  Else
+    Run('"'&@AutoItExe&'" "'&@ScriptFullPath&'"'&$arguments)
+    logging('"'&@AutoItExe&'" "'&@ScriptFullPath&'"'&$arguments)
+  EndIf
+EndFunc
+
+Func cancelAllTimeouts($function_name)
+  For $i = size($global_timeout_functions) To 1 step -1
+    If StringCompare(getTimeout_FunctionName($global_timeout_functions[$i]), $function_name)==0 Then
+      deleteAt($global_timeout_functions, $i)
+    EndIf
+  Next
+EndFunc
+
+Func cancelAllTimeoutsStartingWith($function_name)
+  For $i = size($global_timeout_functions) To 1 step -1
+    If StringStartsWith(getTimeout_FunctionName($global_timeout_functions[$i]), $function_name) Then
+      deleteAt($global_timeout_functions, $i)
+    EndIf
+  Next
+EndFunc
+
+Func parseTimeOutFunctions()
+  If size($global_timeout_functions) > 0 Then
+    ;Logging(TimerDiff($global_timer)&" should get bigger than "&getTimeout_Timer($global_timeout_functions[1]))
+    If TimerDiff($global_timer) > getTimeout_Timer($global_timeout_functions[1]) Then
+      Local $function = getTimeout_FunctionName($global_timeout_functions[1])
+      deleteAt($global_timeout_functions, 1)
+      Call($function)
+      If @error = 0xDEAD And @extended = 0xBEEF Then
+        logging("Error: Function '"&$function&" does not exist")
+      EndIf
+    EndIf
+  EndIf
+EndFunc
+
+; ==================== Testing ====================;
 
 Func AssertEqual($a, $b, $e="")
   If $a <> $b Then

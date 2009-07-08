@@ -64,10 +64,6 @@ Func includeFile(ByRef $parsedFiles, $input, $name)
   WEnd
 EndFunc
 
-Func StringStartsWith($str, $prefix)
-  Return StringCompare(StringMid($str, 1, StringLen($prefix)), $prefix) == 0
-EndFunc
-
 
 
 

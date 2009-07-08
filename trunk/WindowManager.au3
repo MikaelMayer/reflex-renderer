@@ -82,7 +82,7 @@ EndFunc
 Func WindowManager__closeAll()
   While $wm_registered_windows[0] > 0
     ;logging("State : "&toString($wm_registered_windows))
-    $t = $wm_registered_windows[$wm_registered_windows[0]]
+    $t = $wm_registered_windows[1]
     Call($t[$N_WIN_CLOSE], $t[$N_WIN_HANDLE])
   WEnd
 EndFunc
@@ -150,7 +150,7 @@ Func WindowManager__loadAll()
   For $i = 1 To $windows_to_restore[0][0]
     _WindowManager__loadWindow($windows_to_restore[$i][0], $windows_to_restore[$i][1])
   Next
-  WinActivate($rri_win)
+  ;WinActivate($rri_win)
 EndFunc
 
 Func WindowManager__saveAll()
