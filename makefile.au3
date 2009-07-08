@@ -85,7 +85,7 @@ If Not FileExists($folderout) Then
   DirCreate($folderout)
 EndIf
 
-ShellExecute("ExplodeIncludes.au3"); Creates RenderVideoExploded.au3
+RunWait('"'&@AutoItExe&'" "'&@ScriptDir&'\ExplodeIncludes.au3"'); Creates RenderVideoExploded.au3
 
 $Aut2Exe = StringReplace(@AutoItExe, "AutoIt3.exe", "Aut2Exe\Aut2Exe.exe")
 $cmd = StringFormat('%s /in "%s" /out "%s" /icon "%s" /nopack', $Aut2Exe, @ScriptDir&'\'&$filescript1, @ScriptDir&'\'&$filebinout, @ScriptDir&'\'&$fileico)

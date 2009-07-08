@@ -109,7 +109,7 @@ Func updateFile($pp)
   WinWaitActive("Koda","")
   If Not $onevent Then
     ;Convert code to non-event loop
-    Send("^{F9}")
+    Send("!d{LEFT}g")
     WinWaitActive("Génération", "")
     $delay = 200
     Sleep($delay)
@@ -124,7 +124,7 @@ Func updateFile($pp)
     Send("{TAB 3}")
     Send("{ENTER}")
   Else
-    Send("{F9}")
+    Send("!d{LEFT}g")
   EndIf
   WinWaitActive("Code", "")
   Send("!c")

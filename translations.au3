@@ -17,15 +17,16 @@ Global $lang_folder = 'lang' ;TODO: To externalize?
 Global $translation_ini = ""
 Global $ini_section = 'Messages'
 Global $gui_section = 'GUI'
+Global $translation_current_language = 'en'
 Global $languages = emptySizedArray()
 
 LoadTranslations()
 
 Func LoadTranslations()
 
-  Local $language = IniRead($ini_file, $ini_file_session, 'language', 'en')
+  $translation_current_language = IniRead($ini_file, $ini_file_session, 'language', 'en')
   Local $updates = True
-  $translation_ini = @ScriptDir&'\'&$lang_folder&'\'&translationFile($language)
+  $translation_ini = @ScriptDir&'\'&$lang_folder&'\'&translationFile($translation_current_language)
 
   If not listLanguages() Then $languages = False
 
@@ -79,8 +80,8 @@ Func LoadTranslations()
   add($affectations, "__reflex_renderer_interface__", $gui_section, 'Reflex Renderer', 'Reflex Renderer')
   add($affectations, "__navigation__", $gui_section, 'Navigation', 'Navigation')
   add($affectations, "__drag_reflex__", $gui_section, 'Dr&ag reflex', 'Dr&ag reflex')
-  add($affectations, "__zoom_rectangle_in__", $gui_section, '&Zoom rectangle in', '&Zoom rectangle in')
-  add($affectations, "__zoom_rectangle_out__", $gui_section, 'Zoom r&ectangle out', 'Zoom r&ectangle out')
+  add($affectations, "__visit_click__", $gui_section, '&Visit click', '&Visit click')
+  add($affectations, "__visit_rectangle__", $gui_section, 'Visit r&ectangle', 'Visit r&ectangle')
   add($affectations, "__previous_window__", $gui_section, 'P&revious window', 'P&revious window')
   add($affectations, "__next_window__", $gui_section, 'Nex&t window', 'Nex&t window')
   add($affectations, "__zoom_in_factor__", $gui_section, 'Zoom &in', 'Zoom &in')
@@ -195,6 +196,9 @@ Func LoadTranslations()
   add($affectations, "__tutorial__", $gui_section, 'Reflex Renderer Tutorial', 'Reflex Renderer Tutorial')
   add($affectations, "__tutorial_sections__", $gui_section, 'Tut1|Tut2|Tut3|Tut4|Tut5|Tut6|Tut7', 'Zooming|Navigation|Saving options|Discover the Reflex concept|Formula Editor|Browsing formulas|Video recording')
   add($affectations, "__autoplay__", $gui_section, 'Autoplay', 'Autoplay')
+  add($affectations, "__error__", $gui_section, 'Error', 'Error')
+  add($affectations, "__tutorial_section_misformed_aborting_loading__", $gui_section, 'Tutorial section misformed', 'Tutorial section misformed')
+  add($affectations, "__open_tutorial__", $gui_section, 'Tutorial...', 'Tutorial...')
   ;ADD_AFFECTATION
 
   If $updates and Not @Compiled Then

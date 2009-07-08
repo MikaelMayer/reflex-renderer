@@ -428,7 +428,7 @@ EndFunc
 
 Func loadFormulaFromReflex()
   $fullpath = lookForReflexFile()
-  loadJpegReflex($fullpath)
+  LoadFormulaFromFile__LoadImgContainingReflex($fullpath)
 EndFunc
 
 Func LoadFormulaFromFile__setCallbackFunction($callbackfunction)

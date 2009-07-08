@@ -4,7 +4,7 @@
  Author:         Mikaël Mayer
  Date:           June 14, 2008
  Script Function:
-  A user-friendly interface for the RenderReflex programm
+  A user-friendly interface for the RenderReflex program
 
 Doing:
  - Reflex renderer video: Generate program to generate images (self-executable?) should be able to be loaded back
@@ -178,6 +178,7 @@ puis d'y adjoindre les chaînes traduites de &Tools + ' > ' + &Save reflex / form
  
 #ce ----------------------------------------------------------------------------
 #include-once
+
 ;Version number is in GlobalUtils
 
 HotKeySet('{ESC}', 'cancelDrag')
@@ -194,9 +195,12 @@ Opt('MouseCoordMode', 2)
 #include <WindowsConstants.au3>
 #include <StaticConstants.au3>
 #include <ButtonConstants.au3>
-
 #include <Array.au3>
 #Include <GuiEdit.au3>
+
+; ReflexRenderer.exe timeout [milliseconds] [Action]
+parseCommandLine()
+
 #include 'GlobalUtils.au3'
 #include 'AboutBox.au3'
 #include 'EditFormula.au3'
@@ -231,10 +235,9 @@ Global $nPreviousWindows = 0
 Global $nNextWindows = 0
 Global $currentWindow = 0
 Global $pid_rendering = 0, $rendering_thread = False
-Global Enum $DRAG = 0, $ZOOM_FORWARD, $ZOOM_BACKWARD
+Global Enum $DRAG = 0, $VISIT_CLICK, $VISIT_RECTANGLE
 Global $RENDERING_IMAGE_TO_UPDATE = 0
 Global $UPDATE_PIC = False
-Global $factor_threading = 1.0
 Global $rri_out_rendu_pos
 Global Enum $REFLEX_NOT_UP_TO_DATE = 0, $REFLEX_RENDERED_IN_LR, $REFLEX_RENDERED_IN_HR
 Global $REFLEX_RENDERING = $REFLEX_NOT_UP_TO_DATE, $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE, $REFLEX_RENDERED_FINISHED = True
@@ -243,11 +246,12 @@ Global $rri_win_pos[4]
 Global $auto_save_formula = True
 Global $zooming = 0
 Global $zoomvars[8]
-Global $inverted_zoom = False
+Global $mouse_right_pressed = False
 
 Global $initWorkingDir = @ScriptDir
 Global $moving = False
 Global $navigation = $DRAG
+Global $visit_click_drag = False
 Global $width_highres, $height_highres, $maxwh, $width_percent, $height_percent
 Global $winmin, $winmax
 Global $x = 0, $y = 0, $dx = 0, $dy = 0
@@ -280,7 +284,14 @@ Func rri_main()
         $dx = $xy[0]-$x
         $dy = $xy[1]-$y
         repositionneRendu($rri_out_rendu, $dx, $dy)
-      Case $ZOOM_FORWARD To $ZOOM_BACKWARD
+      Case $VISIT_CLICK
+        If Not isMoveBelowMouseThreshold($xy) Or $visit_click_drag Then
+          $visit_click_drag = True
+          $dx = $xy[0]-$x
+          $dy = $xy[1]-$y
+          repositionneRendu($rri_out_rendu, $dx, $dy)
+        EndIf
+      Case $VISIT_RECTANGLE
         resizeZoomBox($x, $y, $xy[0], $xy[1])
       EndSwitch
       $xprev = $xy[0]
@@ -296,6 +307,7 @@ Func rri_main()
       EndIf
     Else
       Sleep(100)
+      parseTimeOutFunctions()
     EndIf
   WEnd
 EndFunc   ;==>rri_main
@@ -409,12 +421,12 @@ Func loadRRI()
   Global $rri_navigation = GUICtrlCreateGroup($__navigation__, 8, 296, 281, 145)
   GUICtrlSetResizing(-1, $GUI_DOCKLEFT+$GUI_DOCKBOTTOM)
   Global $rri_drag_reflex = GUICtrlCreateRadio($__drag_reflex__, 168, 311, 113, 20)
-  GUICtrlSetState(-1, $GUI_CHECKED)
   GUICtrlSetOnEvent(-1, "rri_drag_reflexClick")
-  Global $rri_zoom_forward = GUICtrlCreateRadio($__zoom_rectangle_in__, 168, 334, 113, 20)
-  GUICtrlSetOnEvent(-1, "rri_zoom_forwardClick")
-  Global $rri_zoom_backward = GUICtrlCreateRadio($__zoom_rectangle_out__, 168, 357, 113, 20)
-  GUICtrlSetOnEvent(-1, "rri_zoom_backwardClick")
+  Global $rri_visit_click = GUICtrlCreateRadio($__visit_click__, 168, 334, 113, 20)
+  GUICtrlSetState(-1, $GUI_CHECKED)
+  GUICtrlSetOnEvent(-1, "rri_visit_clickClick")
+  Global $rri_visit_rectangle = GUICtrlCreateRadio($__visit_rectangle__, 168, 357, 113, 20)
+  GUICtrlSetOnEvent(-1, "rri_visit_rectangleClick")
   Global $rri_previous_window = GUICtrlCreateButton($__previous_window__, 168, 382, 113, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_previous_windowClick")
   GUICtrlSetState(-1, $GUI_DISABLE)
@@ -479,6 +491,8 @@ Func loadRRI()
   GUICtrlSetOnEvent(-1, "resolutionsClick")
   Global $rri_menu_export_formula = GUICtrlCreateMenuItem($__export_formula__, $rri_menu_tools)
   GUICtrlSetOnEvent(-1, "rri_menu_export_formulaClick")
+  Global $rri_menu_tutorial = GUICtrlCreateMenuItem($__open_tutorial__, $rri_menu_tools)
+  GUICtrlSetOnEvent(-1, "rri_menu_tutorialClick")
   Global $rri_menu_quitnosave = GUICtrlCreateMenuItem($__menu_quitnosave__, $rri_menu_tools)
   GUICtrlSetOnEvent(-1, "rri_menu_quitnosaveClick")
   Global $rri_menu_quit = GUICtrlCreateMenuItem($__menu_quit__, $rri_menu_tools)
@@ -520,7 +534,7 @@ Func loadRRI()
    _ArrayCreate('height', $rri_height, '401'), _
    _ArrayCreate('winmin', $rri_winmin, '-4-4i'), _
    _ArrayCreate('winmax', $rri_winmax, '4+4i'), _
-   _ArrayCreate('percentPreview', $rri_percent, '25'), _
+   _ArrayCreate('percentPreview', $rri_percent, '50'), _
    _ArrayCreate('outputFile', $rri_output, '.\My_temporary_nice_function.bmp'), _
    _ArrayCreate('ZoomFactor', $rri_zoom_factor, '2'), _
    _ArrayCreate('seed', $rri_seed, '1986') _
@@ -566,7 +580,7 @@ Func loadRRI()
   GUICtrlSetImage($rri_zoom_box_gray2, $gris_file)
   GUICtrlSetImage($rri_zoom_box_gray3, $gris_file)
   GUICtrlSetImage($rri_line_reset, $noir_file)
-  ;TODO: here refrafctor
+
   displayZoombox(False)
 
   ;Line from Reset button to Heigh input box
@@ -585,17 +599,19 @@ Func loadRRI()
   EndIf
   winChange()
   resolutionChanged()
-
   updatePos()
   repositionneRendu($rri_out_rendu, 0, 0)
-  
-  AnimateFromTopLeft($rri_win)
+  changeNavigationState()
   
   EditFormula__setParentWindow($rri_win)
   LoadFormulaFromFile__setParentWindow($rri_win)
   SaveBox__setParentWindow($rri_win)
   Tutorial__setParentWindow($rri_win)
 
+  AnimateFromTopLeft($rri_win)
+  
+  If Not FileExists($ini_file) Then Tutorial__Load()
+  
   $rri_win_pos = WinGetPos($rri_win)
   WindowManager__loadAll()
 
@@ -610,7 +626,12 @@ Func cancelDrag()
     Switch $navigation
     Case $DRAG
       repositionneRendu($rri_out_rendu, 0, 0)
-    Case $ZOOM_FORWARD To $ZOOM_BACKWARD
+    Case $VISIT_CLICK
+      If $visit_click_drag Then
+        repositionneRendu($rri_out_rendu, 0, 0)
+        $visit_click_drag = False
+      EndIf
+    Case $VISIT_RECTANGLE
       displayZoombox(False)
     EndSwitch
   EndIf
@@ -831,7 +852,10 @@ EndFunc   ;==>menu_aboutClick
 ;   $ctrl : 
 Func MouseOverControl($ctrl)
   $pos = ControlGetPos($rri_win, '', $ctrl)
+  Local $save_MouseCoordMode = Opt("MouseCoordMode", 2)
   $mpos = MouseGetPos()
+  Opt("MouseCoordMode", $save_MouseCoordMode)
+  logging("Test over position : "&toString($pos)&" with mouse "&toString($mpos))
   Return $mpos[0]>=$pos[0] and $mpos[0]<=$pos[0]+$pos[2] and $mpos[1]>=$pos[1] and $mpos[1]<=$pos[1]+$pos[3]
 EndFunc   ;==>MouseOverControl
 Func MouseOverPicture()
@@ -844,46 +868,69 @@ EndFunc   ;==>MouseOverFormula
 Func rri_winMouseRightDown()
   If Not $moving and MouseOverPicture() Then
     $moving = True
-    $inverted_zoom = True
+    $mouse_right_pressed = True
     winChange()
     $xy = MouseGetPos()
     $x = $xy[0]
     $y = $xy[1]
     Switch $navigation
     Case $DRAG
-    Case $ZOOM_FORWARD To $ZOOM_BACKWARD
+    Case $VISIT_CLICK
+      ;TODO
+      $visit_click_drag = False
+    Case $VISIT_RECTANGLE
       resizeZoomBox($x, $y, $x, $y)
       displayZoombox(True)
     EndSwitch
   EndIf
 EndFunc   ;==>rri_winMouseRightDown
 
+Func rri_moveWindowToMousePosition()
+  $xy = MouseGetPos()
+  $x = $xy[0]
+  $y = $xy[1]
+  $new_x = Int($output_x + $output_max_size/2)
+  $new_y = Int($output_y + $output_max_size/2)
+  MouseMove($new_x, $new_y, 0)
+  $dx = $output_x + $output_max_size/2 - $x
+  $dy = $output_y + $output_max_size/2 - $y
+  repositionneRendu($rri_out_rendu, $dx, $dy)
+  $moving = True
+  $old_navigation = $navigation
+  $navigation = $DRAG
+  rri_winMouseLeftUp()
+  $navigation = $old_navigation
+  $xy2 = MouseGetPos()
+  ;Logging(StringFormat("Moved from %d, %d to %d, %d", $new_x, $new_y, $xy2[0], $xy2[1]))
+  If $new_x == $xy2[0] and $new_y == $xy2[1] Then
+    MouseMove($x, $y, 2)
+  EndIf
+EndFunc
+
+Func isMoveBelowMouseThreshold($xy)
+  Return Abs($x - $xy[0]) < $threshold_zoom_drag and Abs($y - $xy[1]) < $threshold_zoom_drag
+EndFunc
+
 Func rri_winMouseRightUp()
   If $moving Then
     $moving = False
     $xy = MouseGetPos()
-    If Abs($x - $xy[0]) < $threshold_zoom_drag and Abs($y - $xy[1]) < $threshold_zoom_drag  Then
-      If MouseOverPicture() Then
-        $xy = MouseGetPos()
-        $x = $xy[0]
-        $y = $xy[1]
-        $new_x = Int($output_x + $output_max_size/2)
-        $new_y = Int($output_y + $output_max_size/2)
-        MouseMove($new_x, $new_y, 0)
-        $dx = $output_x + $output_max_size/2 - $x
-        $dy = $output_y + $output_max_size/2 - $y
-        repositionneRendu($rri_out_rendu, $dx, $dy)
-        $moving = True
-        $old_navigation = $navigation
-        $navigation = $DRAG
-        rri_winMouseLeftUp()
-        $navigation = $old_navigation
-        $xy2 = MouseGetPos()
-        ;Logging(StringFormat("Moved from %d, %d to %d, %d", $new_x, $new_y, $xy2[0], $xy2[1]))
-        If $new_x == $xy2[0] and $new_y == $xy2[1] Then
-          MouseMove($x, $y, 2)
+    If  isMoveBelowMouseThreshold($xy) Then
+      Switch $navigation
+      Case $VISIT_CLICK
+        ;TODO: Zoom out over the selected region so that it becomes the center and the mouse follows.
+        logging("Visit click backward")
+        Local $factor = Number(GUICtrlRead($rri_zoom_factor))        
+        $zoom_factor_posrendu = $rri_out_rendu_pos
+        $dw = Int($zoom_factor_posrendu[2]/2/$factor)
+        $dh = Int($zoom_factor_posrendu[3]/2/$factor)
+        zoomBackward($xy[0] - $dw, $xy[1] - $dh, $xy[0] + $dw, $xy[1] + $dh)
+        renderIfAutoRender($rri_out_rendu)
+      Case $VISIT_RECTANGLE, $DRAG
+        If MouseOverPicture() Then
+          rri_moveWindowToMousePosition()
         EndIf
-      EndIf
+      EndSwitch
     Else
       handleFinishMouseMove($xy)
     EndIf
@@ -892,15 +939,19 @@ EndFunc   ;==>rri_winMouseRightUp
 
 Func rri_winMouseLeftDown()
   If Not $moving and MouseOverPicture() Then
+    logging("Now moving")
     $moving = True
-    $inverted_zoom = False
+    $mouse_right_pressed = False
     winChange()
     $xy = MouseGetPos()
     $x = $xy[0]
     $y = $xy[1]
     Switch $navigation
     Case $DRAG
-    Case $ZOOM_FORWARD To $ZOOM_BACKWARD
+    Case $VISIT_CLICK
+      $visit_click_drag = False
+      ;TODO
+    Case $VISIT_RECTANGLE
       resizeZoomBox($x, $y, $x, $y)
       displayZoombox(True)
     EndSwitch
@@ -918,12 +969,41 @@ Func rri_winMouseLeftUp()
     $rri_win_pos = $rri_win_pos2
   EndIf
   
+  logging("Mouse left up")
   ;Detect complex window shift
   If $moving Then
+    logging("was moving")
     $moving = False
     $xy = MouseGetPos()
-    If $x == $xy[0] and $y == $xy[1] Then Return
-    handleFinishMouseMove($xy)
+    If isMoveBelowMouseThreshold($xy) Then
+      logging("small enough")
+      Switch $navigation
+      Case $VISIT_CLICK  
+        ;TODO: Zoom in over the selected region so that it becomes the center and the mouse follows.
+        logging("Visit click forward")
+        Local $factor = Number(GUICtrlRead($rri_zoom_factor))        
+        $zoom_factor_posrendu = $rri_out_rendu_pos
+        $dw = Int($zoom_factor_posrendu[2]/2/$factor)
+        $dh = Int($zoom_factor_posrendu[3]/2/$factor)
+        zoomForward($xy[0] - $dw, $xy[1] - $dh, $xy[0] + $dw, $xy[1] + $dh)
+        renderIfAutoRender($rri_out_rendu)
+      Case $VISIT_RECTANGLE
+        If MouseOverPicture() Then
+          rri_moveWindowToMousePosition()
+        EndIf
+      Case $DRAG
+        ; DO NOT CALL rri_moveWindowToMousePosition else it will make a recursive call right now.
+        Return
+      EndSwitch
+    Else
+      Switch $navigation
+      Case $VISIT_CLICK
+        handleFinishMouseMove($xy) ; TODO: Verify that it drags.
+      Case $VISIT_RECTANGLE, $DRAG
+        handleFinishMouseMove($xy)
+      EndSwitch
+    EndIf
+    
   EndIf
 EndFunc   ;==>rri_winMouseLeftUp
 
@@ -934,9 +1014,15 @@ Func handleFinishMouseMove($xy)
     Case $DRAG
       move_window()
       updatePic()
-    Case $ZOOM_FORWARD To $ZOOM_BACKWARD
+    Case $VISIT_CLICK
+      If $visit_click_drag Then
+        $visit_click_drag = False
+        move_window()
+        updatePic()
+      EndIf
+    Case $VISIT_RECTANGLE
       displayZoombox(False)
-      If ($navigation == $ZOOM_FORWARD and Not $inverted_zoom) or ($navigation == $ZOOM_BACKWARD and $inverted_zoom) Then
+      If Not $mouse_right_pressed Then
         zoomForward($x, $y, $xy[0], $xy[1])
       Else
         zoomBackward($x, $y, $xy[0], $xy[1])
@@ -1028,6 +1114,9 @@ Func rri_menu_export_formulaClick()
     MsgBox(0, $__formula_exported__, $__formula_correctly_exported_to_clipboard__&@CRLF&$f)
   EndIf
 EndFunc
+Func rri_menu_tutorialClick()
+  Tutorial__Load()
+EndFunc   ;==>rri_menu_tutorialClick
 Func rri_menu_quitnosaveClick()
   CloseApp()
 EndFunc   ;==>rri_menu_quitnosaveClick
@@ -1035,6 +1124,7 @@ Func rri_winClose()
   CloseApp()
 EndFunc   ;==>rri_winClose
 Func CloseApp()
+  WindowManager__closeAll()
   AnimateToTopRight($rri_win)
   Exit
 EndFunc   ;==>CloseApp
@@ -1091,15 +1181,15 @@ Func rri_previous_windowClick()
 EndFunc   ;==>rri_previous_windowClick
 Func changeNavigationState()
   If isChecked($rri_drag_reflex) Then $navigation = $DRAG
-  If isChecked($rri_zoom_forward) Then $navigation = $ZOOM_FORWARD
-  If isChecked($rri_zoom_backward) Then $navigation = $ZOOM_BACKWARD
+  If isChecked($rri_visit_click) Then $navigation = $VISIT_CLICK
+  If isChecked($rri_visit_rectangle) Then $navigation = $VISIT_RECTANGLE
 EndFunc   ;==>changeNavigationState
-Func rri_zoom_backwardClick()
+Func rri_visit_rectangleClick()
   changeNavigationState()
-EndFunc   ;==>rri_zoom_backwardClick
-Func rri_zoom_forwardClick()
+EndFunc   ;==>rri_visit_rectangleClick
+Func rri_visit_clickClick()
   changeNavigationState()
-EndFunc   ;==>rri_zoom_forwardClick
+EndFunc   ;==>rri_visit_clickClick
 ;   $factor : 
 Func zoom_factor($factor)
   ;$__reflex_renderer_interface__
@@ -1195,12 +1285,8 @@ EndFunc   ;==>winNext
 
 ;   $string : 
 Func updateFormula($string)
-  ;TODO: Detect if there are some Variable windows somewhere,
-  ;and if so, use them to replace the variables by their values.
   $string = Variables__updateString($string)
-  ;logging("updated: "&$string)
   GUICtrlSetData($rri_in_formula, $string)
-  ;GUICtrlSetData($rri_in_formula, $string)
 EndFunc   ;==>updateFormula
 
 Func frmSave()
@@ -1669,11 +1755,11 @@ Func zoomForward($x0, $y0, $x1, $y1)
   $deltax_max = $xmax - ($zoom_forward_pos[0]+$zoom_forward_pos[2])
   $deltay_max = - $ymin + $zoom_forward_pos[1]
   $winminmax = getWinMinMaxMoved(($deltax_min * $maxwh / $output_max_size), ($deltay_min * $maxwh / $output_max_size))
-  $future_winmin = $winminmax[1]
+  $future_winmin = $winminmax[1] ;TODO: Sécuriser !
 
   $winminmax = getWinMinMaxMoved(($deltax_max * $maxwh / $output_max_size), ($deltay_max * $maxwh / $output_max_size))
   ;Winmax part
-  $future_winmax = $winminmax[2]
+  $future_winmax = $winminmax[2] ; TODO: Secure this !
   setWinminmax($future_winmin, $future_winmax)
 EndFunc   ;==>zoomForward
 
@@ -1706,11 +1792,58 @@ Func invertCoordinates(Const ByRef $pos, ByRef $xmin, ByRef $ymin, ByRef $xmax, 
   $ymax = ($pos[1]+$pos[3]) * $facteur + $offset
 EndFunc   ;==>invertCoordinates
 
-;   $x0 : 
-;   $y0 : 
-;   $x1 : 
-;   $y1 : 
+;   $x0 : Backward zoom box coordinates
+;   $y0 : "
+;   $x1 : "
+;   $y1 : "
 Func zoomBackward($x0, $y0, $x1, $y1)
+  ;calculateWidthHeight()
+  ; Everything is to be recalculated... because it's not linear
+  
+  $coord = resizeCoordinates($x0, $y0, $x1, $y1, $width_percent, $height_percent)
+  $xmin = $coord[0]
+  $ymin = $coord[1]
+  $xmax = $coord[2]
+  $ymax = $coord[3]
+  
+  If $xmin == $xmax Or $ymin == $ymax Then Return
+    
+  Local $pos = $rri_out_rendu_pos
+  Local $factor = ($xmax-$xmin)/$pos[2]
+  
+  Local $dx = (1+$factor)*($pos[0]+$pos[2]/2-($xmin+$xmax)/2)
+  Local $dy = (1+$factor)*($pos[1]+$pos[3]/2-($ymin+$ymax)/2)
+  
+  $xmin += $dx
+  $xmax += $dx
+  $ymin += $dy
+  $ymax += $dy
+  
+  AnimateZoomBackward($pos, $xmin, $ymin, $xmax, $ymax)
+  invertCoordinates($pos, $xmin, $ymin, $xmax, $ymax)
+  
+  $deltax_min = $xmin - $pos[0]
+  $deltay_min = - $ymax + ($pos[1]+$pos[3])
+  $deltax_max = $xmax - ($pos[0]+$pos[2])
+  $deltay_max = - $ymin + $pos[1]
+  
+  $winminmax = getWinMinMaxMoved(($deltax_min * $maxwh / $output_max_size), ($deltay_min * $maxwh / $output_max_size))
+  $future_winmin = $winminmax[1]
+
+  $winminmax = getWinMinMaxMoved(($deltax_max * $maxwh / $output_max_size), ($deltay_max * $maxwh / $output_max_size))
+  ;Winmax part
+  $future_winmax = $winminmax[2]
+  
+  
+  setWinminmax($future_winmin, $future_winmax)
+EndFunc   ;==>zoomBackward
+
+; Deprecated function (to delete)
+;   $x0 : Backward zoom box coordinates
+;   $y0 : "
+;   $x1 : "
+;   $y1 : "
+Func zoomBackwardPrevious($x0, $y0, $x1, $y1)
   ;calculateWidthHeight()
   ; Everything is to be recalculated... because it's not linear
   
@@ -1739,7 +1872,7 @@ Func zoomBackward($x0, $y0, $x1, $y1)
   
   
   setWinminmax($future_winmin, $future_winmax)
-EndFunc   ;==>zoomBackward
+EndFunc   ;==>zoomBackwardPrevious
 
 ;   $id_rendu : 
 ;   $dx       : 
@@ -1930,6 +2063,19 @@ Func rcc_winResize()
   GUICtrlSetState($rcc_color_code, $GUI_SHOW)
 EndFunc   ;==>rcc_winResize
 
+Func parseCommandLine()
+  If $CmdLine[0] >= 3 and $CmdLine[1]="timeout" Then
+  $todo = StringSplit(_ArrayToString($CmdLine, " ", 3), ";")
+  ;ToolTip("Waiting "&$CmdLine[2]&"ms... ("&$todo[0]&" tasks) "&$CmdLine[3], 0, 0)
+  Sleep(Int($CmdLine[2]))
+  For $i = 1 To $todo[0]
+    ;ToolTip("Accomplishing task "&$i&" over "&$todo[0]&":"&$todo[$i], 0, 0)
+    Execute($todo[$i])
+  Next
+  Exit
+EndIf
+EndFunc
+
 ;============================= UNUSED FUNCS ==================================;
 
 Func rri_outputChange()
@@ -1967,20 +2113,28 @@ EndFunc   ;==>rri_labelXClick
 ;============================== LOAD/SAVE ===================================;
 
 Func LoadDefaultResolution()
-  LoadDefaultParameter('width', $rri_width)
-  LoadDefaultParameter('height', $rri_height)
+  If Not LoadDefaultParameter('width', $rri_width)   Then ReloadDefaultParameter('width')
+  If Not LoadDefaultParameter('height', $rri_height) Then ReloadDefaultParameter('height')
 EndFunc   ;==>LoadDefaultResolution
 Func LoadDefaultWindow()
-  LoadDefaultParameter('winmin', $rri_winmin)
-  LoadDefaultParameter('winmax', $rri_winmax)
+  If Not LoadDefaultParameter('winmin', $rri_winmin) Then ReloadDefaultParameter('winmin')
+  If Not LoadDefaultParameter('winmax', $rri_winmax) Then ReloadDefaultParameter('winmax')
   rri_winminChange()
   rri_winmaxChange()
 EndFunc   ;==>LoadDefaultWindow
+Func ReloadDefaultParameter($name)
+  For $singlemap in $sessionParametersMap
+    If $singlemap[0] = $name Then
+      LoadSessionParameter($singlemap[0], $singlemap[1], $singlemap[2])
+      ExitLoop
+    EndIf
+  Next
+EndFunc
 
 Func LoadSession()
   For $singlemap in $sessionParametersMap
     LoadSessionParameter($singlemap[0], $singlemap[1], $singlemap[2])
-	Next
+  Next
   For $singlemap in $sessionCheckBoxMap
     LoadSessionCheckBox($singlemap[0], $singlemap[1], $singlemap[2])
   Next
@@ -1988,11 +2142,20 @@ Func LoadSession()
 EndFunc   ;==>LoadSession
 
 Func SaveSession()
+  Local $default_section_missing = False
+  If Not FileExists($ini_file) Then $default_section_missing = True
   For $singlemap in $sessionParametersMap
     SaveSessionParameter($singlemap[0], $singlemap[1])
   Next
   For $singlemap in $sessionCheckBoxMap
     SaveSessionCheckBox($singlemap[0], $singlemap[1])
   Next
-  WindowManager__saveAll()
+  If $default_section_missing Then
+    For $singlemap in $sessionParametersMap
+      SaveDefaultParameter($singlemap[0], $singlemap[2])
+    Next
+    For $singlemap in $sessionCheckBoxMap
+      SaveDefaultCheckBox($singlemap[0], $singlemap[2])
+    Next
+  EndIf
 EndFunc   ;==>SaveSession

@@ -37,7 +37,8 @@ $filescript2, _
 $filescript3, _
 $filescript4, _
 $filescript6, _
-$filescript7)
+$filescript7, _
+$filescript8)
 EndIf
 
 ;$initranslation = "translations.ini"
