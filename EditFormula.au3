@@ -295,6 +295,9 @@ Func GenerateEditFormulaBox()
   GUICtrlSetResizing($IDC_F_RANDF, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_RANDF, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_RANDF, $__randf_hint__)
+  Global $IDC_F_RANDF_AUTO = GUICtrlCreateButton(">", 116, 248, 17, 25, 0)
+  GUICtrlSetOnEvent($IDC_F_RANDF_AUTO, "ef_insertionClick")
+  GUICtrlSetTip($IDC_F_RANDF_AUTO, $__randf_auto_hint__)
   Global $IDC_F_SUM = GUICtrlCreateButton("sum", 8, 272, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_SUM, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_SUM, "ef_insertionClick")
@@ -307,6 +310,9 @@ Func GenerateEditFormulaBox()
   GUICtrlSetResizing($IDC_F_RANDH, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_RANDH, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_RANDH, $__randh_hint__)
+  Global $IDC_F_RANDH_AUTO = GUICtrlCreateButton(">", 116, 272, 17, 25, 0)
+  GUICtrlSetOnEvent($IDC_F_RANDH_AUTO, "ef_insertionClick")
+  GUICtrlSetTip($IDC_F_RANDH_AUTO, $__randh_auto_hint__)
   Global $IDC_F_COMP = GUICtrlCreateButton("comp", 8, 296, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_COMP, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_COMP, "ef_insertionClick")
@@ -393,7 +399,7 @@ Func GenerateEditFormulaBox()
   Global $ID_RANDSEED = GUICtrlCreateCheckbox($__randomize_seed__, 8, 323, 137, 17)
   GUICtrlSetResizing($ID_RANDSEED, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($ID_RANDSEED, "ef_insertionClick")
-  GUICtrlSetTip($ID_RANDSEED, $__inv_hint__)
+  GUICtrlSetTip($ID_RANDSEED, $__randomize_seed_hint__)
   #EndRegion ### END Koda GUI section ###
   GUISetOnEvent($GUI_EVENT_RESIZED, 'ID_EDITFORMULAResize')
   
@@ -482,8 +488,10 @@ EndFunc
 ; randh()*$x => randh()*0.10 => cos(sin(x))*0.10 => 
 
 Func EditFormula__UpdateFormulaFromApplication($formula)
-  ;If StringInStr(
-  _GUICtrlEdit_SetText($IDC_EDIT1, $formula)
+  If $EDIT_FORMULA_EXISTS Then
+    _GUICtrlEdit_SetText($IDC_EDIT1, $formula)
+    colorationSyntaxique($IDC_EDIT1)
+  EndIf
 EndFunc
 
 Func EditFormula__HighlightError($start, $end)
@@ -626,10 +634,22 @@ Func ef_insertionClick()
       insertText($IDC_EDIT1, TEXT('${[]}'))
     Case $IDC_F_RANDF
       insertText($IDC_EDIT1, TEXT('randf([{5}])'))
-      If $randseed Then GUICtrlSetData($IDC_F_SEED, newSeed())
+      If $randseed Then GUICtrlSetData($IDC_F_SEED, EditFormula__newSeed())
     Case $IDC_F_RANDH
       insertText($IDC_EDIT1, TEXT('randh([{5}])'))
-      If $randseed Then GUICtrlSetData($IDC_F_SEED, newSeed())
+      If $randseed Then GUICtrlSetData($IDC_F_SEED, EditFormula__newSeed())
+    Case $IDC_F_RANDF_AUTO
+      deleteText($IDC_EDIT1, 0)
+      insertText($IDC_EDIT1, TEXT('randf([{15}])'))
+      GUICtrlSetData($IDC_F_SEED, EditFormula__newSeed())
+      Sleep(500)
+      ID_DRAWClick()
+    Case $IDC_F_RANDH_AUTO
+      deleteText($IDC_EDIT1, 0)
+      insertText($IDC_EDIT1, TEXT('randh([{15}])'))
+      GUICtrlSetData($IDC_F_SEED, EditFormula__newSeed())
+      Sleep(500)
+      ID_DRAWClick()
     Case $IDC_F_RETOUR_ARRIERE
       deleteText($IDC_EDIT1, 1)
     Case $IDC_F_SUPPRIMER
@@ -655,7 +675,7 @@ Func ef_insertionClick()
   EndSwitch
 EndFunc
 
-Func newSeed()
+Func EditFormula__newSeed()
   ;Return 1679895117;
   Return Random(0, 2147483647, 1)
 EndFunc

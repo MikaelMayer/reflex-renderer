@@ -36,12 +36,12 @@ Func GenerateTutorialBox()
   EndIf
   $TUTORIAL_BOX_EXISTS = True
   #Region ### START Koda GUI section ### Form=C:\Documents and Settings\Mikaël\Mes documents\Reflex\LogicielOrdi\RenderReflex\ReflexRendererTutorial.kxf
-  Global $TutorialBox = GUICreate($__tutorial__, 443, 164, 281, 198)
+  Global $TutorialBox = GUICreate($__tutorial__, 484, 165, 281, 198)
   GUISetOnEvent($GUI_EVENT_CLOSE, "TutorialBoxClose")
   GUISetOnEvent($GUI_EVENT_MINIMIZE, "TutorialBoxMinimize")
   GUISetOnEvent($GUI_EVENT_MAXIMIZE, "TutorialBoxMaximize")
   GUISetOnEvent($GUI_EVENT_RESTORE, "TutorialBoxRestore")
-  Global $tb_texte = GUICtrlCreateEdit("", 0, 0, 320, 128, BitOR($ES_AUTOVSCROLL,$ES_READONLY,$ES_WANTRETURN,$WS_VSCROLL))
+  Global $tb_texte = GUICtrlCreateEdit("", 0, 0, 360, 128, BitOR($ES_AUTOVSCROLL,$ES_READONLY,$ES_WANTRETURN,$WS_VSCROLL))
   GUICtrlSetData(-1, "tb_texte")
   GUICtrlSetFont(-1, 12, 400, 0, "Arial")
   GUICtrlSetOnEvent(-1, "tb_texteChange")
@@ -57,7 +57,7 @@ Func GenerateTutorialBox()
   Global $tb_autoplay = GUICtrlCreateCheckbox($__autoplay__, 208, 138, 97, 17)
   GUICtrlSetState(-1, $GUI_CHECKED)
   GUICtrlSetOnEvent(-1, "tb_autoplayClick")
-  Global $tb_sections = GUICtrlCreateList("", 320, 0, 121, 162, $WS_BORDER)
+  Global $tb_sections = GUICtrlCreateList("", 360, 0, 121, 162, $WS_BORDER)
   GUICtrlSetData(-1, $__tutorial_sections__)
   GUICtrlSetOnEvent(-1, "tb_sectionsClick")
   #EndRegion ### END Koda GUI section ###
@@ -357,10 +357,10 @@ Func _Tutorial_MouseMove($control, $main_win = $rri_win)
   Opt("MouseCoordMode", $save_MouseCoordMode)
 EndFunc
 
-Func _Tutorial_MouseMoveRatio($control, $xratio, $yratio)
+Func _Tutorial_MouseMoveRatio($control, $xratio, $yratio, $speed=10)
   Local $mpos = positionRatio($control, $xratio, $yratio)
   Local $save_MouseCoordMode = Opt("MouseCoordMode", 1)
-  MouseMove($mpos[0], $mpos[1])
+  MouseMove($mpos[0], $mpos[1], $speed)
   Opt("MouseCoordMode", $save_MouseCoordMode)
 EndFunc
 
@@ -372,6 +372,7 @@ Func _Tutorial_continue()
   setTimeout("nextSubSection", $global_after_ms)
 EndFunc
 
+;=================== Tutorial pre-defined functions ===================;
 Func _Tutorial_Miniature()
   If _Tutorial_cancel() Then Return
   _Tutorial_MouseMove($rri_preview)
@@ -549,3 +550,90 @@ Func _Tutorial_SaveQuick2()
   MouseClick("left")
   If $tutorial_play Then _Tutorial_continue()
 EndFunc
+  
+Func _Tutorial_OpenColors()
+  If _Tutorial_cancel() Then Return
+  _Tutorial_MouseMove($rri_color_code_button)
+  MouseClick("left")
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+
+Func _Tutorial_CloseColors()
+  If _Tutorial_cancel() Then Return
+  If WinActive($__hint_color_code_button__) Then
+    rcc_winClose()
+  EndIf
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+
+Func _Tutorial_LoadConcept()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_LoadConcept", 500)
+  _Tutorial_MouseMove($rri_in_formula)
+  Sleep(500)
+  updateFormula("z^2-4")
+  _Tutorial_MouseMove($rri_realmode)
+  Sleep(500)
+  GUICtrlSetState($rri_realmode, $GUI_CHECKED)
+  _Tutorial_MouseMove($rri_reset_window)
+  Sleep(500)
+  rri_reset_windowClick()
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+
+Func _Tutorial_SwitchComplex()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_SwitchComplex", 500)
+  _Tutorial_MouseMove($rri_realmode)
+  Sleep(500)
+  GUICtrlSetState($rri_realmode, $GUI_UNCHECKED)
+  rri_realmodeClick()
+  setTimeout("_Tutorial_DisplayRealLine", 500)
+EndFunc
+Func _Tutorial_DisplayRealLine()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_DisplayRealLine", 500)
+  _Tutorial_MouseMoveRatio($rri_out_rendu, 0.1, 0.5)
+  Sleep(500)
+  _Tutorial_MouseMoveRatio($rri_out_rendu, 0.1, 0.5, 0)
+  _Tutorial_MouseMoveRatio($rri_out_rendu, 0.9, 0.5)
+  Sleep(200)
+  _Tutorial_MouseMoveRatio($rri_out_rendu, 0.1, 0.5)
+  
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+
+Func _Tutorial_LoadConcept2()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_LoadConcept2", 500)
+  _Tutorial_MouseMove($rri_in_formula)
+  Sleep(200)
+  updateFormula("0.5z^2+2")
+  _Tutorial_MouseMove($rri_realmode)
+  Sleep(200)
+  GUICtrlSetState($rri_realmode, $GUI_CHECKED)
+  _Tutorial_MouseMove($rri_reset_window)
+  Sleep(200)
+  rri_reset_windowClick()
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+;TODO: Tutorial
+Func _Tutorial_SwitchComplex2()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_SwitchComplex2", 500)
+  _Tutorial_MouseMove($rri_realmode)
+  Sleep(500)
+  GUICtrlSetState($rri_realmode, $GUI_UNCHECKED)
+  rri_realmodeClick()
+  setTimeout("_Tutorial_LoadConcept2_ShowRoots", 500)
+EndFunc
+Func _Tutorial_LoadConcept2_ShowRoots()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_LoadConcept2_ShowRoots", 500)
+  _Tutorial_MouseMoveRatio($rri_out_rendu, 0.5, 0.25)
+  Sleep(1000)
+  _Tutorial_MouseMoveRatio($rri_out_rendu, 0.5, 0.75)
+  Sleep(1000)
+  _Tutorial_SwitchComplex()
+EndFunc
+  
