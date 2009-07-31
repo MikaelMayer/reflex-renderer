@@ -15,6 +15,7 @@
 #ce ----------------------------------------------------------------------------
 
 #include <Array.au3>
+#include "GlobalUtils.au3"
 
 $filescript1 = "ReflexRenderer.au3"
 $filescript2 = "LoadFormulaFromFile.au3"
@@ -99,6 +100,7 @@ Func extractStrings($line, ByRef $matches)
 EndFunc
 
 Func parseFile($file)
+  Local $file_changed = False
   $f = FileOpen($file, 0) 
   $region = False
   $matches = _ArrayCreate(6)
@@ -130,22 +132,23 @@ Func parseFile($file)
     $e = @error
     If $e == 0 Then
     ElseIf $e == 1 Then
-      $r = MsgBox(3+32+256, "Nothing found in "&$file&" for", $match&@CRLF&"[yes]: Enter a traduction"&@CRLF&"[no]: Set no traduction"&@CRLF&"[Cancel]: Cancel process")
-      If $r == 7 Then
-      ElseIf $r == 2 Then
-        Exit
-      ElseIf $r == 6 Then
-        $res = InputBox("Give a traduction", "Variable name: "&$match, $match)
-        If $res<> "" Then
-          $newline = StringFormat("add($affectations, ""%s"", $gui_section, '%s', '%s')", $match, $res, $res)
-          $content_lang = StringReplace($content_lang, ";ADD_AFFECTATION", $newline&@CRLF&"  ;ADD_AFFECTATION", 1)
-          ;IniWrite($initranslation, 'GUI', $match[0], $res)
+      $default = StringStripWS(StringReplace($match, "_", " "), 1+2)
+      $res = InputBox("Give a translation", "Variable name: "&$match&@CRLF&"Separate with == if you want to specify key and its basic translation", $default)
+      If $res<> "" Then
+        $key = $res
+        $translation = $res
+        $res_split = StringSplit($res, "=", 1)
+        If size($res_split) >= 2 Then
+          $key = $res_split[1]
+          $translation = $res_split[2]
         EndIf
-        ;MsgBox(0, "Résultat", StringRight($content_lang, 200))
+        $newline = StringFormat("add($affectations, ""%s"", $gui_section, '%s', '%s')", $match, $key, $translation)
+        $content_lang = StringReplace($content_lang, ";ADD_AFFECTATION", $newline&@CRLF&"  ;ADD_AFFECTATION", 1)
+        $file_changed = True
+        ;IniWrite($initranslation, 'GUI', $match[0], $res)
+      ElseIf @error > 0 Then
+        Exit
       EndIf
-      ;ElseIf $e == 2 Then
-      ;  MsgBox(0, "Error "&$e, StringLeft($regexp, @extended))
-      ;EndIf
     ElseIf $e == 2 Then
       MsgBox(0, "Error "&$e, StringLeft($regexp, @extended))
     EndIf
@@ -155,10 +158,13 @@ Func parseFile($file)
     ;FileWriteLine($f2, StringFormat("GUICtrlSetData($%s, _"&@CRLF&"IniRead($translation_ini, 'GUI', '%s', '%s'))", $match[0], $match[1], $match[1]))
     ;IniWrite($initranslation, 'GUI', $match[1], $match[1])
   Next
-  FileCopy($file_lang, $file_lang&"_tmp")
-  $f2 = FileOpen($file_lang, 2)
-  FileWrite($f2, $content_lang)
-  FileClose($f2)
+  If $file_changed Then
+    FileCopy($file_lang, $file_lang&"_tmp")
+    $f2 = FileOpen($file_lang, 2)
+    FileWrite($f2, $content_lang)
+    FileClose($f2)
+    RunWait('"'&@AutoItExe&'" "'&@ScriptDir&'\'&$file_lang&'"')
+  EndIf
 EndFunc
 
 Func parseAllFiles($fileArray)

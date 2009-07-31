@@ -197,6 +197,7 @@ Opt('MouseCoordMode', 2)
 #include <ButtonConstants.au3>
 #include <Array.au3>
 #Include <GuiEdit.au3>
+#Include <File.au3>
 
 ; ReflexRenderer.exe timeout [milliseconds] [Action]
 parseCommandLine()
@@ -268,7 +269,7 @@ rri_main()
 Func rri_main()
   loadRRI()
 
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
   ;$arrayWindows = emptySizedArray()
   ;$nPreviousWindows = 0
   ;$currentWindow = 0
@@ -354,66 +355,72 @@ Func loadRRI()
   GUICtrlCreateGroup("", -99, -99, 1, 1)
   Global $rri_group_options = GUICtrlCreateGroup($__creating_options__, 8, 40, 281, 255)
   GUICtrlSetResizing(-1, $GUI_DOCKLEFT+$GUI_DOCKTOP)
-  Global $rri_Label1 = GUICtrlCreateLabel($__formula__, 10, 60, 54, 17, $SS_RIGHT)
+  Global $rri_Label1 = GUICtrlCreateLabel($__formula__, 11, 87, 54, 17, $SS_RIGHT)
   GUICtrlSetOnEvent(-1, "rri_Label1Click")
-  Global $rri_in_formula = GUICtrlCreateInput("", 64, 58, 193, 21)
+  Global $rri_in_formula = GUICtrlCreateInput("", 65, 85, 193, 21)
   GUICtrlSetOnEvent(-1, "rri_in_formulaChange")
-  Global $rri_formula_editor = GUICtrlCreateButton("...", 260, 59, 21, 21, 0)
+  Global $rri_formula_editor = GUICtrlCreateButton("...", 261, 86, 21, 21, 0)
   GUICtrlSetOnEvent(-1, "rri_menu_formula_editorClick")
-  Global $rri_DimLabel = GUICtrlCreateLabel($__width_height__, 10, 89, 96, 17, $SS_RIGHT)
+  Global $rri_DimLabel = GUICtrlCreateLabel($__width_height__, 11, 116, 96, 17, $SS_RIGHT)
   GUICtrlSetOnEvent(-1, "rri_DimLabelClick")
-  Global $rri_width = GUICtrlCreateInput("201", 109, 87, 41, 21)
+  Global $rri_width = GUICtrlCreateInput("201", 110, 114, 41, 21)
   GUICtrlSetOnEvent(-1, "rri_widthChange")
-  Global $rri_labelX = GUICtrlCreateLabel("x", 152, 89, 9, 17)
+  Global $rri_labelX = GUICtrlCreateLabel("x", 153, 116, 9, 17)
   GUICtrlSetOnEvent(-1, "rri_labelXClick")
-  Global $rri_height = GUICtrlCreateInput("201", 162, 87, 41, 21)
+  Global $rri_height = GUICtrlCreateInput("201", 163, 114, 41, 21)
   GUICtrlSetOnEvent(-1, "rri_heightChange")
-  Global $rri_reset_resolution = GUICtrlCreateButton($__reset_resolution__, 240, 85, 41, 25, 0)
+  Global $rri_reset_resolution = GUICtrlCreateButton($__reset_resolution__, 241, 112, 41, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_reset_resolutionClick")
-  Global $rri_preview = GUICtrlCreateCheckbox($__preview__, 28, 113, 81, 17)
+  Global $rri_preview = GUICtrlCreateCheckbox($__preview__, 29, 140, 81, 17)
   GUICtrlSetOnEvent(-1, "rri_previewClick")
-  Global $rri_LabelWinMin = GUICtrlCreateLabel($__winmin__, 10, 139, 97, 17, BitOR($SS_RIGHT,$SS_RIGHTJUST))
+  Global $rri_LabelWinMin = GUICtrlCreateLabel($__winmin__, 11, 166, 97, 17, BitOR($SS_RIGHT,$SS_RIGHTJUST))
   GUICtrlSetOnEvent(-1, "rri_LabelWinMinClick")
-  Global $rri_percent = GUICtrlCreateInput("10", 109, 112, 33, 21)
+  Global $rri_percent = GUICtrlCreateInput("10", 110, 139, 33, 21)
   GUICtrlSetOnEvent(-1, "rri_percentChange")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_winmin = GUICtrlCreateInput("-4-4i", 109, 137, 129, 21)
+  Global $rri_winmin = GUICtrlCreateInput("-4-4i", 110, 164, 129, 21)
   GUICtrlSetOnEvent(-1, "rri_winminChange")
-  Global $rri_LabelWinMax = GUICtrlCreateLabel($__winmax__, 10, 161, 97, 17, $SS_RIGHT)
+  Global $rri_LabelWinMax = GUICtrlCreateLabel($__winmax__, 11, 188, 97, 17, $SS_RIGHT)
   GUICtrlSetOnEvent(-1, "rri_LabelWinMaxClick")
-  Global $rri_winmax = GUICtrlCreateInput("4+4i", 109, 159, 129, 21)
+  Global $rri_winmax = GUICtrlCreateInput("4+4i", 110, 186, 129, 21)
   GUICtrlSetOnEvent(-1, "rri_winmaxChange")
-  Global $rri_reset_window = GUICtrlCreateButton($__reset_window__, 240, 146, 41, 25, 0)
+  Global $rri_reset_window = GUICtrlCreateButton($__reset_window__, 241, 173, 41, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_reset_windowClick")
-  Global $rri_check_auto_render = GUICtrlCreateCheckbox($__auto_render__, 16, 190, 118, 17)
+  Global $rri_check_auto_render = GUICtrlCreateCheckbox($__auto_render__, 17, 217, 118, 17)
   GUICtrlSetOnEvent(-1, "rri_check_auto_renderClick")
   GUICtrlSetTip(-1, $__auto_render_hint__)
-  Global $rri_LabelTempFile = GUICtrlCreateLabel($__temp_file__, 15, 269, 89, 17, BitOR($SS_RIGHT,$SS_RIGHTJUST))
-  GUICtrlSetOnEvent(-1, "rri_LabelTempFileClick")
-  Global $rri_render = GUICtrlCreateButton($__render_reflex__, 136, 188, 145, 25, $BS_DEFPUSHBUTTON)
+  Global $rri_render = GUICtrlCreateButton($__render_reflex__, 137, 215, 145, 25, $BS_DEFPUSHBUTTON)
   GUICtrlSetFont(-1, 11, 400, 0, "MS Sans Serif")
   GUICtrlSetOnEvent(-1, "rri_renderClick")
-  Global $rri_output = GUICtrlCreateInput("c:\My_nice_function.bmp", 106, 267, 153, 21)
+  Global $rri_output = GUICtrlCreateInput("c:\My_nice_function.bmp", 261, 139, 17, 21)
   GUICtrlSetOnEvent(-1, "rri_outputChange")
-  Global $rri_PercentSign = GUICtrlCreateLabel("%", 144, 115, 12, 17)
+  GUICtrlSetState(-1, $GUI_HIDE)
+  Global $rri_PercentSign = GUICtrlCreateLabel("%", 145, 142, 12, 17)
   GUICtrlSetOnEvent(-1, "rri_PercentSignClick")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_select = GUICtrlCreateButton("...", 260, 267, 21, 21, 0)
-  GUICtrlSetOnEvent(-1, "rri_selectClick")
-  Global $rri_progress = GUICtrlCreateProgress(10, 245, 271, 16)
-  Global $rri_rendering_text = GUICtrlCreateLabel($__rendering__, 16, 227, 102, 17)
+  Global $rri_progress = GUICtrlCreateProgress(11, 272, 271, 16)
+  Global $rri_rendering_text = GUICtrlCreateLabel($__rendering__, 17, 254, 102, 17)
   GUICtrlSetOnEvent(-1, "rri_rendering_textClick")
-  Global $rri_quicksave = GUICtrlCreateButton($__quick_save__, 136, 212, 89, 25, 0)
+  Global $rri_quicksave = GUICtrlCreateButton($__quick_save__, 137, 239, 89, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_quicksaveClick")
   GUICtrlSetTip(-1, $__quicksave_hint__)
-  Global $rri_save_noquick = GUICtrlCreateButton($__noquick_save__, 224, 212, 57, 25, 0)
+  Global $rri_save_noquick = GUICtrlCreateButton($__noquick_save__, 225, 239, 57, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_menu_saveClick")
   GUICtrlSetTip(-1, $__noquick_save_hint__)
-  Global $rri_seed = GUICtrlCreateInput("", 264, 128, 17, 21)
+  Global $rri_seed = GUICtrlCreateInput("", 241, 139, 17, 21)
   GUICtrlSetOnEvent(-1, "rri_seedChange")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_realmode = GUICtrlCreateCheckbox($__real_mode__, 16, 208, 113, 17)
+  Global $rri_realmode = GUICtrlCreateCheckbox($__real_mode__, 17, 235, 113, 17)
   GUICtrlSetOnEvent(-1, "rri_realmodeClick")
+  Global $rri_lucky_func = GUICtrlCreateButton($__lucky_func__, 14, 56, 90, 25, 0)
+  GUICtrlSetOnEvent(-1, "rri_lucky_funcClick")
+  GUICtrlSetTip(-1, $__lucky_func_hint__)
+  Global $rri_lucky_fract = GUICtrlCreateButton($__lucky_fractal__, 103, 56, 90, 25, 0)
+  GUICtrlSetOnEvent(-1, "rri_lucky_fractClick")
+  GUICtrlSetTip(-1, $__lucky_fractal_hint__)
+  Global $rri_switch_fract = GUICtrlCreateButton($__switch_fractal__, 192, 56, 90, 25, 0)
+  GUICtrlSetOnEvent(-1, "rri_switch_fractClick")
+  GUICtrlSetTip(-1, $__switch_fractal_hint__)
   GUICtrlCreateGroup("", -99, -99, 1, 1)
   Global $rri_LabelTitre = GUICtrlCreateLabel($__reflex_renderer_interface__, 9, 8, 244, 28, $SS_CENTER)
   GUICtrlSetFont(-1, 14, 400, 0, "MS Sans Serif")
@@ -505,10 +512,18 @@ Func loadRRI()
   GUICtrlSetOnEvent(-1, "rri_menu_import_formulaClick")
   Global $rri_menu_import_reflex = GUICtrlCreateMenuItem($__menu_formula_import_reflex__, $rri_menu_formula_editor)
   GUICtrlSetOnEvent(-1, "rri_menu_import_reflexClick")
+  Global $rri_menu_formula_small_history = GUICtrlCreateMenuItem($__menu_formula_small_history__, $rri_menu_formula_editor)
+  GUICtrlSetOnEvent(-1, "rri_menu_formula_small_historyClick")
   Global $rri_menu_formula_history = GUICtrlCreateMenuItem($__menu_formula_history__, $rri_menu_formula_editor)
   GUICtrlSetOnEvent(-1, "rri_menu_formula_historyClick")
   Global $rri_menu_language = GUICtrlCreateMenu($__language_menu__)
   GUICtrlSetOnEvent(-1, "rri_menu_languageClick")
+  Global $rri_menu_customize = GUICtrlCreateMenu($__customize_menu__)
+  GUICtrlSetOnEvent(-1, "rri_menu_customizeClick")
+  Global $rri_all_parameters = GUICtrlCreateMenuItem($__customize_menu_all_parameters__, $rri_menu_customize)
+  GUICtrlSetOnEvent(-1, "rri_all_parametersClick")
+  Global $rri_reset_menu = GUICtrlCreateMenuItem($__reset_menu__, $rri_menu_customize)
+  GUICtrlSetOnEvent(-1, "rri_reset_menuClick")
   #EndRegion ### END Koda GUI section ###
   
   ;Koda doesn't know how to handle that
@@ -658,7 +673,7 @@ EndFunc   ;==>rri_selectClick
 
 ; Performs a conditionnal rendering if the formula changes
 Func rri_in_formulaChange()
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
 EndFunc   ;==>rri_in_formulaChange
 
 ; If height changes, set up window size to keep
@@ -670,7 +685,7 @@ Func rri_heightChange()
   recalculatePreviewPercent(Sqrt($height_pred / $height_new))
   calculateWidthHeight()
   resolutionChanged()
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
 EndFunc   ;==>rri_heightChange
 
 ; If width changes, set up window size to keep
@@ -682,7 +697,7 @@ Func rri_widthChange()
   recalculatePreviewPercent(Sqrt($width_pred / $width_new))
   calculateWidthHeight()
   resolutionChanged()
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
 EndFunc   ;==>rri_widthChange
 
 ; Multiplies the current percent preview by a given ratio
@@ -710,7 +725,7 @@ EndFunc   ;==>resolutionChanged
 Func rri_previewClick()
   changePreviewState()
   calculateWidthHeight()
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
 EndFunc   ;==>rri_previewClick
 
 ;
@@ -732,12 +747,12 @@ EndFunc
 Func rri_winmaxChange()
   updateWinmax()
   winChange()
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
 EndFunc   ;==>rri_winmaxChange
 Func rri_winminChange()
   updateWinmin()
   winChange()
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
 EndFunc   ;==>rri_winminChange
 Func winChange()
   GUICtrlSetState($rri_window_1, $GUI_UNCHECKED)
@@ -765,7 +780,7 @@ Func EditFormulaCallBack($formula_modified, $seed_modified, $history_save)
   updateFormula($formula_modified)
   GUICtrlSetData($rri_seed, $seed_modified)
   
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
   
   $auto_save_formula = $auto_save_formula_sav
 EndFunc   ;==>EditFormulaCallBack
@@ -776,6 +791,7 @@ EndFunc   ;==>rri_menu_import_formulaClick
 Func loadImgDropped()
   ;logging(@GUI_DRAGFILE)
   LoadFormulaFromFile__LoadImgContainingReflex(@GUI_DRAGFILE)
+  EditFormula__UpdateFormulaFromApplication(GUICtrlRead($rri_in_formula))
 EndFunc   ;==>loadImgDropped
 Func rri_menu_import_reflexClick()
   loadFormulaFromReflex()
@@ -802,7 +818,7 @@ Func loadFormulaCallback($formula)
       logging("Unknown tag : "&$item[0])
     EndSwitch
   Next
-  if $render_again Then renderIfAutoRender($rri_out_rendu)
+  if $render_again Then renderIfAutoRenderDefault()
 EndFunc   ;==>loadFormulaCallback
 Func rri_menu_resolutionsClick()
 EndFunc   ;==>rri_menu_resolutionsClick
@@ -925,7 +941,7 @@ Func rri_winMouseRightUp()
         $dw = Int($zoom_factor_posrendu[2]/2/$factor)
         $dh = Int($zoom_factor_posrendu[3]/2/$factor)
         zoomBackward($xy[0] - $dw, $xy[1] - $dh, $xy[0] + $dw, $xy[1] + $dh)
-        renderIfAutoRender($rri_out_rendu)
+        renderIfAutoRenderDefault()
       Case $VISIT_RECTANGLE, $DRAG
         If MouseOverPicture() Then
           rri_moveWindowToMousePosition()
@@ -986,7 +1002,7 @@ Func rri_winMouseLeftUp()
         $dw = Int($zoom_factor_posrendu[2]/2/$factor)
         $dh = Int($zoom_factor_posrendu[3]/2/$factor)
         zoomForward($xy[0] - $dw, $xy[1] - $dh, $xy[0] + $dw, $xy[1] + $dh)
-        renderIfAutoRender($rri_out_rendu)
+        renderIfAutoRenderDefault()
       Case $VISIT_RECTANGLE
         If MouseOverPicture() Then
           rri_moveWindowToMousePosition()
@@ -1078,7 +1094,7 @@ Func resolutionsClick()
   Next 
   updateResolution($res_string)
   ;calculateWidthHeight()
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
 EndFunc   ;==>resolutionsClick
 Func rri_menu_quitClick()
   SaveSession()
@@ -1164,19 +1180,19 @@ Func windowClick()
   if @GUI_CTRLID==$rri_window_8 Then $window_string = '-8-8i, 8+8i'
   if @GUI_CTRLID==$rri_window_pi Then $window_string = '-pi-pi*i, pi+pi*i'
   updateWindow($window_string)
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
 EndFunc   ;==>windowClick
 Func rri_drag_reflexClick()
   $navigation = $DRAG
 EndFunc   ;==>rri_drag_reflexClick
 Func rri_next_windowClick()
   If winNext() Then
-    renderIfAutoRender($rri_out_rendu)
+    renderIfAutoRenderDefault()
   EndIf
 EndFunc   ;==>rri_next_windowClick
 Func rri_previous_windowClick()
   If winPrevious() Then
-    renderIfAutoRender($rri_out_rendu)
+    renderIfAutoRenderDefault()
   EndIf
 EndFunc   ;==>rri_previous_windowClick
 Func changeNavigationState()
@@ -1205,7 +1221,7 @@ Func zoom_factor($factor)
   $winmax_new = complex_calculate(StringFormat("(%s-(%s))*%g+%s", $winmax, $wincenter, $factor, $wincenter))
   zoomForward($cx - $dw * $factor , $cy - $dh * $factor, $cx + $dw * $factor + 1, $cy + $dh * $factor + 1)
   setWinminmax($winmin_new, $winmax_new)
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
 EndFunc   ;==>zoom_factor
 Func rri_zoom_in_factorClick()
   zoom_factor(1.0 / Number(GUICtrlRead($rri_zoom_factor)))
@@ -1289,6 +1305,13 @@ Func updateFormula($string)
   GUICtrlSetData($rri_in_formula, $string)
 EndFunc   ;==>updateFormula
 
+Func updateSeed($string=Default)
+  If $string == Default Then
+    $string = String(EditFormula__newSeed())
+    GUICtrlSetData($rri_seed, $string)
+  EndIf
+EndFunc
+
 Func frmSave()
   GUICtrlSetData($rri_in_formula, GUICtrlRead($rri_in_formula))
 EndFunc   ;==>frmSave
@@ -1330,6 +1353,11 @@ EndFunc   ;==>winSave
 Func isAutoRender()
   Return isChecked($rri_check_auto_render)
 EndFunc   ;==>isAutoRender
+
+Func renderIfAutoRenderDefault()
+  Return renderIfAutoRender($rri_out_rendu)
+EndFunc
+
 ;   $id_rendu : 
 Func renderIfAutoRender($id_rendu)
   if isAutoRender() Then
@@ -1985,11 +2013,11 @@ EndFunc   ;==>rri_zoom_box_gray3Click
 
 Func rri_reset_resolutionClick()
   LoadDefaultResolution()
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
 EndFunc   ;==>rri_reset_resolutionClick
 Func rri_reset_windowClick()
   LoadDefaultWindow()
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
 EndFunc   ;==>rri_reset_windowClick
 
 Func menu_setLang()
@@ -2019,15 +2047,23 @@ EndFunc   ;==>menu_setLang
 
 Func rri_percentChange()
   calculateWidthHeight()
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
 EndFunc   ;==>rri_percentChange
 
 Func rri_realmodeClick()
-  renderIfAutoRender($rri_out_rendu)
+  renderIfAutoRenderDefault()
 EndFunc   ;==>rri_realmodeClick
 
 Func rri_menu_formula_historyClick()
   loadFormula($history_formula_filename)
+EndFunc   ;==>rri_menu_formula_historyClick
+
+Func rri_menu_formula_small_historyClick()
+  Local $content = _ArrayToString($history_formula_array, @CRLF)
+  $filetemp = _TempFile()
+  FileWrite($filetemp, $content)
+  loadFormula($filetemp)
+  FileDelete($filetemp)
 EndFunc   ;==>rri_menu_formula_historyClick
 
 ;============================= Color code ==================================;
@@ -2065,16 +2101,48 @@ EndFunc   ;==>rcc_winResize
 
 Func parseCommandLine()
   If $CmdLine[0] >= 3 and $CmdLine[1]="timeout" Then
-  $todo = StringSplit(_ArrayToString($CmdLine, " ", 3), ";")
-  ;ToolTip("Waiting "&$CmdLine[2]&"ms... ("&$todo[0]&" tasks) "&$CmdLine[3], 0, 0)
-  Sleep(Int($CmdLine[2]))
-  For $i = 1 To $todo[0]
-    ;ToolTip("Accomplishing task "&$i&" over "&$todo[0]&":"&$todo[$i], 0, 0)
-    Execute($todo[$i])
-  Next
-  Exit
-EndIf
-EndFunc
+    $todo = StringSplit(_ArrayToString($CmdLine, " ", 3), ";")
+    ;ToolTip("Waiting "&$CmdLine[2]&"ms... ("&$todo[0]&" tasks) "&$CmdLine[3], 0, 0)
+    Sleep(Int($CmdLine[2]))
+    For $i = 1 To $todo[0]
+      ;ToolTip("Accomplishing task "&$i&" over "&$todo[0]&":"&$todo[$i], 0, 0)
+      Execute($todo[$i])
+    Next
+    Exit
+  EndIf
+EndFunc ;==>parseCommandLine
+
+Func rri_all_parametersClick()
+EndFunc ;==>rri_all_parametersClick
+
+Func rri_reset_menuClick()
+  If MsgBox(1, $__confirmation_reset_title__, $__confirmation_reset_message__) <> 1 Then Return
+  ;TODO: Global reset
+EndFunc ;==>rri_reset_menuClick
+
+Func rri_lucky_funcClick()
+  updateFormula("randf(16)") ;TODO: Externalize
+  updateSeed() ;Put a random seed.
+  renderIfAutoRenderDefault()
+EndFunc ;==>rri_lucky_funcClick
+
+Func rri_lucky_fractClick()
+  updateFormula("oo(randf(16),5)") ;TODO: Externalize
+  updateSeed() ;Put a random seed.
+  renderIfAutoRenderDefault()
+EndFunc ;==>rri_lucky_fractClick
+
+Func rri_switch_fractClick()
+  Local $formula = GUICtrlRead($rri_in_formula)
+  $match = StringRegExp($formula, "oo\((.*),(\d+)\)", 1)
+  If @error = 0 Then ; Already a fractal
+    $m = $match[0]
+    updateFormula($m)
+  Else
+    updateFormula('oo('&$formula&',5)')
+  EndIf
+  renderIfAutoRenderDefault()
+EndFunc ;==>rri_switch_fractClick
 
 ;============================= UNUSED FUNCS ==================================;
 
@@ -2084,6 +2152,8 @@ Func rri_check_auto_renderClick()
 EndFunc   ;==>rri_check_auto_renderClick
 Func rri_menu_languageClick()
 EndFunc   ;==>rri_menu_languageClick
+Func rri_menu_customizeClick()
+EndFunc ;==>rri_menu_customizeClick
 Func rri_seedChange()
 EndFunc   ;==>rri_seedChange
 

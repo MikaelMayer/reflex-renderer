@@ -410,9 +410,7 @@ Func GenerateLoadFormulaBox($fullpath)
   GUICtrlSetOnEvent(-1, "lf_ControlClick")
   #EndRegion ### END Koda GUI section ###
   If loadLinesIntoTreeControl($fullpath, $lf_formula_tree) == -1 Then
-    ;GUIDelete($formula_chooser)
-    ;Opt('GUIOnEventMode', 1)
-    ;Return $return_value
+    ;It's an error... but should not happen
   EndIf
   $pos = WinGetPos($rri_win)
   WinMove($formula_chooser, "", $pos[0]+$pos[2], $pos[1])

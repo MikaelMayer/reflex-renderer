@@ -58,9 +58,42 @@ Remarquez que l'image est recalculée en haute résolution.
 Fermons la fenêtre d'enregistrement.
 Si nous changeons l'image, il suffit de cliquer sur "Enregistrer" et de spécifier un nouveau commentaire.
 
-@4,,1
-Nous pouvons alors charger l'image à partir du fichier en le glissant dans la fenêtre par exemple.
+@4,,0
+Il est aussi possible d'importer de telles images png ou jpeg générées par ce logiciel par glisser-déposer dans celui-ci.
 
+@@2,OpenColors,8
+Pour comprendre le sens des couleurs, cliquons sur l'icône colorée à côté du titre.
+Le principe d'une Reflex (REprésentation de Fonction compLEXe) est que 
+chaque point du plan (x, y) est colorié avec la couleur de son image par la fonction f(x+iy).
 
+@3,CloseColors,1
+Fermons la fenêtre et observons maintenant les relations entre fonctions complexes et réelles.
 
+@3,LoadConcept,7
+Pour cela, chargeons cette fonction réelle:
+f(z) = z² - 4
+Remarquons les couleurs, Positif: rouge; Négatif: cyan; Nul: Noir.
+Les racines sont en -2 et 2.
 
+@3,SwitchComplex,6
+Passons en mode complexe. La fonction réelle est maintenant réduite au coloriage de la droite horizontale centrale, alors que la fonction complexe colorie le plan entier.
+
+@1,LoadConcept2,5
+Chargeons une autre fonction réelle
+f(z) = 0.5z² + 2.
+Cette fonction n'a pas de racines réelles, comme nous pouvons le constater
+
+@2,SwitchComplex2,6
+Maintenant, en passant en mode complexe, on voit apparaître les deux racines complexes 2i et -2i.
+La droite réelle (horizontale centrale) est rouge.
+
+@@5,OpenFormulaEditor,1
+Un éditeur de formule avec coloration syntaxique est aussi disponible.
+Pour l'ouvrir, cliquons sur les "..." à côté de la formule.
+
+@5,GenerateRandomFunctions,5
+Vous pouvez survoler les boutons pour des explications approfondies.
+En attendant, si nous cliquons sur le ">" à côté du boutton randh pour générer des fonctions aléatoires rapidement.
+
+@6,,3
+Quelques exemples sont disponibles dans le menu outils
