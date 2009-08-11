@@ -43,6 +43,7 @@ Global Const $WAIT_CYCLE = 250
 Global $ini_file = getIniFile()
 ;Global $ini_file = "C:\Documents and Settings\Mikaël\Mes documents\Mes images\Reflex\Videos\TestI\Test1.ini"
 Global $total_of_frames = 0 ; Set up in ConvertAndCheckEverything()
+Global $video_framestorender = ""
 
 Global $ini_video_parameters = emptySizedArray()
 push($ini_video_parameters, _ArrayCreate("video_formula", $INI_VIDEO, $INI_VIDEO_FORMULA, ""))
@@ -64,17 +65,43 @@ push($ini_video_parameters, _ArrayCreate("image_winmin", $INI_IMAGE, $INI_IMAGE_
 push($ini_video_parameters, _ArrayCreate("image_winmax", $INI_IMAGE, $INI_IMAGE_WINMAX,  "4+4i"))
 push($ini_video_parameters, _ArrayCreate("image_colornan", $INI_IMAGE, $INI_IMAGE_COLORNAN, "0xFFFFFF"))
 
+Global $percent = 0
+Global $maintext = "Rendering video " 
+Global $subtext = "Rendering video, please wait."&@CRLF&"CTRL+SHIFT+ALT+E : cancel/exit, CTRL+SHIFT+ALT+P : pause/resume"
+Global $subtext_pause = "Rendering paused."&@CRLF&"CTRL+SHIFT+ALT+E : cancel/exit, CTRL+SHIFT+ALT+P : pause/resume"
+Global $state_rendering = True
+
+HotKeySet("^+!e", "RenderVideoExit")
+HotKeySet("^+!p", "RenderVideoPauseResume")
+
 main()
 Exit
 
 Func main()
-  If Not AssignVideoParameters($ini_file, $ini_video_parameters) Then Return
+  If Not AssignVideoParameters($ini_file, $ini_video_parameters) Then
+    $ini_file = getIniFile(True)
+    If Not AssignVideoParameters($ini_file, $ini_video_parameters) Then
+      Return
+    EndIf
+  EndIf
   If Not ConvertAndCheckEverything() Then Return
   RenderVideo()
 EndFunc
 
+Func RenderVideoPauseResume()
+  If $state_rendering Then
+    $state_rendering = False
+    ProgressSet($percent, $subtext_pause, $maintext&$percent&"%")
+  Else
+    $state_rendering = True
+    ProgressSet($percent, $subtext, $maintext&$percent&"%")
+  EndIf
+EndFunc
+Func RenderVideoExit()
+  Exit
+EndFunc
+
 Func RenderVideo()
-  
   $n = getNumberOfProcessors()
   Local $thread_pid     = emptySizedArray()      ; PID array
   Local $thread_output  = emptySizedArray()      ; output array
@@ -84,17 +111,17 @@ Func RenderVideo()
   ;We launch as many rendering as there are available processors.
   Local $list_frames_to_render = $video_framestorender
   Local $done = 0
-  
-  $maintext = "Rendering video " 
-  $subtext = "Rendering video, please wait."
-  
-  ProgressOn($maintext, $maintext, $subtext, Default, Default, 16)
+
+  ProgressOn($maintext, $maintext, $subtext, Default, Default, 16); +2 if not on top wanted.
   ProgressSet(0)
   
   While Not ($list_frames_to_render = "" and size($thread_pid) = 0)
     While size($thread_pid) == $n Or ($list_frames_to_render = "" And size($thread_pid) > 0)
       $i = 1
       While $i <= size($thread_pid)
+        While Not $state_rendering
+          Sleep(1000)
+        WEnd
         If ProcessWaitClose($thread_pid[$i], 1) Then
           $done += 1
           $percent = Int(100 * $done / $total_of_frames)
@@ -121,6 +148,7 @@ Func RenderVideo()
       $formula = getFormulaForFrame($frame)
       $output = getOutputForFrame($frame)
       ;$custom_output = getCustomOutputForFrame($frame) ; Contains the true extension
+      ;logging("computing formula "&$formula&" at frame "&$frame)
       
       $cmd = getRenderingCommandForFormulaOutput($formula, $output)
       
@@ -229,22 +257,25 @@ EndFunc
 ;Returns True if all required variables were set
 Func AssignVideoParameters($ini_file, $ini_video_parameters)
   Local $errors = emptySizedArray()
-  
-  For $i = 1 To $ini_video_parameters[0]
-    $tab = $ini_video_parameters[$i]
-    $varname = $tab[$INI_N_VARNAME]
-    
-    $section = $tab[$INI_N_SECTION]
-    $sectionvar = $tab[$INI_N_SECTIONVAR]
-    $default = $tab[$INI_N_DEFAULT]
-    
-    $value = IniRead($ini_file, $section, $sectionvar, $default)
-    ;logging("new value:"&$value)
-    If $value == "" Then
-      push($errors, "Missing required field "&$section&">"&$sectionvar&" in "&FileBaseName($ini_file))
-    EndIf
-    Assign($varname, $value, 2)
-  Next
+  If $ini_file == "" Then
+    push($errors, "No *.ini file specified. Exactly one is needed to render the video")
+  Else
+    For $i = 1 To $ini_video_parameters[0]
+      $tab = $ini_video_parameters[$i]
+      $varname = $tab[$INI_N_VARNAME]
+      
+      $section = $tab[$INI_N_SECTION]
+      $sectionvar = $tab[$INI_N_SECTIONVAR]
+      $default = $tab[$INI_N_DEFAULT]
+      
+      $value = IniRead($ini_file, $section, $sectionvar, $default)
+      ;logging("new value:"&$value)
+      If $value == "" Then
+        push($errors, "Missing required field "&$section&">"&$sectionvar&" in "&FileBaseName($ini_file))
+      EndIf
+      Assign($varname, $value, 2)
+    Next
+  EndIf
   If size($errors)>0 Then
     toBasicArray($errors)
     MsgBox(0, "Errors while generating", _ArrayToString($errors, @CRLF)&@CRLF&@CRLF&"If you remove this ini file, this programm will automatically generate a new correct one.")
@@ -353,10 +384,10 @@ Func ReplaceSharpsByValue($file, $number, $max)
 EndFunc
 
 ;Gets the ini file that will be used to generate all the processes.
-Func getIniFile()
+Func getIniFile($force_choose=False)
   ;Either by argument
   Local $ini_file = ""
-  If $CmdLine[0] > 0 Then
+  If $CmdLine[0] > 0 and Not $force_choose Then
     Local $arg_provided = $CmdLine[1]
     If FileExists($arg_provided) Then
       If StringEndsWith($arg_provided, ".ini") Then
@@ -365,16 +396,16 @@ Func getIniFile()
     EndIf
   EndIf
   ;Or by FileDialog
-  If $ini_file = "" Then
+  If $ini_file == "" or $force_choose Then
     ;TODO:Find itself the first ini file in this directory
     $search = FileFindFirstFile("*.ini")
     $default = FileFindNextFile($search)
-    If @error <> 0 Then
+    If @error <> 0 and not $force_choose Then
       FileInstall("___INI_VIDEO_FULLFILE___", "___INI_VIDEO_FILE_BASENAME___")
       Return "___INI_VIDEO_FILE_BASENAME___" ; No file terminating with *.ini, so we install the one that we contains
     Else
       FileFindNextFile($search)
-      If @error <> 0 Then ; Only one file, we take it without asking.
+      If @error <> 0 and Not $force_choose Then ; Only one file, we take it without asking.
         Return $default
       EndIf
     EndIf

@@ -376,7 +376,7 @@ Func GenerateLoadFormulaBox($fullpath)
   If $LOAD_FORMULA_EXISTS Then
     Return
   EndIf
-	$LOAD_FORMULA_EXISTS = True
+  $LOAD_FORMULA_EXISTS = True
   #Region ### START Koda GUI section ### Form=C:\Documents and Settings\Mikaël\Mes documents\Reflex\LogicielOrdi\RenderReflex\ReflexRendererFormulaList.kxf
   Global $formula_chooser = GUICreate($__formula_chooser__, 257, 346, 303, 219, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS))
   GUISetOnEvent($GUI_EVENT_CLOSE, "formula_chooserClose")

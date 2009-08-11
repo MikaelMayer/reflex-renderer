@@ -298,22 +298,22 @@ Func complex_calculate($expr)
   $p = runReflexWithArguments($flags)
   $found = False
   $result = 0
-  While True
-    $text = StdoutRead($p)
+  $text = ""
+  While True ; Read everything
+    $text = $text & StdoutRead($p)
     If @error Then ExitLoop
-    ;BUG / TODO: Error if the std output is truncated.
-    $lines = StringSplit($text, @CRLF, 1)
-    For $i = 1 To $lines[0]
-      $current_line = $lines[$i]
-      ;Logging("Line to compare: "&$current_line)
-      If isFormulaLine($current_line) Then
-        ;Logging("Formula!")
-        $result= extractFormulaLine($current_line)
-        $found = True
-        ExitLoop 2
-      EndIf
-    Next
   WEnd
+  $lines = StringSplit($text, @CRLF, 1)
+  For $i = 1 To $lines[0]
+    $current_line = $lines[$i]
+    ;Logging("Line to compare: "&$current_line)
+    If isFormulaLine($current_line) Then
+      ;Logging("Formula!")
+      $result= extractFormulaLine($current_line)
+      $found = True
+      ExitLoop
+    EndIf
+  Next
   ProcessClose($p)
   If Not $found Then
     logging(StringFormat("%s has not been simplified", $expr))
@@ -364,6 +364,17 @@ Func StringSizeMin($str, $length, $add_char = " ")
     $str = $str & $add_char
   WEnd
   Return $str
+EndFunc
+
+; Remove comments from a string Comments are introduced by semicolon.
+; Beware, if other introductors, should be compatible by StringRegExpReplace, so escaped if necessary.
+Func removeComments($string, $introductor = ";")
+  $comments_replaced = $string
+  Do
+    $string = $comments_replaced
+    $comments_replaced = StringRegExpReplace($string, "(\r?\n|\A)"&$introductor&"(?m).*(?:\r?\n|\z)", "\1")
+  Until $comments_replaced == $string
+  Return $comments_replaced
 EndFunc
 
 ; Animation and windows

@@ -113,10 +113,6 @@ Func newSubSection($Before, $Action, $After, $Text)
   Return $result
 EndFunc ;==> newSubSection
 
-
-
-
-
 ; Tutorial internal format:
 ; tutorial = SizedArray of sections
 ; section = SizedArray of subsections
@@ -130,7 +126,10 @@ Func loadTutorial()
   Local $tutorial_current_textfile = FileRead($tutorial_file)
 
   Local $sections_tutorial = StringSplit($tutorial_current_textfile, "@@", 1)
-  deleteAt($sections_tutorial, 1)
+  $sections_titles = pop($sections_tutorial)
+  ;Overwrite section titles
+  $__tutorial_sections__ = StringStripWS(removeComments($sections_titles), 1+2)
+  
   For $i = 1 to size($sections_tutorial)
     $subsections = StringSplit($sections_tutorial[$i], "@", 1)
     For $j = 1 To size($subsections)
@@ -373,6 +372,61 @@ Func _Tutorial_continue()
 EndFunc
 
 ;=================== Tutorial pre-defined functions ===================;
+
+Func _Tutorial_Quick0()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_Quick0", 500)
+  _Tutorial_MouseMove($rri_switch_fract)
+  _Tutorial_MouseMove($rri_lucky_fract)
+  _Tutorial_MouseMove($rri_lucky_func)
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+
+Func _Tutorial_Quick1($seed, $func_name)
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout($func_name, 500)
+  _Tutorial_MouseMove($rri_lucky_func)
+  updateFormula("randf(16)")
+  updateSeed($seed)
+  renderIfAutoRenderDefault()
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+Func _Tutorial_Quick1_1()
+  _Tutorial_Quick1("1524393753", "_Tutorial_Quick1_1")
+EndFunc
+Func _Tutorial_Quick1_2()
+  _Tutorial_Quick1("1693264836", "_Tutorial_Quick1_2")
+EndFunc
+Func _Tutorial_Quick1_3()
+  _Tutorial_Quick1("2031282463", "_Tutorial_Quick1_3")
+EndFunc
+
+Func _Tutorial_Quick2()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_Quick2", 500)
+  _Tutorial_MouseMove($rri_switch_fract)
+  rri_switch_fractClick()
+  renderIfAutoRenderDefault()
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+
+Func _Tutorial_Quick3()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_Quick3", 500)
+  _Tutorial_MouseMove($rri_lucky_fract)
+  updateFormula("oo(o(y-z,y)-x/z-sin(argth(z*argsh(z))),5)")
+  renderIfAutoRenderDefault()
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+
+Func _Tutorial_LoadInit()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_LoadInit", 500)
+  ResetSession()
+  renderIfAutoRenderDefault()
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+
 Func _Tutorial_Miniature()
   If _Tutorial_cancel() Then Return
   _Tutorial_MouseMove($rri_preview)
@@ -634,6 +688,50 @@ Func _Tutorial_LoadConcept2_ShowRoots()
   Sleep(1000)
   _Tutorial_MouseMoveRatio($rri_out_rendu, 0.5, 0.75)
   Sleep(1000)
-  _Tutorial_SwitchComplex()
+  setTimeout("_Tutorial_DisplayRealLine", 500)
 EndFunc
-  
+
+Func _Tutorial_OpenFormulaEditor()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_OpenFormulaEditor", 500)
+  _Tutorial_MouseMove($rri_formula_editor)
+  rri_menu_formula_editorClick()
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+
+Func _Tutorial_GenerateRandomFunctions()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_GenerateRandomFunctions", 500)
+  _Tutorial_MouseMove($IDC_F_RANDH_AUTO, $ID_EDITFORMULA)
+  deleteText($IDC_EDIT1, 0)
+  insertText($IDC_EDIT1, TEXT('randh([{15}])'))
+  GUICtrlSetData($IDC_F_SEED, "1459936610")
+  Sleep(500)
+  ResetSession()
+  ID_DRAWClick()
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+
+Func _Tutorial_CloseFormulaEditor()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_CloseFormulaEditor", 500)
+  ID_EDITFORMULAClose()
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+
+Func _Tutorial_OpenSmallHistory()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_OpenSmallHistory", 500)
+  ResetSession()
+  WinActivate($rri_win)
+  setTimeout_external("WinWaitActive('"&WinGetTitle($rri_win)&"');Send('!f');Sleep(100);Send('{DOWN 3}');Sleep(400);Send('p')", 0)
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+
+Func _Tutorial_LoadFromSmallHistory()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_OpenSmallHistory", 500)
+  _Tutorial_MouseMove($lf_formula_tree, $formula_chooser)
+  MouseClick("left")
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
