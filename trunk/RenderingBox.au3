@@ -120,6 +120,7 @@ Func GenerateVideoExeFromIni($ini_file)
   Local $base_ini_file = FileBaseName($ini_file)
   Local $folder = FileFolder($ini_file)
   Local $default_comment = StringRegExpReplace($ini_file, "\.[^\.]*\z", "")
+  $default_comment = StringRegExpReplace($default_comment, ".*\\", "")
   
   $ra = retrieveRenderVideoAndAut2Exe()
   $renderVideoAu3 = $ra[0]

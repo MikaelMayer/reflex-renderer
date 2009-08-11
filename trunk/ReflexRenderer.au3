@@ -1308,8 +1308,8 @@ EndFunc   ;==>updateFormula
 Func updateSeed($string=Default)
   If $string == Default Then
     $string = String(EditFormula__newSeed())
-    GUICtrlSetData($rri_seed, $string)
   EndIf
+  GUICtrlSetData($rri_seed, $string)
 EndFunc
 
 Func frmSave()
@@ -2101,12 +2101,12 @@ EndFunc   ;==>rcc_winResize
 
 Func parseCommandLine()
   If $CmdLine[0] >= 3 and $CmdLine[1]="timeout" Then
-    $todo = StringSplit(_ArrayToString($CmdLine, " ", 3), ";")
-    ;ToolTip("Waiting "&$CmdLine[2]&"ms... ("&$todo[0]&" tasks) "&$CmdLine[3], 0, 0)
+    Local $task = StringSplit(_ArrayToString($CmdLine, " ", 3), ";")
+    ;ToolTip("Waiting "&$CmdLine[2]&"ms... ("&$task[0]&" tasks) "&$CmdLine[3], 0, 0)
     Sleep(Int($CmdLine[2]))
-    For $i = 1 To $todo[0]
-      ;ToolTip("Accomplishing task "&$i&" over "&$todo[0]&":"&$todo[$i], 0, 0)
-      Execute($todo[$i])
+    For $i = 1 To $task[0]
+      ;ToolTip("Accomplishing task "&$i&" over "&$task[0]&":"&$task[$i], 0, 0)
+      Execute($task[$i])
     Next
     Exit
   EndIf
@@ -2117,7 +2117,8 @@ EndFunc ;==>rri_all_parametersClick
 
 Func rri_reset_menuClick()
   If MsgBox(1, $__confirmation_reset_title__, $__confirmation_reset_message__) <> 1 Then Return
-  ;TODO: Global reset
+  ResetSession()
+  renderIfAutoRenderDefault()
 EndFunc ;==>rri_reset_menuClick
 
 Func rri_lucky_funcClick()
@@ -2199,6 +2200,19 @@ Func ReloadDefaultParameter($name)
       ExitLoop
     EndIf
   Next
+EndFunc
+
+Func ResetSession()
+  For $singlemap in $sessionParametersMap
+    GUICtrlSetData($singlemap[1], $singlemap[2])
+  Next
+  For $singlemap in $sessionCheckBoxMap
+    GUICtrlSetState($singlemap[1], _Iif($singlemap[2]=='TRUE', $GUI_CHECKED, $GUI_UNCHECKED))
+  Next
+  changePreviewState()
+  updateWinmin()
+  updateWinmax()
+  winChange()
 EndFunc
 
 Func LoadSession()

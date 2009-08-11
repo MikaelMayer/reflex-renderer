@@ -11,6 +11,8 @@
 #include-once
 #include "IniHandling.au3"
 #include "GlobalUtils.au3"
+#include <GUIListBox.au3>
+#include <GuiConstantsEx.au3>
 #include <Array.au3>
 
 Global $lang_folder = 'lang' ;TODO: To externalize?
@@ -24,10 +26,29 @@ LoadTranslations()
 
 Func LoadTranslations()
 
-  $translation_current_language = IniRead($ini_file, $ini_file_session, 'language', 'en')
-  Local $updates = True
-  $translation_ini = @ScriptDir&'\'&$lang_folder&'\'&translationFile($translation_current_language)
+  ; Code to retrieve the main user language. 'Hack' found in the Autoit3 documentation of _GUICtrlListBox_GetLocalePrimLang
+  Local $hlistBox, $default_language = 'en', $default_language_number
+  $win = GUICreate("Dummy list box", 400, 296)
+  $hListBox = $hListBox = GUICtrlCreateList("", 2, 2, 396, 296)
+  $default_language_number = _GUICtrlListBox_GetLocalePrimLang($hListBox)
+  GUIDelete($win)
+  Switch $default_language_number
+  Case 09
+    $default_language = 'en'
+  Case 12
+    $default_language = 'fr'
+  EndSwitch
 
+  ;Detection of the language file
+  $translation_current_language = IniRead($ini_file, $ini_file_session, 'language', $default_language)
+  Local $updates = True
+  $translation_ini = globalTranslationIni($translation_current_language)
+  If not FileExists($translation_ini) Then
+    $translation_current_language = 'en'
+    $translation_ini = globalTranslationIni($translation_current_language)
+  EndIf
+  
+  ;Builds the list of all available languages (all *.ini files in the 'lang' folder)
   If not listLanguages() Then $languages = False
 
   Global $affectations_messages = _ArrayCreate( _ArrayCreate('Reflex_name', $ini_section, 'Reflex name', 'Reflex name'))
@@ -242,8 +263,13 @@ Func update($affectations)
   Next
 EndFunc
 
+Func globalTranslationIni($translation_current_language)
+  Return @ScriptDir&'\'&$lang_folder&'\'&translationFile($translation_current_language)
+EndFunc
+  
 Func translationFile($str)
-  Return "translations_"&$str&".ini"
+  Local $result = "translations_"&$str&".ini"
+  Return $result
 EndFunc
 
 Func listLanguages()

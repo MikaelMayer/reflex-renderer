@@ -1,13 +1,40 @@
 ; Duration before animation, type of animation, duration after animation (if auto-play)
-
+Prise en main rapide|Zooms|Navigation|Enregistrement|Le concept Reflex|Editeur de formules|Parcourir les formules
 @@0,,0
 Bonjour et bienvenue dans ce tutorial du Générateur de Reflex !
 Préparez-vous à explorer les fonctions complexes.
+La souris et le clavier seront automatisés.
 Cliquez sur "Lire" ci-dessous pour commencer.
 
-@4,,0
-L'image à droite est une fonction complexe.
-Nous allons d'abord voir comment apprécier les différents niveaux de détail.
+@5,Quick0,1
+L'image à droite est une REprésentation de Fonction compLEXe, d'où le terme 'Reflex'.
+
+Mais sans même savoir de quoi il s'agit, il est possible de générer vos propres Reflex juste en cliquant sur un des 3 boutons ci-dessus.
+
+@4,Quick1_1,1
+Chaque fois que nous cliquons sur le premier bouton, nous générons une fonction complètement aléatoire, contenant 16 fonctions et symboles de fonction.
+
+@2,Quick1_2,1
+Cliquons encore une fois pour en générer une nouvelle.
+
+@1,Quick1_3,1
+Et encore une fois !
+
+@4,Quick2,1
+En cliquant sur le troisième bouton, après avoir cliqué sur le premier, nous "composons la fonction par elle-même", c'est à dire générons une fractale.
+
+@4,Quick3,1
+Avec le deuxième bouton, nous pouvons directement générer de telles fonctions fractales.
+
+@2,Quick2,5
+Et avec le troisième bouton, nous pouvons récupérer la fonction d'origine.
+
+D'ores et déjà, vous pouvez appuyer sur "stop" et vous amuser un peu, ou bien laisser se continuer ce didacticiel.
+
+@@4,LoadInit,0
+Très bien ! Continuons l'exploration.
+Nous allons maintenant voir comment apprécier les différents niveaux de détail.
+Pour cela, chargeons la fonction initiale.
 
 @6,Miniature,2
 Le tracé prenant du temps, nous allons générer 4 fois moins de pixels pour aller plus vite.
@@ -70,30 +97,41 @@ chaque point du plan (x, y) est colorié avec la couleur de son image par la fonc
 Fermons la fenêtre et observons maintenant les relations entre fonctions complexes et réelles.
 
 @3,LoadConcept,7
-Pour cela, chargeons cette fonction réelle:
+Pour cela, observons les couleurs de cette fonction réelle:
 f(z) = z² - 4
-Remarquons les couleurs, Positif: rouge; Négatif: cyan; Nul: Noir.
+Rouge = Positif, Cyan = Négatif, Noir = Zéro.
 Les racines sont en -2 et 2.
 
 @3,SwitchComplex,6
 Passons en mode complexe. La fonction réelle est maintenant réduite au coloriage de la droite horizontale centrale, alors que la fonction complexe colorie le plan entier.
 
 @1,LoadConcept2,5
-Chargeons une autre fonction réelle
+Chargeons une autre fonction réelle :
 f(z) = 0.5z² + 2.
-Cette fonction n'a pas de racines réelles, comme nous pouvons le constater
+Cette fonction n'a pas de racines réelles, tout est rouge (=positif).
 
 @2,SwitchComplex2,6
-Maintenant, en passant en mode complexe, on voit apparaître les deux racines complexes 2i et -2i.
+Maintenant, en passant en mode complexe, on voit apparaître les deux racines complexes, 2i et -2i.
 La droite réelle (horizontale centrale) est rouge.
 
-@@5,OpenFormulaEditor,1
-Un éditeur de formule avec coloration syntaxique est aussi disponible.
+@@4,OpenFormulaEditor,1
+Un éditeur de formule avec coloration syntaxique sommaire est aussi disponible.
 Pour l'ouvrir, cliquons sur les "..." à côté de la formule.
 
 @5,GenerateRandomFunctions,5
 Vous pouvez survoler les boutons pour des explications approfondies.
-En attendant, si nous cliquons sur le ">" à côté du boutton randh pour générer des fonctions aléatoires rapidement.
+En attendant, nous pouvons cliquer sur le ">" à côté du boutton randh pour générer des fonctions aléatoires rapidement.
 
-@6,,3
-Quelques exemples sont disponibles dans le menu outils
+@1,CloseFormulaEditor,1
+Passons maintenant à la manipulation de l'historique.
+
+@@5,OpenSmallHistory,3
+L'historique des formules est disponible sous le menu "Formule > Historique".
+Prenons par exemple le petit historique.
+Le gros historique peut mettre du temps à se charger après un certain temps.
+
+@1,LoadFromSmallHistory,3
+Cliquons sur une formule pour la recharger.
+
+Voilà, vous connaissez les bases.
+Ce tutorial est terminé, mais vous pouvez désormais continuer seul ou à plusieurs votre exploration!

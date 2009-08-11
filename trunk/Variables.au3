@@ -311,12 +311,12 @@ EndFunc
 Func vaw_varmaxChange()
   loadVariable()
   vaw_update_slider_raw()
-  vawUpdate()
+  ;vawUpdate()
 EndFunc
 Func vaw_varminChange()
   loadVariable()
   vaw_update_slider_raw()
-  vawUpdate()
+  ;vawUpdate()
 EndFunc
 Func vaw_varnameChange()
   loadVariable()
