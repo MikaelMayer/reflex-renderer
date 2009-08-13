@@ -25,9 +25,11 @@ Global $TUTORIAL_BOX_CALLBACK = "", $TUTORIAL_BOX_PARENT_WINDOW = 0
 Global $current_tutorial
 Global $n_current_section = 1
 Global $n_current_subsection = 1
-Global $tutorial_play = False
+Global $tutorial_play = True
 Global $tutorial_automatic_move = True
 Global $global_after_ms = 0
+Global $_Tutorial_texte_tutorial_sections = ""
+Global $tutorial_first_run = True
 
 Func GenerateTutorialBox()
   If $TUTORIAL_BOX_EXISTS Then
@@ -47,23 +49,18 @@ Func GenerateTutorialBox()
   GUICtrlSetOnEvent(-1, "tb_texteChange")
   Global $tb_previous = GUICtrlCreateButton($__previous__, 0, 130, 48, 33, 0)
   GUICtrlSetOnEvent(-1, "tb_previousClick")
-  Global $tb_stop = GUICtrlCreateButton($__stop__, 100, 130, 48, 33, 0)
-  GUICtrlSetOnEvent(-1, "tb_stopClick")
-  GUICtrlSetState(-1, $GUI_DISABLE)
-  Global $tb_play = GUICtrlCreateButton($__play__, 50, 130, 48, 33, 0)
-  GUICtrlSetOnEvent(-1, "tb_playClick")
-  Global $tb_next = GUICtrlCreateButton($__next__, 150, 130, 48, 33, 0)
+  Global $tb_next = GUICtrlCreateButton($__next__, 50, 130, 48, 33, 0)
   GUICtrlSetOnEvent(-1, "tb_nextClick")
-  Global $tb_autoplay = GUICtrlCreateCheckbox($__autoplay__, 208, 138, 97, 17)
+  Global $tb_autoplay = GUICtrlCreateCheckbox($__autoplay__, 104, 138, 217, 17)
   GUICtrlSetState(-1, $GUI_CHECKED)
   GUICtrlSetOnEvent(-1, "tb_autoplayClick")
   Global $tb_sections = GUICtrlCreateList("", 360, 0, 121, 162, $WS_BORDER)
-  GUICtrlSetData(-1, $__tutorial_sections__)
   GUICtrlSetOnEvent(-1, "tb_sectionsClick")
   #EndRegion ### END Koda GUI section ###
+  GUICtrlSetData(-1, $_Tutorial_texte_tutorial_sections)
+
   WindowManager__registerWindow($TutorialBox, "Tutorial", "TutorialBoxClose")
-  tb_autoplayClick()
-  $tutorial_play = False
+  $tutorial_play = True
   ;If WinExists($main_window_handle) Then
   ;  $pos = WinGetPos($main_window_handle, "")
   ;  $pos2 = WinGetPos($AboutBox, "")
@@ -128,7 +125,7 @@ Func loadTutorial()
   Local $sections_tutorial = StringSplit($tutorial_current_textfile, "@@", 1)
   $sections_titles = pop($sections_tutorial)
   ;Overwrite section titles
-  $__tutorial_sections__ = StringStripWS(removeComments($sections_titles), 1+2)
+  $_Tutorial_texte_tutorial_sections = StringStripWS(removeComments($sections_titles), 1+2)
   
   For $i = 1 to size($sections_tutorial)
     $subsections = StringSplit($sections_tutorial[$i], "@", 1)
@@ -177,12 +174,16 @@ EndFunc
 
 WindowManager__addLoadSaveFunctionForType("Tutorial", "Tutorial__LoadFromValue", "Tutorial__SaveToValue")
 Func Tutorial__LoadFromValue($value)
+  logging(toString($global_timeout_functions))
+  
   If Not loadTutorial() Then Return
   Local $t_save = $TUTORIAL_BOX_EXISTS
   GenerateTutorialBox()
   $n_current_section = Int($value)
   $n_current_subsection = 1
+  $tutorial_first_run = True
   loadCurrentSection()
+;  tb_autoplayClick()
   If Not $t_save Then
     Tutorial__putInFrontOfParentWindow()
     AnimateFromTop($TutorialBox)
@@ -194,7 +195,7 @@ Func Tutorial__SaveToValue($win_handle)
 EndFunc
 
 Func getSectionNumberFromName($name)
-  Local $sections = StringSplit($__tutorial_sections__, "|")
+  Local $sections = StringSplit($_Tutorial_texte_tutorial_sections, "|")
   For $i = 1 To size($sections)
     If $sections[$i] == $name Then Return $i
     ;logging("Comparing "&$sections[$i]&" and "&$name)
@@ -202,7 +203,7 @@ Func getSectionNumberFromName($name)
   Return 0
 EndFunc
 Func getSectionNameFromNumber($n)
-  Local $sections = StringSplit($__tutorial_sections__, "|")
+  Local $sections = StringSplit($_Tutorial_texte_tutorial_sections, "|")
   $n = Int($n)
   If $n < 1 Then $n = 1
   If $n > size($sections) Then $n = size($sections)
@@ -226,6 +227,10 @@ Func previousSubSection()
   loadCurrentSection()
 EndFunc
 Func nextSubSection()
+  If $tutorial_first_run Then ;$n_current_section == 1 and $n_current_subsection == 1 Then
+    Tutorial__stickToParentWindow()
+    $tutorial_first_run = False
+  EndIf
   Local $section = $current_tutorial[$n_current_section]
   Local $subsection = $section[$n_current_subsection]
   $n_current_subsection +=  1
@@ -259,22 +264,25 @@ Func loadCurrentSection()
     GUICtrlSetState($tb_next, $GUI_ENABLE)
   EndIf
   
-  ;logging("Loaded subsection : "&toString($subsection))
+  logging("Loaded subsection : "&toString($subsection))
   Local $action = getSubSection_Action($subsection)
   Local $before_ms = 1000*getSubSection_Before($subsection) 
   Local $after_ms  = 1000*getSubSection_After($subsection) 
   $global_after_ms = $after_ms
   Switch $action
-  Case "Miniature", "Zoomout1", "Zoomin1", "Zoomout2", "Zoomin2", "Zoomin3", "Zoomout3", "Navig1"
-    setTimeout("_Tutorial_"&$action, $before_ms)
   Case ""
-    If $tutorial_play Then
-      setTimeout("nextSubSection", $before_ms + $after_ms)
+    _Tutorial_nextIsReady()
+    If $tutorial_automatic_move Then _Tutorial_continue()
+  Case Else
+    If $tutorial_first_run Then
+      $n_current_subsection -= 1
+      _Tutorial_nextIsReady()
+    Else
+      If $tutorial_automatic_move Then _Tutorial_nextIsNotReady()
+      GUICtrlSetData($tb_autoplay, $__autoplay_plus_action__)
+      setTimeout("_Tutorial_"&$action, $before_ms)
     EndIf
-  Case Else ;TODO: To delete ?
-    setTimeout("_Tutorial_"&$action, $before_ms)
   EndSwitch
-  ;TODO : initialize animation, etc.
 EndFunc
 
 Func cancelAllTutorialActions()
@@ -285,24 +293,12 @@ Func tb_autoplayClick()
   cancelAllTutorialActions()
   If BitAND(GUICtrlRead($tb_autoplay), $GUI_CHECKED) Then
     $tutorial_automatic_move = True
+    loadCurrentSection()
   Else
-    $tutorial_play = False
+    $tutorial_automatic_move = False
+    _Tutorial_nextIsReady()
   EndIf
 EndFunc ;==>tb_autoplayClick
-Func tb_playClick()
-  cancelAllTutorialActions()
-  GUICtrlSetState($tb_play, $GUI_DISABLE)
-  GUICtrlSetState($tb_stop, $GUI_ENABLE)
-  $tutorial_play = True
-  Tutorial__stickToParentWindow()
-  loadCurrentSection()
-EndFunc ;==>tb_playClick
-Func tb_stopClick()
-  cancelAllTutorialActions()
-  GUICtrlSetState($tb_play, $GUI_ENABLE)
-  GUICtrlSetState($tb_stop, $GUI_DISABLE)
-  $tutorial_play = False
-EndFunc ;==>tb_stopClick
 
 Func tb_previousClick() ; Previous subsection.
   cancelAllTutorialActions()
@@ -322,6 +318,7 @@ Func tb_texteChange()
   ; Nothing to write here.
 EndFunc ;==>tb_texteChange
 Func TutorialBoxClose($win_handle=$TutorialBox)
+  cancelAllTutorialActions()
   If Not IsDeclared("win_handle") Then  $win_handle=$TutorialBox
   If $TUTORIAL_BOX_EXISTS Then
     AnimateToTop($win_handle)
@@ -340,6 +337,10 @@ EndFunc ;==>TutorialBoxRestore
 Func positionCenter($control, $main_win = $rri_win)
   Local $wpos = WinGetPos($main_win, "")
   Local $cpos = ControlGetPos($main_win, "", $control)
+  If Not IsArray($wpos) Or Not IsArray($cpos) Then
+    logging("Error: the control "&$control&" does not have any position")
+    ;Return _ArrayCreate(0, 0)
+  EndIf
   Return _ArrayCreate($wpos[0]+$cpos[0]+$cpos[2]/2+6, $wpos[1]+$cpos[1]+$cpos[3]/2+_iif($main_win == $rri_win, 50, 30))
 EndFunc
 
@@ -349,14 +350,16 @@ Func positionRatio($control, $xratio, $yratio)
   Return _ArrayCreate($wpos[0]+$cpos[0]+$cpos[2]*$xratio+6, $wpos[1]+$cpos[1]+$cpos[3]*$yratio+50)
 EndFunc
 
-Func _Tutorial_MouseMove($control, $main_win = $rri_win)
+Func _Tutorial_MouseMove($control, $main_win = Default, $speed = Default)
+  If $main_win = Default Then $main_win = $rri_win
+  If $speed    = Default Then $speed = 10
   Local $mpos = positionCenter($control, $main_win)
   Local $save_MouseCoordMode = Opt("MouseCoordMode", 1)
-  MouseMove($mpos[0], $mpos[1])
+  MouseMove($mpos[0], $mpos[1], $speed)
   Opt("MouseCoordMode", $save_MouseCoordMode)
 EndFunc
 
-Func _Tutorial_MouseMoveRatio($control, $xratio, $yratio, $speed=10)
+Func _Tutorial_MouseMoveRatio($control, $xratio, $yratio, $speed = 10)
   Local $mpos = positionRatio($control, $xratio, $yratio)
   Local $save_MouseCoordMode = Opt("MouseCoordMode", 1)
   MouseMove($mpos[0], $mpos[1], $speed)
@@ -364,11 +367,26 @@ Func _Tutorial_MouseMoveRatio($control, $xratio, $yratio, $speed=10)
 EndFunc
 
 Func _Tutorial_cancel()
-  Return Not $tutorial_automatic_move Or Not $tutorial_play
+  Return Not $tutorial_automatic_move
 EndFunc
 
-Func _Tutorial_continue()
-  setTimeout("nextSubSection", $global_after_ms)
+Func _Tutorial_pointerNext()
+  _Tutorial_MouseMove($tb_next, $TutorialBox)
+  GUICtrlSetData($tb_autoplay, $__autoplay__)
+EndFunc
+
+Func _Tutorial_nextIsReady()
+  GUICtrlSetBkColor($tb_next, 0x00ff00)
+EndFunc
+
+Func _Tutorial_nextIsNotReady()
+  GUICtrlSetBkColor($tb_next, 0xff0000)
+EndFunc
+
+Func _Tutorial_continue($delay = Default)
+  If $delay == Default Then $delay = 500
+  _Tutorial_nextIsReady()
+  setTimeout("_Tutorial_pointerNext", $delay)
 EndFunc
 
 ;=================== Tutorial pre-defined functions ===================;
@@ -376,10 +394,10 @@ EndFunc
 Func _Tutorial_Quick0()
   If _Tutorial_cancel() Then Return
   If $rendering_thread Then  Return setTimeout("_Tutorial_Quick0", 500)
-  _Tutorial_MouseMove($rri_switch_fract)
+  _Tutorial_MouseMove($rri_switch_fract, Default, 30)
   _Tutorial_MouseMove($rri_lucky_fract)
   _Tutorial_MouseMove($rri_lucky_func)
-  If $tutorial_play Then _Tutorial_continue()
+  If $tutorial_play Then _Tutorial_continue(700)
 EndFunc
 
 Func _Tutorial_Quick1($seed, $func_name)
@@ -401,13 +419,25 @@ Func _Tutorial_Quick1_3()
   _Tutorial_Quick1("2031282463", "_Tutorial_Quick1_3")
 EndFunc
 
+Func _Tutorial_StartTooltipWaiting($jump_lines = True)
+  $start_message = _Iif($jump_lines, @LF&@LF, "")
+  ToolTip($start_message&$__wait_while_generating__) ; TODO: Externalise
+EndFunc
+
+Func _Tutorial_EndTooltipWaitingWhenFinished()
+  If $rendering_thread Then Return setTimeout("_Tutorial_EndTooltipWaitingWhenFinished", 500)
+  ToolTip("")
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+
 Func _Tutorial_Quick2()
   If _Tutorial_cancel() Then Return
   If $rendering_thread Then  Return setTimeout("_Tutorial_Quick2", 500)
   _Tutorial_MouseMove($rri_switch_fract)
   rri_switch_fractClick()
   renderIfAutoRenderDefault()
-  If $tutorial_play Then _Tutorial_continue()
+  _Tutorial_StartTooltipWaiting()
+  _Tutorial_EndTooltipWaitingWhenFinished()
 EndFunc
 
 Func _Tutorial_Quick3()
@@ -423,13 +453,15 @@ Func _Tutorial_LoadInit()
   If _Tutorial_cancel() Then Return
   If $rendering_thread Then  Return setTimeout("_Tutorial_LoadInit", 500)
   ResetSession()
+  _Tutorial_StartTooltipWaiting(False)
   renderIfAutoRenderDefault()
-  If $tutorial_play Then _Tutorial_continue()
+  _Tutorial_EndTooltipWaitingWhenFinished()
+  ;If $tutorial_play Then _Tutorial_continue()
 EndFunc
 
 Func _Tutorial_Miniature()
   If _Tutorial_cancel() Then Return
-  _Tutorial_MouseMove($rri_preview)
+  _Tutorial_MouseMove($rri_preview, Default, 30)
   setPreviewPercent(50)
   rri_previewClick()
   If $tutorial_play Then _Tutorial_continue()
@@ -454,19 +486,19 @@ EndFunc
 
 Func _Tutorial_ZoomAbsolute($factor)
   If _Tutorial_cancel() Then Return
-  _Tutorial_MouseMove($rri_zoom_absolute)
-  GUICtrlSetData($rri_zoom_absolute, String($factor))
+  _Tutorial_MouseMoveRatio($rri_zoom_absolute, $factor/50, 0.5, 30)
+  GUICtrlSetData($rri_zoom_absolute, $factor)
   rri_zoom_absoluteChange()
   If $tutorial_play Then _Tutorial_continue()
 EndFunc
 Func _Tutorial_Zoomout2()
-  _Tutorial_ZoomAbsolute(6)
+  _Tutorial_ZoomAbsolute(35)
 EndFunc
 Func _Tutorial_Zoomin2()
-  _Tutorial_ZoomAbsolute(2)
+  _Tutorial_ZoomAbsolute(45)
 EndFunc
 Func _Tutorial_Zoomin3()
-  _Tutorial_ZoomAbsolute(0.5)
+  _Tutorial_ZoomAbsolute(25)
 EndFunc
 
 Func _Tutorial_Zoomout3()
@@ -481,7 +513,8 @@ Func _Tutorial_Navig1()
   If _Tutorial_cancel() Then Return
   If $rendering_thread Then  Return setTimeout("_Tutorial_Navig1", 500)
   GUICtrlSetData($rri_zoom_factor, "2")
-  _Tutorial_MouseMove($rri_reset_window)
+  GUICtrlSetState($rri_visit_click, $GUI_CHECKED)
+  _Tutorial_MouseMove($rri_reset_window, Default, 30)
   rri_reset_windowClick()
   setTimeout("_Tutorial_Navig1_1", 500)
 EndFunc
@@ -489,7 +522,7 @@ Func _Tutorial_Navig1_1()
   If _Tutorial_cancel() Then Return
   If $rendering_thread Then  Return setTimeout("_Tutorial_Navig1_1", 500)
   WinActivate($rri_win)
-  _Tutorial_MouseMoveRatio($rri_out_rendu, 0.25, 0.25)
+  _Tutorial_MouseMoveRatio($rri_out_rendu, 0.25, 0.25, 20)
   rri_winMouseLeftDown()
   rri_winMouseLeftUp()
   setTimeout("_Tutorial_Navig1_2", 500)
@@ -516,18 +549,18 @@ EndFunc
 Func _Tutorial_Rectangle1()
   If _Tutorial_cancel() Then Return
   If $rendering_thread Then  Return setTimeout("_Tutorial_Rectangle1", 500)
-  _Tutorial_MouseMove($rri_visit_rectangle)
+  _Tutorial_MouseMove($rri_visit_rectangle, Default, 30)
   GUICtrlSetState($rri_visit_rectangle, $GUI_CHECKED)
   rri_visit_rectangleClick()
   Sleep(300)
   WinActivate($rri_win)
-  _Tutorial_MouseMoveRatio($rri_out_rendu, 3/7, 3/7)
+  _Tutorial_MouseMoveRatio($rri_out_rendu, 3/7, 3/7, 30)
   rri_winMouseLeftDown()
   displayZoombox(True)
-  _Tutorial_MouseMoveRatio($rri_out_rendu, 4/7, 4/7)
+  _Tutorial_MouseMoveRatio($rri_out_rendu, 4/7, 5/7, 30)
   Local $xy = MouseGetPos()
   resizeZoomBox($x, $y, $xy[0], $xy[1])
-  Sleep(100)
+  Sleep(500)
   rri_winMouseLeftUp()
   If $tutorial_play Then _Tutorial_continue()
 EndFunc
@@ -614,9 +647,10 @@ EndFunc
 
 Func _Tutorial_CloseColors()
   If _Tutorial_cancel() Then Return
-  If WinActive($__hint_color_code_button__) Then
+  If WinExists($__hint_color_code_button__) Then
     rcc_winClose()
   EndIf
+  ResetSession()
   If $tutorial_play Then _Tutorial_continue()
 EndFunc
 
@@ -732,6 +766,7 @@ Func _Tutorial_LoadFromSmallHistory()
   If _Tutorial_cancel() Then Return
   If $rendering_thread Then  Return setTimeout("_Tutorial_OpenSmallHistory", 500)
   _Tutorial_MouseMove($lf_formula_tree, $formula_chooser)
-  MouseClick("left")
+  WinActivate($formula_chooser)
+  setTimeout_external("WinWaitActive('"&WinGetTitle($formula_chooser)&"');Send('{DOWN}');Sleep(2000);Send('{DOWN}')", 0)
   If $tutorial_play Then _Tutorial_continue()
 EndFunc

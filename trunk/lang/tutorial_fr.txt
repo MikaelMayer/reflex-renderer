@@ -4,39 +4,39 @@ Prise en main rapide|Zooms|Navigation|Enregistrement|Le concept Reflex|Editeur d
 Bonjour et bienvenue dans ce tutorial du Générateur de Reflex !
 Préparez-vous à explorer les fonctions complexes.
 La souris et le clavier seront automatisés.
-Cliquez sur "Lire" ci-dessous pour commencer.
+Cliquez sur '>' ci-dessous pour commencer.
 
-@5,Quick0,1
+@7,Quick0,1
 L'image à droite est une REprésentation de Fonction compLEXe, d'où le terme 'Reflex'.
 
 Mais sans même savoir de quoi il s'agit, il est possible de générer vos propres Reflex juste en cliquant sur un des 3 boutons ci-dessus.
 
-@4,Quick1_1,1
+@5,Quick1_1,1
 Chaque fois que nous cliquons sur le premier bouton, nous générons une fonction complètement aléatoire, contenant 16 fonctions et symboles de fonction.
 
-@2,Quick1_2,1
+@1,Quick1_2,1
 Cliquons encore une fois pour en générer une nouvelle.
 
 @1,Quick1_3,1
 Et encore une fois !
 
 @4,Quick2,1
-En cliquant sur le troisième bouton, après avoir cliqué sur le premier, nous "composons la fonction par elle-même", c'est à dire générons une fractale.
+En cliquant sur le troisième bouton, après avoir cliqué sur le premier, nous "composons plusieurs fois la fonction avec elle-même", c'est à dire générons une fractale.
 
 @4,Quick3,1
 Avec le deuxième bouton, nous pouvons directement générer de telles fonctions fractales.
 
-@2,Quick2,5
+@4,Quick2,5
 Et avec le troisième bouton, nous pouvons récupérer la fonction d'origine.
 
-D'ores et déjà, vous pouvez appuyer sur "stop" et vous amuser un peu, ou bien laisser se continuer ce didacticiel.
+Vous pouvez essayer ces fonctionalités avant de passer à la suite.
 
-@@4,LoadInit,0
+@@1,LoadInit,0
 Très bien ! Continuons l'exploration.
 Nous allons maintenant voir comment apprécier les différents niveaux de détail.
-Pour cela, chargeons la fonction initiale.
+Pour cela, nous vous chargeons la fonction initiale.
 
-@6,Miniature,2
+@3,Miniature,0
 Le tracé prenant du temps, nous allons générer 4 fois moins de pixels pour aller plus vite.
 Pour cela, activons l'option "miniature".
 
@@ -48,16 +48,16 @@ Le facteur de zoom est indiqué et vaut actuellement 2.
 Augmentons le facteur de zoom à 4 et zoomons en avant avec ce nouveau facteur.
 
 @4,Zoomout2,2
-Maintenant, nous pouvons aussi jouer avec le paramètre du "zoom absolu".
-Il est actuellement à 1. En le changeant de 1 à 6, nous zoomons directement 6 fois en arrière.
+Maintenant, nous pouvons aussi jouer avec le zoomeur.
+En le bougeant à droite, nous agrandissons la fonction.
 
-@3,Zoomin2,2
-Si nous le changeons de 6 à 2, cela équivaut à un zoom 3 fois avant.
+@1,Zoomin2,2
+Encore une fois à droite.
 
-@3,Zoomin3,2
-Si nous le changeons de 2 à 0.5, cela équivaut à un zoom quatre fois en avant.
+@2,Zoomin3,2
+En le remettant à gauche, nous réduisons la fonction.
 
-@5,Zoomout3,5
+@6,Zoomout3,5
 Nous pouvons revenir à la vue précédente en appuyant sur "précédent".
 Voilà, nous avons fait le tour des zooms avec les boutons.
 Prochaine section, nous verrons comment nous déplacer avec la souris.
@@ -73,64 +73,64 @@ Nous pouvons aussi activer la visite par rectangles de zooms, en activant préala
 Dans le cas où une image nous plait (chargeons une vue personnalisée), nous pouvons la sauvegarder.
 Pour cela, visitons les options correspondantes.
 
-@4,SaveDialogPng,1
+@6,SaveDialogPng,1
 Par exemple, nous spécifions le format PNG, et nous gardons le répertoire par défaut.
 Tant qu'on y est, donnons lui un nom: "Montagne".
 
-@4,SaveAll,3
+@6,SaveAll,3
 Appuyons sur "Enregistrer tout", qui enregistre donc l'image au format PNG, ainsi que la formule dans un fichier texte à côté.
 Remarquez que l'image est recalculée en haute résolution.
 
-@4,SaveQuick,1
+@8,SaveQuick,1
 Fermons la fenêtre d'enregistrement.
-Si nous changeons l'image, il suffit de cliquer sur "Enregistrer" et de spécifier un nouveau commentaire.
+Si nous changeons l'image, il suffit de cliquer sur "Enregistrer" et de spécifier un nouveau nom. Notre nouvelle image sera alors enregistrée dans le même dossier que précédemment.
 
-@4,,0
-Il est aussi possible d'importer de telles images png ou jpeg générées par ce logiciel par glisser-déposer dans celui-ci.
+@5,,0
+Il est aussi possible d'importer une image déjà enregistrée en .png ou .jpeg par ce logiciel.
+Procédez simplement un glisser-déposer ou importez-la avec le menu Formules > Importer.
 
-@@2,OpenColors,8
+@@8,OpenColors,8
 Pour comprendre le sens des couleurs, cliquons sur l'icône colorée à côté du titre.
-Le principe d'une Reflex (REprésentation de Fonction compLEXe) est que 
-chaque point du plan (x, y) est colorié avec la couleur de son image par la fonction f(x+iy).
+Le principe d'une Reflex (REprésentation de Fonction compLEXe) est que chaque point de coordonnées (x, y) est colorié avec la couleur de f(x+iy)
 
-@3,CloseColors,1
+@2,CloseColors,1
 Fermons la fenêtre et observons maintenant les relations entre fonctions complexes et réelles.
 
-@3,LoadConcept,7
+@6,LoadConcept,7
 Pour cela, observons les couleurs de cette fonction réelle:
 f(z) = z² - 4
 Rouge = Positif, Cyan = Négatif, Noir = Zéro.
 Les racines sont en -2 et 2.
 
-@3,SwitchComplex,6
+@6,SwitchComplex,6
 Passons en mode complexe. La fonction réelle est maintenant réduite au coloriage de la droite horizontale centrale, alors que la fonction complexe colorie le plan entier.
 
-@1,LoadConcept2,5
+@3,LoadConcept2,5
 Chargeons une autre fonction réelle :
 f(z) = 0.5z² + 2.
 Cette fonction n'a pas de racines réelles, tout est rouge (=positif).
 
 @2,SwitchComplex2,6
-Maintenant, en passant en mode complexe, on voit apparaître les deux racines complexes, 2i et -2i.
+Maintenant, en passant en mode complexe, on voit apparaître en noir les deux racines complexes, 2i et -2i.
 La droite réelle (horizontale centrale) est rouge.
 
-@@4,OpenFormulaEditor,1
+@@6,OpenFormulaEditor,1
 Un éditeur de formule avec coloration syntaxique sommaire est aussi disponible.
 Pour l'ouvrir, cliquons sur les "..." à côté de la formule.
 
-@5,GenerateRandomFunctions,5
+@6,GenerateRandomFunctions,5
 Vous pouvez survoler les boutons pour des explications approfondies.
 En attendant, nous pouvons cliquer sur le ">" à côté du boutton randh pour générer des fonctions aléatoires rapidement.
 
 @1,CloseFormulaEditor,1
 Passons maintenant à la manipulation de l'historique.
 
-@@5,OpenSmallHistory,3
+@@8,OpenSmallHistory,3
 L'historique des formules est disponible sous le menu "Formule > Historique".
 Prenons par exemple le petit historique.
-Le gros historique peut mettre du temps à se charger après un certain temps.
+Le chargement du gros historique peut être long après de nombreuses utilisations.
 
-@1,LoadFromSmallHistory,3
+@3,LoadFromSmallHistory,3
 Cliquons sur une formule pour la recharger.
 
 Voilà, vous connaissez les bases.

@@ -25,14 +25,13 @@ Global $languages = emptySizedArray()
 LoadTranslations()
 
 Func LoadTranslations()
-
   ; Code to retrieve the main user language. 'Hack' found in the Autoit3 documentation of _GUICtrlListBox_GetLocalePrimLang
   Local $hlistBox, $default_language = 'en', $default_language_number
-  $win = GUICreate("Dummy list box", 400, 296)
-  $hListBox = $hListBox = GUICtrlCreateList("", 2, 2, 396, 296)
-  $default_language_number = _GUICtrlListBox_GetLocalePrimLang($hListBox)
+  Local $win = GUICreate("Dummy list box", 400, 296)
+  $hListBox = GUICtrlCreateList("", 2, 2, 396, 296)
+  Local $default_language_number = _GUICtrlListBox_GetLocalePrimLang($hListBox)
   GUIDelete($win)
-  Switch $default_language_number
+  Switch Int($default_language_number)
   Case 09
     $default_language = 'en'
   Case 12
@@ -176,7 +175,7 @@ Func LoadTranslations()
   add($affectations, "__quicksave_hint__", $gui_section, 'Give a comment and save!', 'Give a comment and save!')
   add($affectations, "__noquick_save_hint__", $gui_section, 'Set saving options.', 'Set saving options.')
   add($affectations, "__zoom_factor_hint__", $gui_section, 'Zoom factor hint', '"Zoom in" or "Zoom out" are using this multiplier.')
-  add($affectations, "__zoom_absolute_hint__", $gui_section, 'Zoom absolute hint', '')
+  add($affectations, "__zoom_absolute_hint__", $gui_section, 'Zoom absolute hint', 'Move this to view the function at different scales')
   add($affectations, "__menu_quitnosave__", $gui_section, 'Quit without saving', 'Quit without saving')
   add($affectations, "__import_window__", $gui_section, 'Import window', 'Import window')
   add($affectations, "__import_resolution__", $gui_section, 'Import resolution', 'Import resolution')
@@ -215,8 +214,7 @@ Func LoadTranslations()
   add($affectations, "__previous__", $gui_section, 'Previous', 'Previous')
   add($affectations, "__stop__", $gui_section, 'Stop', 'Stop')
   add($affectations, "__tutorial__", $gui_section, 'Reflex Renderer Tutorial', 'Reflex Renderer Tutorial')
-  add($affectations, "__tutorial_sections__", $gui_section, 'Tut1|Tut2|Tut3|Tut4|Tut5|Tut6|Tut7', 'Zooming|Navigation|Saving options|Discover the Reflex concept|Formula Editor|Browsing formulas|Video recording')
-  add($affectations, "__autoplay__", $gui_section, 'Autoplay', 'Autoplay')
+  add($affectations, "__autoplay__", $gui_section, 'Autoplay', 'Automated actions')
   add($affectations, "__error__", $gui_section, 'Error', 'Error')
   add($affectations, "__tutorial_section_misformed_aborting_loading__", $gui_section, 'Tutorial section misformed', 'Tutorial section misformed')
   add($affectations, "__open_tutorial__", $gui_section, 'Tutorial...', 'Tutorial...')
@@ -232,9 +230,12 @@ Func LoadTranslations()
   add($affectations, "__lucky_func__", $gui_section, 'Lucky function', 'Lucky function')
   add($affectations, "__lucky_func_hint__", $gui_section, 'Lucky func hint', 'Generates a random complex function')
   add($affectations, "__lucky_fractal__", $gui_section, 'Lucky fractal', 'Lucky fractal')
-  add($affectations, "__lucky_fractal_hint__", $gui_section, 'Generates a random complex function and compose it by itself', 'Generates a random complex function and compose it by itself')
+  add($affectations, "__lucky_fractal_hint__", $gui_section, 'Lucky fractal hint', 'Generates a random complex function and compose it by itself')
   add($affectations, "__switch_fractal__", $gui_section, '(Un)fractalize!', '(Un)fractalize!')
   add($affectations, "__switch_fractal_hint__", $gui_section, 'Switch fractal hint', 'Toggles betweens fractal and function')
+  add($affectations, "__autoplay_plus_action__", $gui_section, 'Autoplay action', 'Automated actions (1 planified action)')
+  add($affectations, "__switch_function__", $gui_section, 'Unfractalize !', 'Unfractalize !')
+  add($affectations, "__wait_while_generating__", $gui_section, 'Wait while generating', 'Please wait while the function is generated')
   ;ADD_AFFECTATION
 
   If $updates and Not @Compiled Then

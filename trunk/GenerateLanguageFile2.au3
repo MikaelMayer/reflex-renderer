@@ -133,7 +133,7 @@ Func parseFile($file)
     If $e == 0 Then
     ElseIf $e == 1 Then
       $default = StringStripWS(StringReplace($match, "_", " "), 1+2)
-      $res = InputBox("Give a translation", "Variable name: "&$match&@CRLF&"Separate with == if you want to specify key and its basic translation", $default)
+      $res = InputBox("Give a translation", "Variable name: "&$match&@CRLF&"Separate with = if you want to specify key and its basic translation", $default)
       If $res<> "" Then
         $key = $res
         $translation = $res
