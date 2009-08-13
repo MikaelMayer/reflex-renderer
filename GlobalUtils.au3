@@ -286,7 +286,11 @@ EndFunc
 Func runReflexWithArguments($args)
   $cmd = StringFormat("%s %s", $RenderReflexExe, $args)
   ;logging("Running "&$cmd)
-  Return Run($cmd, '', @SW_HIDE, 2+4)
+  Local $pid = Run($cmd, '', @SW_HIDE, 2+4)
+  ;If @error <> 0 Then
+    ;logging("Error while running reflexrenderer")
+  ;EndIf
+  Return $pid
 EndFunc
 
 Func complex_calculate($expr)
@@ -315,8 +319,10 @@ Func complex_calculate($expr)
     EndIf
   Next
   ProcessClose($p)
+  ;logging("rr output={"&$text&"}")
   If Not $found Then
-    logging(StringFormat("%s has not been simplified", $expr))
+    logging(StringFormat("%s has not been simplified, retrying.", $expr))
+    Return complex_calculate($expr)
   EndIf
   $result = simplifyParenthesis($result)
   Return $result

@@ -36,10 +36,10 @@ Func LoadSavebox($saveboxParametersMap, $saveboxCheckBoxMap)
 EndFunc
 
 Func SaveSavebox($saveboxParametersMap, $saveboxCheckBoxMap)
-  for $singlemap in $saveboxParametersMap
+  For $singlemap in $saveboxParametersMap
     SaveSaveboxParameter($singlemap[0], $singlemap[1])
   Next
-  for $singlemap in $saveboxCheckBoxMap
+  For $singlemap in $saveboxCheckBoxMap
     SaveSaveboxCheckBox($singlemap[0], $singlemap[1])
   Next
 EndFunc

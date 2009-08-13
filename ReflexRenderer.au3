@@ -195,6 +195,7 @@ Opt('MouseCoordMode', 2)
 #include <WindowsConstants.au3>
 #include <StaticConstants.au3>
 #include <ButtonConstants.au3>
+#include <SliderConstants.au3>
 #include <Array.au3>
 #Include <GuiEdit.au3>
 #Include <File.au3>
@@ -248,6 +249,7 @@ Global $auto_save_formula = True
 Global $zooming = 0
 Global $zoomvars[8]
 Global $mouse_right_pressed = False
+Global $zoom_absolute_exponent_per_unit = 1/5
 
 Global $initWorkingDir = @ScriptDir
 Global $moving = False
@@ -450,10 +452,9 @@ Func loadRRI()
   Global $rri_LabelZoomFactor = GUICtrlCreateLabel($__zoom_factor__, 10, 384, 84, 17, $SS_RIGHT)
   GUICtrlSetOnEvent(-1, "rri_LabelZoomFactorClick")
   GUICtrlSetTip(-1, $__zoom_factor_hint__)
-  Global $rri_LabelZoomAbsolute = GUICtrlCreateLabel($__zoom_absolute__, 10, 412, 84, 17, $SS_RIGHT)
-  GUICtrlSetOnEvent(-1, "rri_LabelZoomAbsoluteClick")
-  GUICtrlSetTip(-1, $__zoom_absolute_hint__)
-  Global $rri_zoom_absolute = GUICtrlCreateInput("1", 96, 410, 57, 21)
+  Global $rri_zoom_absolute = GUICtrlCreateSlider(16, 405, 150, 45, BitOR($TBS_AUTOTICKS,$TBS_TOP,$TBS_LEFT,$TBS_FIXEDLENGTH))
+  GUICtrlSetLimit(-1, 50, 0)
+  GUICtrlSetData(-1, 25)
   GUICtrlSetOnEvent(-1, "rri_zoom_absoluteChange")
   GUICtrlSetTip(-1, $__zoom_absolute_hint__)
   GUICtrlCreateGroup("", -99, -99, 1, 1)
@@ -625,7 +626,10 @@ Func loadRRI()
 
   AnimateFromTopLeft($rri_win)
   
-  If Not FileExists($ini_file) Then Tutorial__Load()
+  If Not FileExists($ini_file) Then
+    Tutorial__Load()
+    SaveSession()
+  EndIf
   
   $rri_win_pos = WinGetPos($rri_win)
   WindowManager__loadAll()
@@ -673,6 +677,7 @@ EndFunc   ;==>rri_selectClick
 
 ; Performs a conditionnal rendering if the formula changes
 Func rri_in_formulaChange()
+  formulaChanged(GUICtrlRead($rri_in_formula))
   renderIfAutoRenderDefault()
 EndFunc   ;==>rri_in_formulaChange
 
@@ -724,7 +729,6 @@ EndFunc   ;==>resolutionChanged
 ; Action to perform if the user changes the "preview" check box
 Func rri_previewClick()
   changePreviewState()
-  calculateWidthHeight()
   renderIfAutoRenderDefault()
 EndFunc   ;==>rri_previewClick
 
@@ -737,6 +741,7 @@ Func changePreviewState()
     GUICtrlSetState($rri_percent, $GUI_HIDE)
     GUICtrlSetState($rri_PercentSign, $GUI_HIDE)
   EndIf
+  calculateWidthHeight()
 EndFunc   ;==>changePreviewState
 Func updateWinmax()
   $winmax = GUICtrlRead($rri_winmax)
@@ -1208,13 +1213,14 @@ Func rri_visit_clickClick()
 EndFunc   ;==>rri_visit_clickClick
 ;   $factor : 
 Func zoom_factor($factor)
+  If $factor == 1 Then Return
   ;$__reflex_renderer_interface__
   $zoom_factor_posrendu = $rri_out_rendu_pos
   $dw = Int($zoom_factor_posrendu[2]/2)
   $dh = Int($zoom_factor_posrendu[3]/2)
   $cx = $zoom_factor_posrendu[0]+$dw
   $cy = $zoom_factor_posrendu[1]+$dh
-  ;logging(StringFormat("%d, %d, %d, %d", $dw, $dh, $cx, $y))
+  logging(StringFormat("Center: %d, %d, %d, %d, %s, %s", $dw, $dh, $cx, $y, $winmin, $winmax))
   $wincenter = complex_calculate(StringFormat("(%s+%s)/2", $winmin, $winmax))
   logging($wincenter)
   $winmin_new = complex_calculate(StringFormat("(%s-(%s))*%g+%s", $winmin, $wincenter, $factor, $wincenter))
@@ -1224,18 +1230,36 @@ Func zoom_factor($factor)
   renderIfAutoRenderDefault()
 EndFunc   ;==>zoom_factor
 Func rri_zoom_in_factorClick()
-  zoom_factor(1.0 / Number(GUICtrlRead($rri_zoom_factor)))
+  Local $factor = Number(GUICtrlRead($rri_zoom_factor))
+  rri_zoom_absoluteAddFactor($factor)
+  zoom_factor(1/$factor)
 EndFunc   ;==>rri_zoom_in_factorClick
 Func rri_zoom_out_factorClick()
-  zoom_factor(Number(GUICtrlRead($rri_zoom_factor)))
+  Local $factor = Number(GUICtrlRead($rri_zoom_factor))
+  rri_zoom_absoluteAddFactor(1/$factor)
+  zoom_factor($factor)
 EndFunc   ;==>rri_zoom_out_factorClick
 Func rri_zoom_factorChange()
+  If Number(GUICTrlRead($rri_zoom_factor)) <= 0 Then GUICtrlSetData($rri_zoom_factor, "4")
 EndFunc   ;==>rri_zoom_factorChange
+Func rri_zoom_absoluteReset()
+  $zoomAbsolutePrevious = 25
+  GUICtrlSetData($rri_zoom_absolute, $zoomAbsolutePrevious)
+EndFunc
+Func rri_zoom_absoluteAddFactor($factor)
+  $pixels = Log($factor)/log(2)/($zoom_absolute_exponent_per_unit*Number(GUICTrlRead($rri_zoom_factor))/4)
+  GUICtrlSetData($rri_zoom_absolute, GUICtrlRead($rri_zoom_absolute) + $pixels)
+  $zoomAbsolutePrevious = Number(GUICtrlRead($rri_zoom_absolute))
+EndFunc
+
 Func rri_zoom_absoluteChange()
+  logging("Zoom absolute changed")
   $newZoomAbsolute = Number(GUICtrlRead($rri_zoom_absolute))
-  If $newZoomAbsolute <= 0 Then Return
+  logging("$newZoomAbsolute = "&$newZoomAbsolute)
   If isAutoRender() Then
-    zoom_factor($newZoomAbsolute / $zoomAbsolutePrevious)
+    Local $factor = 2^(($zoomAbsolutePrevious - $newZoomAbsolute)*$zoom_absolute_exponent_per_unit*Number(GUICTrlRead($rri_zoom_factor))/4)
+    zoom_factor($factor)
+    logging("zoom factor done on "&$factor)
   EndIf
   $zoomAbsolutePrevious = $newZoomAbsolute
 EndFunc   ;==>rri_zoom_absoluteChange
@@ -1299,12 +1323,6 @@ Func winNext()
   Return True
 EndFunc   ;==>winNext
 
-;   $string : 
-Func updateFormula($string)
-  $string = Variables__updateString($string)
-  GUICtrlSetData($rri_in_formula, $string)
-EndFunc   ;==>updateFormula
-
 Func updateSeed($string=Default)
   If $string == Default Then
     $string = String(EditFormula__newSeed())
@@ -1313,7 +1331,7 @@ Func updateSeed($string=Default)
 EndFunc
 
 Func frmSave()
-  GUICtrlSetData($rri_in_formula, GUICtrlRead($rri_in_formula))
+  updateFormula(GUICtrlRead($rri_in_formula))
 EndFunc   ;==>frmSave
 
 Func winSave()
@@ -1642,23 +1660,30 @@ Func getWinMinMaxMoved($delta_x, $delta_y)
   ;addFlag($flags, "output", GUICtrlRead($rri_output))
   addFlag($flags, "delta_x", $delta_x)
   addFlag($flags, "delta_y", $delta_y)
-  $pid = runReflexWithArguments('--new_window'&$flags)
+  Dim $cmd = '--new_window'&$flags
+  Dim $pid = runReflexWithArguments($cmd)
   Dim $lines = '';
   While True
-    $text = StdoutRead($pid)
-    if @error Then
-      ExitLoop
-    Else
-      $lines &= $text
-    EndIf
+    $lines = $lines & StdoutRead($pid)
+    If @error Then ExitLoop
   WEnd
+  ;logging("error="&@error)
   $errors_pid = StderrRead($pid)
   If $errors_pid<>'' Then
-    MsgBox(0, $Errors, $errors_pid);
+    MsgBox(0, $Errors, $errors_pid)
     Return -1
   EndIf
+  ProcessClose($pid)
+  ;logging("rr output :{"&$lines&"}")
   $lines = StringSplit($lines, @CRLF, 1)
   $winminmax = StringSplit($lines[1],';:,')
+  If UBound($winminmax) < 3 Then
+    ;logging("Error: Was called with the following command line")
+    ;logging($cmd)
+    ;logging("Remaining to read on pid: "&StdoutRead($pid))
+    ;MsgBox(0, "Erreur", "erreur, voies le log")
+    $winminmax = _ArrayCreate(2, getWinmin(), getWinmax())
+  EndIf
   Return $winminmax
 EndFunc   ;==>getWinMinMaxMoved
 
@@ -1787,6 +1812,11 @@ Func zoomForward($x0, $y0, $x1, $y1)
 
   $winminmax = getWinMinMaxMoved(($deltax_max * $maxwh / $output_max_size), ($deltay_max * $maxwh / $output_max_size))
   ;Winmax part
+  If Not IsArray($winminmax) Or UBound($winminmax) < 3 Then
+    ;Error detected !
+    ;logging("winminmax="&toString($winminmax))
+    
+  EndIf
   $future_winmax = $winminmax[2] ; TODO: Secure this !
   setWinminmax($future_winmin, $future_winmax)
 EndFunc   ;==>zoomForward
@@ -2013,11 +2043,13 @@ EndFunc   ;==>rri_zoom_box_gray3Click
 
 Func rri_reset_resolutionClick()
   LoadDefaultResolution()
+  calculateWidthHeight()
   renderIfAutoRenderDefault()
 EndFunc   ;==>rri_reset_resolutionClick
 Func rri_reset_windowClick()
   LoadDefaultWindow()
   renderIfAutoRenderDefault()
+  rri_zoom_absoluteReset()
 EndFunc   ;==>rri_reset_windowClick
 
 Func menu_setLang()
@@ -2071,9 +2103,9 @@ EndFunc   ;==>rri_menu_formula_historyClick
 Func rri_color_code_buttonClick()
   Global $rcc_base_x = 484, $rcc_base_y = 408
   Global $rcc_win = GUICreate($__hint_color_code_button__, $rcc_base_x, $rcc_base_y, Default, Default, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS,$DS_MODALFRAME))
-  GUISetOnEvent($GUI_EVENT_CLOSE, "rcc_winClose")
-  GUISetOnEvent($GUI_EVENT_MAXIMIZE, "rcc_winResize")
-  GUISetOnEvent($GUI_EVENT_RESIZED, 'rcc_winResize')
+  GUISetOnEvent($GUI_EVENT_CLOSE, 'rcc_winClose', $rcc_win)
+  GUISetOnEvent($GUI_EVENT_MAXIMIZE, 'rcc_winResize', $rcc_win)
+  GUISetOnEvent($GUI_EVENT_RESIZED, 'rcc_winResize', $rcc_win)
   Global $rcc_color_code = GUICtrlCreatePic($bin_dir&"RenderCodeColor.JPG", 0, 0, $rcc_base_x, $rcc_base_y)
   GUICtrlSetResizing ( $rcc_color_code, $GUI_DOCKLEFT+$GUI_DOCKTOP + $GUI_DOCKRIGHT+$GUI_DOCKBOTTOM)
   rcc_winResize()
@@ -2121,21 +2153,37 @@ Func rri_reset_menuClick()
   renderIfAutoRenderDefault()
 EndFunc ;==>rri_reset_menuClick
 
+;   $string : The formula to update
+Func updateFormula($string)
+  $string = Variables__updateString($string)
+  GUICtrlSetData($rri_in_formula, $string)
+  formulaChanged($string)
+EndFunc
+
+Func formulaChanged($formula)
+  $match = StringRegExp($formula, "\Aoo\((.*),(\d+)\)\z", 1)
+  If @error = 0 Then ; Already a fractal
+    GUICtrlSetData($rri_switch_fract, $__switch_function__)
+  Else
+    GUICtrlSetData($rri_switch_fract, $__switch_fractal__)
+  EndIf
+EndFunc   ;==>updateFormula
+
 Func rri_lucky_funcClick()
-  updateFormula("randf(16)") ;TODO: Externalize
+  updateFormula("randf(16)") ;TODO: Externalize 16
   updateSeed() ;Put a random seed.
   renderIfAutoRenderDefault()
 EndFunc ;==>rri_lucky_funcClick
 
 Func rri_lucky_fractClick()
-  updateFormula("oo(randf(16),5)") ;TODO: Externalize
+  updateFormula("oo(randf(16),5)") ;TODO: Externalize 16 and 5
   updateSeed() ;Put a random seed.
   renderIfAutoRenderDefault()
 EndFunc ;==>rri_lucky_fractClick
 
 Func rri_switch_fractClick()
   Local $formula = GUICtrlRead($rri_in_formula)
-  $match = StringRegExp($formula, "oo\((.*),(\d+)\)", 1)
+  $match = StringRegExp($formula, "\Aoo\((.*),(\d+)\)\z", 1)
   If @error = 0 Then ; Already a fractal
     $m = $match[0]
     updateFormula($m)
@@ -2212,6 +2260,7 @@ Func ResetSession()
   changePreviewState()
   updateWinmin()
   updateWinmax()
+  resolutionChanged()
   winChange()
 EndFunc
 

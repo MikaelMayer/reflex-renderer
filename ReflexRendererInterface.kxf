@@ -689,35 +689,20 @@
 					</properties>
 					<components/>
 				</object>
-				<object type="TALabel" name="rri_LabelZoomAbsolute">
+				<object type="TASlider" name="rri_zoom_absolute">
 					<properties>
-						<property name="Left" vt="Int8">2</property>
-						<property name="Top" vt="Int8">116</property>
-						<property name="Width" vt="Int8">84</property>
-						<property name="Height" vt="Int8">17</property>
+						<property name="Left" vt="Int8">8</property>
+						<property name="Top" vt="Int8">109</property>
+						<property name="Width" vt="Int16">150</property>
+						<property name="Height" vt="Int8">45</property>
 						<property name="Hint" vt="String">%__zoom_absolute_hint__%</property>
-						<property name="AutoSize" vt="False">False</property>
-						<property name="Caption" vt="String">%__zoom_absolute__%</property>
+						<property name="Max" vt="Int8">50</property>
+						<property name="Position" vt="Int8">25</property>
 						<property name="TabOrder" vt="Int8">9</property>
-						<property name="HaveVariable" vt="False">False</property>
-						<property name="CtrlStyle" vt="Int32">1342177538</property>
+						<property name="OnChange" vt="String">rri_zoom_absoluteChange</property>
+						<property name="CtrlStyle" vt="Int32">1342177349</property>
 						<property name="CtrlExStyle" vt="Int8">0</property>
-						<property name="Resizing" vt="Set"/>
-					</properties>
-					<components/>
-				</object>
-				<object type="TAInput" name="rri_zoom_absolute">
-					<properties>
-						<property name="Left" vt="Int8">88</property>
-						<property name="Top" vt="Int8">114</property>
-						<property name="Width" vt="Int8">57</property>
-						<property name="Height" vt="Int8">21</property>
-						<property name="Hint" vt="String">%__zoom_absolute_hint__%</property>
-						<property name="TabOrder" vt="Int8">10</property>
-						<property name="Text" vt="String">1</property>
-						<property name="CtrlStyle" vt="Int32">1342242944</property>
-						<property name="CtrlExStyle" vt="Int16">512</property>
-						<property name="Resizing" vt="Set">DockHeight</property>
+						<property name="Resizing" vt="Set">DockWidth, DockHeight</property>
 					</properties>
 					<components/>
 				</object>
