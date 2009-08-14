@@ -11,7 +11,7 @@
 #include <Array.au3>
 #include "GlobalUtils.au3"
 
-$zip_file = "Versions\ReflexRendererv"&$VERSION_NUMER&".zip"
+$zip_file = "Versions\ReflexRenderer"&$VERSION_NUMER&".zip"
 
 $folderout = "Versions\ReflexRendererv"&$VERSION_NUMER
 
@@ -145,6 +145,7 @@ Func copyAllMissingIniConfig($arrayIniFiles, $folder)
 EndFunc
 
 Func compressAll($folderout, $zip_file)
-  RunWait("zip.exe -r "&$zip_file&" "&$folderout)
+  Local $cmd = "zip.exe -r """&$zip_file&""" """&$folderout&""""
+  RunWait($cmd)
   Return
 EndFunc
