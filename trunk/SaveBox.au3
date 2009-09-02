@@ -430,7 +430,7 @@ Func saveFormulaIntoFile($filename, $formula, $comment, $b_saveComment, $b_saveR
   $fileExistedBefore = FileExists($filename)
   $f = FileOpen($filename, 9)
   If $f == -1 Then
-    MsgBox(0, $Error, StringFormat($__s__is_not_a_valsb_filename__s_Saving_canceled_, $filename, @CRLF))
+    MsgBox(0, $Error_title, StringFormat($__s__is_not_a_valsb_filename__s_Saving_canceled_, $filename, @CRLF))
     Return False
   EndIf
   If $fileExistedBefore Then

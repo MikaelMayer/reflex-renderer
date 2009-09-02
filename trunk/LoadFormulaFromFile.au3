@@ -25,12 +25,12 @@ Global $LOAD_FORMULA_CALLBACK=""
  @Options: Winmin=-4-4i; Winmax=4+4i; Width=401; Height=401; PercentPreview=30
  - No case sensitive / no order. Don't care about the space after or before the semicolon.
  => Preview means also that "preview" is checked.
- 
+
  Detect many formulas without blank lines in between. 3 or more is easy.
  Each formula will then be on its single item.
  If 2, the first is a comment over the second.
  Automatically breaks tree after a line beginning with @Options:
- 
+
  Input / output example:
 ==== Input file=====
 Whouahou
@@ -38,7 +38,7 @@ sin(z+x)/y
 @Options: Winmin=-4-4i; Winmax=4+4i; Width=401; Height=401; PercentPreview=30
 belle fonction
 cos(z)
-@Options: 
+@Options:
 g(z)
 h(z)
 j(z)
@@ -101,7 +101,7 @@ Func formulaItem($line)
   Else
     Return _ArrayCreate($COMMENT_OR_FORMULA, $line)
   EndIf
-  Return 
+  Return
 EndFunc
 
 ;Build a string representation of the formula_item
@@ -257,13 +257,13 @@ Func flushFormulaGroup(ByRef $queue, ByRef $formula_entry_map, $tree_control)
   ;Logging("FlushFormulaGroup")
   If isEmpty($queue) Then Return
   assertFormulaBeforeOptionsLines($queue)
-	
+
   $count_formula_or_comment = CountCommentOrFormula($queue)
   $count_options_lines = CountOptionsLines($queue)
   ;If only options, discard.
   If $count_formula_or_comment == 0 Then Return
   expandOptions($queue)
-  
+
   If $count_formula_or_comment >= 3 Then
     ;Each line is a formula, and the options lines apply only on the last one
     For $i = 1 To $count_formula_or_comment -1
@@ -288,7 +288,7 @@ Func createFormulaEntry(ByRef $formula_items, $tree_control)
   Dim $isComment = 0, $isWindow = 0, $isResolution = 0
   Dim $window_min = "", $window_max = "", $resolution_width = "", $resolution_height = ""
   Dim $formula = "", $comment = "", $window = "; ", $resolution = " x "
-  
+
   For $i = 1 To size($formula_items)
     $formula_item = $formula_items[$i]
     If $formula_item[$FORMULA_ITEM_TYPE] <> $OPTIONS_LINE Then
@@ -341,7 +341,7 @@ Func createFormulaEntry(ByRef $formula_items, $tree_control)
   $resolution = StringFormat("%s x %s", $resolution_width, $resolution_height)
   Dim $formula_entry[$FORMULA_ENTRY_SIZE]
   $formula_entry[$FORMULA_ENTRY_TREEVIEWITEMS] = $tree_view_items_controls
-  $formula_entry[$FORMULA_ENTRY_IFOPTIONS]     = _ArrayCreate(True, $isComment, $isWindow==3, $isResolution==3) 
+  $formula_entry[$FORMULA_ENTRY_IFOPTIONS]     = _ArrayCreate(True, $isComment, $isWindow==3, $isResolution==3)
   $formula_entry[$FORMULA_ENTRY_OPTIONS]       = _ArrayCreate($formula, $comment, $window, $resolution)
   Return $formula_entry
 EndFunc
@@ -447,11 +447,11 @@ Func LoadFormulaFromFile__LoadImgContainingReflex($fullpath)
   ElseIf $isPng Then
     $text_tags_found = PngReflexTags($fullpath)
   Else
-    MsgBox(0, $Error, StringFormat($no_algorithm_to_import_data_from_this_kind_of_file__s, $fullpath))
+    MsgBox(0, $Error_title, StringFormat($no_algorithm_to_import_data_from_this_kind_of_file__s, $fullpath))
     Return
   EndIf
   If $ERROR_DECODE_HANDLING <> "" Then
-    MsgBox(0, $Error, StringFormat($error_while_importing_from__s, $fullpath)&@CRLF&$ERROR_DECODE_HANDLING)
+    MsgBox(0, $Error_title, StringFormat($error_while_importing_from__s, $fullpath)&@CRLF&$ERROR_DECODE_HANDLING)
     Return
   EndIf
   Dim $comment = ""
@@ -464,7 +464,7 @@ Func LoadFormulaFromFile__LoadImgContainingReflex($fullpath)
     EndIf
   Next
   If $comment == "" Then
-    MsgBox(0, $Error, $No_comments_found_in_this_image)
+    MsgBox(0, $Error_title, $No_comments_found_in_this_image)
     Return
   EndIf
   ;logging("Comment trouvé: "&$comment)
@@ -484,22 +484,22 @@ Func LoadFormulaFromFile__LoadImgContainingReflex($fullpath)
     EndIf
   Next
   If isEmpty($queue) Then
-    MsgBox(0, $Error, $Bad_formatting_in_xp_comment)
+    MsgBox(0, $Error_title, $Bad_formatting_in_xp_comment)
     Return
   EndIf
   If not FormulaBeforeOptionsLines($queue) Then
-    MsgBox(0, $Error, $Bad_formatting_in_xp_comment)
+    MsgBox(0, $Error_title, $Bad_formatting_in_xp_comment)
     Return
   EndIf
   $count_formula_or_comment = CountCommentOrFormula($queue)
   $count_options_lines = CountOptionsLines($queue)
   ;If only options, discard.
   If $count_formula_or_comment == 0 or $count_formula_or_comment >= 3 Then
-      MsgBox(0, $Error, $Bad_formatting_in_xp_comment)
+      MsgBox(0, $Error_title, $Bad_formatting_in_xp_comment)
       Return
   EndIf
   expandOptions($queue)
-  
+
   $result = getEverythingAvailableFromFormula($queue)
   ;logging("Retour avec n options: "&size($queue))
   ;logging("calling back load formula callback : "&$LOAD_FORMULA_CALLBACK)
@@ -511,7 +511,7 @@ Func getEverythingAvailableFromFormula($formula_items)
   Dim $isComment = 0, $isWindow = 0, $isResolution = 0
   Dim $window_min = "", $window_max = "", $resolution_width = "", $resolution_height = ""
   Dim $formula = "", $comment = "", $window = "; ", $resolution = " x "
-  
+
   For $i = 1 To size($formula_items)
     $formula_item = $formula_items[$i]
     If $formula_item[$FORMULA_ITEM_TYPE] <> $OPTIONS_LINE Then
@@ -585,7 +585,7 @@ EndFunc
 
 Func lf_OkClick()
   $return_value = emptySizedArray()
-  $selected = GUICtrlRead($lf_formula_tree) 
+  $selected = GUICtrlRead($lf_formula_tree)
   For $i=1 To size($formula_entry_map)
     $formula_entry = $formula_entry_map[$i]
     $treeitems = $formula_entry[$FORMULA_ENTRY_TREEVIEWITEMS]
@@ -607,6 +607,10 @@ Func lf_OkClick()
     EndIf
   Next
   Call($LOAD_FORMULA_CALLBACK, $return_value)
+EndFunc
+
+Func enableControl($ctrl, $bool)
+  GUICtrlSetState($ctrl, _Iif($bool, $GUI_ENABLE, $GUI_DISABLE))
 EndFunc
 
 Func lf_ControlClick()
@@ -646,13 +650,9 @@ Func lf_ControlClick()
       EndIf
     Next
     ;If $nMsg>0 Then Logging("Tree code : "&$nMsg)
-  Case Else
+  ;Case Else
     ;If $nMsg>0 Then Logging("Non tree code : "&$nMsg)
-    If Not WinActive($formula_chooser) Then WinActivate($formula_chooser)
+  ;  If Not WinActive($formula_chooser) Then WinActivate($formula_chooser)
   EndSwitch
   ;Opt('GUIOnEventMode', 1)
-EndFunc
-
-Func enableControl($ctrl, $bool)
-  GUICtrlSetState($ctrl, _Iif($bool, $GUI_ENABLE, $GUI_DISABLE))
 EndFunc

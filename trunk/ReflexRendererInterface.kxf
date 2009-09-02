@@ -77,7 +77,7 @@
 				<property name="Left" vt="Int8">8</property>
 				<property name="Top" vt="Int8">40</property>
 				<property name="Width" vt="Int16">281</property>
-				<property name="Height" vt="Int16">255</property>
+				<property name="Height" vt="Int16">271</property>
 				<property name="CtrlStyle" vt="Int32">1342308359</property>
 				<property name="CtrlExStyle" vt="Int8">0</property>
 				<property name="Caption" vt="String">%__creating_options__%</property>
@@ -544,9 +544,9 @@
 		<object type="TAGroup" name="rri_navigation">
 			<properties>
 				<property name="Left" vt="Int8">8</property>
-				<property name="Top" vt="Int16">296</property>
+				<property name="Top" vt="Int16">312</property>
 				<property name="Width" vt="Int16">281</property>
-				<property name="Height" vt="Int16">145</property>
+				<property name="Height" vt="Int16">129</property>
 				<property name="CtrlStyle" vt="Int32">1342308359</property>
 				<property name="CtrlExStyle" vt="Int8">0</property>
 				<property name="Caption" vt="String">%__navigation__%</property>
@@ -554,30 +554,15 @@
 				<property name="Resizing" vt="Set">DockLeft, DockBottom</property>
 			</properties>
 			<components>
-				<object type="TARadio" name="rri_drag_reflex">
-					<properties>
-						<property name="Left" vt="Int16">160</property>
-						<property name="Top" vt="Int8">15</property>
-						<property name="Width" vt="Int8">113</property>
-						<property name="Height" vt="Int8">20</property>
-						<property name="Caption" vt="String">%__drag_reflex__%</property>
-						<property name="TabOrder" vt="Int8">0</property>
-						<property name="TabStop" vt="True">True</property>
-						<property name="CtrlStyle" vt="Int32">1342242825</property>
-						<property name="CtrlExStyle" vt="Int8">0</property>
-						<property name="Resizing" vt="Set">DockHeight</property>
-					</properties>
-					<components/>
-				</object>
 				<object type="TARadio" name="rri_visit_click">
 					<properties>
 						<property name="Left" vt="Int16">160</property>
-						<property name="Top" vt="Int8">38</property>
+						<property name="Top" vt="Int8">14</property>
 						<property name="Width" vt="Int8">113</property>
 						<property name="Height" vt="Int8">20</property>
 						<property name="Caption" vt="String">%__visit_click__%</property>
 						<property name="Checked" vt="True">True</property>
-						<property name="TabOrder" vt="Int8">1</property>
+						<property name="TabOrder" vt="Int8">0</property>
 						<property name="TabStop" vt="True">True</property>
 						<property name="CtrlStyle" vt="Int32">1342242825</property>
 						<property name="CtrlExStyle" vt="Int8">0</property>
@@ -588,11 +573,11 @@
 				<object type="TARadio" name="rri_visit_rectangle">
 					<properties>
 						<property name="Left" vt="Int16">160</property>
-						<property name="Top" vt="Int8">61</property>
+						<property name="Top" vt="Int8">37</property>
 						<property name="Width" vt="Int8">113</property>
 						<property name="Height" vt="Int8">20</property>
 						<property name="Caption" vt="String">%__visit_rectangle__%</property>
-						<property name="TabOrder" vt="Int8">2</property>
+						<property name="TabOrder" vt="Int8">1</property>
 						<property name="CtrlStyle" vt="Int32">1342242825</property>
 						<property name="CtrlExStyle" vt="Int8">0</property>
 						<property name="Resizing" vt="Set">DockHeight</property>
@@ -602,12 +587,12 @@
 				<object type="TAButton" name="rri_previous_window">
 					<properties>
 						<property name="Left" vt="Int16">160</property>
-						<property name="Top" vt="Int8">86</property>
+						<property name="Top" vt="Int8">62</property>
 						<property name="Width" vt="Int8">113</property>
 						<property name="Height" vt="Int8">25</property>
 						<property name="Caption" vt="String">%__previous_window__%</property>
 						<property name="Enabled" vt="False">False</property>
-						<property name="TabOrder" vt="Int8">3</property>
+						<property name="TabOrder" vt="Int8">2</property>
 						<property name="CtrlStyle" vt="Int32">1342259200</property>
 						<property name="CtrlExStyle" vt="Int8">0</property>
 						<property name="Resizing" vt="Set">DockWidth, DockHeight</property>
@@ -617,12 +602,12 @@
 				<object type="TAButton" name="rri_next_window">
 					<properties>
 						<property name="Left" vt="Int16">160</property>
-						<property name="Top" vt="Int8">112</property>
+						<property name="Top" vt="Int8">96</property>
 						<property name="Width" vt="Int8">113</property>
 						<property name="Height" vt="Int8">25</property>
 						<property name="Caption" vt="String">%__next_window__%</property>
 						<property name="Enabled" vt="False">False</property>
-						<property name="TabOrder" vt="Int8">4</property>
+						<property name="TabOrder" vt="Int8">3</property>
 						<property name="CtrlStyle" vt="Int32">1342259200</property>
 						<property name="CtrlExStyle" vt="Int8">0</property>
 						<property name="Resizing" vt="Set">DockWidth, DockHeight</property>
@@ -632,11 +617,11 @@
 				<object type="TAButton" name="rri_zoom_in_factor">
 					<properties>
 						<property name="Left" vt="Int8">29</property>
-						<property name="Top" vt="Int8">55</property>
+						<property name="Top" vt="Int8">31</property>
 						<property name="Width" vt="Int8">58</property>
 						<property name="Height" vt="Int8">25</property>
 						<property name="Caption" vt="String">%__zoom_in_factor__%</property>
-						<property name="TabOrder" vt="Int8">6</property>
+						<property name="TabOrder" vt="Int8">5</property>
 						<property name="CtrlStyle" vt="Int32">1342259200</property>
 						<property name="CtrlExStyle" vt="Int8">0</property>
 						<property name="Resizing" vt="Set">DockWidth, DockHeight</property>
@@ -646,11 +631,11 @@
 				<object type="TAButton" name="rri_zoom_out_factor">
 					<properties>
 						<property name="Left" vt="Int8">88</property>
-						<property name="Top" vt="Int8">55</property>
+						<property name="Top" vt="Int8">31</property>
 						<property name="Width" vt="Int8">58</property>
 						<property name="Height" vt="Int8">25</property>
 						<property name="Caption" vt="String">%__zoom_out_factor__%</property>
-						<property name="TabOrder" vt="Int8">7</property>
+						<property name="TabOrder" vt="Int8">6</property>
 						<property name="CtrlStyle" vt="Int32">1342259200</property>
 						<property name="CtrlExStyle" vt="Int8">0</property>
 						<property name="Resizing" vt="Set">DockWidth, DockHeight</property>
@@ -660,11 +645,11 @@
 				<object type="TAInput" name="rri_zoom_factor">
 					<properties>
 						<property name="Left" vt="Int8">88</property>
-						<property name="Top" vt="Int8">86</property>
+						<property name="Top" vt="Int8">62</property>
 						<property name="Width" vt="Int8">58</property>
 						<property name="Height" vt="Int8">21</property>
 						<property name="Hint" vt="String">%__zoom_factor_hint__%</property>
-						<property name="TabOrder" vt="Int8">5</property>
+						<property name="TabOrder" vt="Int8">4</property>
 						<property name="Text" vt="String">2</property>
 						<property name="CtrlStyle" vt="Int32">1342242944</property>
 						<property name="CtrlExStyle" vt="Int16">512</property>
@@ -675,13 +660,13 @@
 				<object type="TALabel" name="rri_LabelZoomFactor">
 					<properties>
 						<property name="Left" vt="Int8">2</property>
-						<property name="Top" vt="Int8">88</property>
+						<property name="Top" vt="Int8">64</property>
 						<property name="Width" vt="Int8">84</property>
 						<property name="Height" vt="Int8">17</property>
 						<property name="Hint" vt="String">%__zoom_factor_hint__%</property>
 						<property name="AutoSize" vt="False">False</property>
 						<property name="Caption" vt="String">%__zoom_factor__%</property>
-						<property name="TabOrder" vt="Int8">8</property>
+						<property name="TabOrder" vt="Int8">7</property>
 						<property name="HaveVariable" vt="False">False</property>
 						<property name="CtrlStyle" vt="Int32">1342177538</property>
 						<property name="CtrlExStyle" vt="Int8">0</property>
@@ -692,13 +677,13 @@
 				<object type="TASlider" name="rri_zoom_absolute">
 					<properties>
 						<property name="Left" vt="Int8">8</property>
-						<property name="Top" vt="Int8">109</property>
+						<property name="Top" vt="Int8">85</property>
 						<property name="Width" vt="Int16">150</property>
 						<property name="Height" vt="Int8">45</property>
 						<property name="Hint" vt="String">%__zoom_absolute_hint__%</property>
 						<property name="Max" vt="Int8">50</property>
 						<property name="Position" vt="Int8">25</property>
-						<property name="TabOrder" vt="Int8">9</property>
+						<property name="TabOrder" vt="Int8">8</property>
 						<property name="OnChange" vt="String">rri_zoom_absoluteChange</property>
 						<property name="CtrlStyle" vt="Int32">1342177349</property>
 						<property name="CtrlExStyle" vt="Int8">0</property>

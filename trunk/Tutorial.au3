@@ -17,7 +17,7 @@
 #include "GlobalUtils.au3"
 #include "IniHandling.au3"
 #include "translations.au3"
-  
+
 Opt("GUIOnEventMode", 1)
 
 Global $TUTORIAL_BOX_EXISTS = False, $TutorialBox = 0
@@ -126,7 +126,7 @@ Func loadTutorial()
   $sections_titles = pop($sections_tutorial)
   ;Overwrite section titles
   $_Tutorial_texte_tutorial_sections = StringStripWS(removeComments($sections_titles), 1+2)
-  
+
   For $i = 1 to size($sections_tutorial)
     $subsections = StringSplit($sections_tutorial[$i], "@", 1)
     For $j = 1 To size($subsections)
@@ -175,7 +175,7 @@ EndFunc
 WindowManager__addLoadSaveFunctionForType("Tutorial", "Tutorial__LoadFromValue", "Tutorial__SaveToValue")
 Func Tutorial__LoadFromValue($value)
   logging(toString($global_timeout_functions))
-  
+
   If Not loadTutorial() Then Return
   Local $t_save = $TUTORIAL_BOX_EXISTS
   GenerateTutorialBox()
@@ -248,41 +248,56 @@ Func loadCurrentSection()
   Local $section = $current_tutorial[$n_current_section]
   If $n_current_subsection < 1 Then $n_current_subsection = 1
   If $n_current_subsection > size($section) Then $n_current_subsection = size($section)
-  
+
   Local $subsection = $section[$n_current_subsection]
   GUICtrlSetData($tb_texte, getSubSection_Text($subsection))
   setCurrentSectionNumber($n_current_section)
-  
-  If $n_current_section == 1 and $n_current_subsection == 1 Then
+
+  If _Tutorial_isAtStart() Then
     GUICtrlSetState($tb_previous, $GUI_DISABLE)
   Else
     GUICtrlSetState($tb_previous, $GUI_ENABLE)
   EndIf
-  If $n_current_section == size($current_tutorial) and $n_current_subsection == size($current_tutorial[$n_current_section]) Then
+  If _Tutorial_isAtEnd() Then
     GUICtrlSetState($tb_next, $GUI_DISABLE)
   Else
     GUICtrlSetState($tb_next, $GUI_ENABLE)
   EndIf
-  
-  logging("Loaded subsection : "&toString($subsection))
+
   Local $action = getSubSection_Action($subsection)
-  Local $before_ms = 1000*getSubSection_Before($subsection) 
-  Local $after_ms  = 1000*getSubSection_After($subsection) 
+  Local $before_ms = 1000*getSubSection_Before($subsection)
+  Local $after_ms  = 1000*getSubSection_After($subsection)
   $global_after_ms = $after_ms
   Switch $action
   Case ""
     _Tutorial_nextIsReady()
-    If $tutorial_automatic_move Then _Tutorial_continue()
+    _Tutorial_continue_if_automatic_move()
   Case Else
     If $tutorial_first_run Then
       $n_current_subsection -= 1
       _Tutorial_nextIsReady()
     Else
-      If $tutorial_automatic_move Then _Tutorial_nextIsNotReady()
+      _Tutorial_wait_if_automatic_move()
       GUICtrlSetData($tb_autoplay, $__autoplay_plus_action__)
       setTimeout("_Tutorial_"&$action, $before_ms)
     EndIf
   EndSwitch
+EndFunc
+
+Func _Tutorial_continue_if_automatic_move()
+  If $tutorial_automatic_move Then
+    _Tutorial_continue()
+  Else
+    _Tutorial_nextIsGreyed()
+  EndIf
+EndFunc
+
+Func _Tutorial_wait_if_automatic_move()
+  If $tutorial_automatic_move Then
+    _Tutorial_nextIsNotReady()
+  Else
+    _Tutorial_nextIsGreyed()
+  EndIf
 EndFunc
 
 Func cancelAllTutorialActions()
@@ -296,7 +311,8 @@ Func tb_autoplayClick()
     loadCurrentSection()
   Else
     $tutorial_automatic_move = False
-    _Tutorial_nextIsReady()
+    _Tutorial_nextIsGreyed()
+    ;_Tutorial_nextIsReady()
   EndIf
 EndFunc ;==>tb_autoplayClick
 
@@ -376,11 +392,30 @@ Func _Tutorial_pointerNext()
 EndFunc
 
 Func _Tutorial_nextIsReady()
-  GUICtrlSetBkColor($tb_next, 0x00ff00)
+  logging(" _Tutorial_nextIsReady ")
+  If _Tutorial_isAtEnd() Then
+    _Tutorial_nextIsGreyed()
+  Else
+    GUICtrlSetBkColor($tb_next, 0x00ff00)
+  EndIf
 EndFunc
 
 Func _Tutorial_nextIsNotReady()
+  logging(" _Tutorial_nextIsNotReady ")
   GUICtrlSetBkColor($tb_next, 0xff0000)
+EndFunc
+
+Func _Tutorial_nextIsGreyed()
+  logging(" _Tutorial_nextIsGreyed ")
+  GUICtrlSetBkColor($tb_next, 0x888888)
+EndFunc
+
+Func _Tutorial_isAtStart()
+  Return $n_current_section == 1 and $n_current_subsection == 1
+EndFunc
+
+Func _Tutorial_isAtEnd()
+  Return $n_current_section == size($current_tutorial) and $n_current_subsection == size($current_tutorial[$n_current_section])
 EndFunc
 
 Func _Tutorial_continue($delay = Default)
@@ -564,7 +599,7 @@ Func _Tutorial_Rectangle1()
   rri_winMouseLeftUp()
   If $tutorial_play Then _Tutorial_continue()
 EndFunc
-  
+
 Func _Tutorial_OpenSaveDialog()
   If _Tutorial_cancel() Then Return
   If $rendering_thread Then  Return setTimeout("_Tutorial_OpenSaveDialog", 500)
@@ -637,7 +672,7 @@ Func _Tutorial_SaveQuick2()
   MouseClick("left")
   If $tutorial_play Then _Tutorial_continue()
 EndFunc
-  
+
 Func _Tutorial_OpenColors()
   If _Tutorial_cancel() Then Return
   _Tutorial_MouseMove($rri_color_code_button)
@@ -687,7 +722,7 @@ Func _Tutorial_DisplayRealLine()
   _Tutorial_MouseMoveRatio($rri_out_rendu, 0.9, 0.5)
   Sleep(200)
   _Tutorial_MouseMoveRatio($rri_out_rendu, 0.1, 0.5)
-  
+
   If $tutorial_play Then _Tutorial_continue()
 EndFunc
 

@@ -95,7 +95,7 @@ Func aboutBox($main_window_handle)
   ;Opt('GUIOnEventMode', 0)
   $abe_save = $ABOUT_BOX_EXISTS
   GenerateAboutBox($main_window_handle)
-  
+
   ;#include "AboutBox_lang.au3"
   GUICtrlSetImage($ab_icon, @ScriptDir&"\Release\nice_function.JPG")
   If Not $abe_save Then
