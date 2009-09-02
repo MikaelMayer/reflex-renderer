@@ -529,7 +529,7 @@ Function *Parseur::lireFunction() {
 		avancerLex();
 		lireParentheseOuvrante();
 		if(E1->isAlea()!=0) {
-			int k = lireEntier();
+			int k = (int)lireFloat();
 			Total = Tree::createFuncAlea(k, E1->isAlea()==1);
 			macro=true;
 		} else if(E1->isBinaire()) {
@@ -541,7 +541,7 @@ Function *Parseur::lireFunction() {
 		} else if(E1->isCompositionRecursive()) {
 			Total=lireE();
 			lireVirgule();
-			k=lireEntier();
+			k=(int)lireFloat();
 			Total=E1->getFunctionRecursive(Total,k);
 		} else if(E1->isIncrementeur()) {
 			Total=lireE();

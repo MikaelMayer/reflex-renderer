@@ -76,6 +76,7 @@ Global Enum $FORMULA_ENTRY_TREEVIEWITEMS = 0, $FORMULA_ENTRY_IFOPTIONS, $FORMULA
 Global Enum $HAS_FORMULA, $HAS_COMMENT, $HAS_WINDOW, $HAS_RESOLUTION
 Global Enum $FORMULA_ITEM_TYPE = 0, $FORMULA_ITEM_CONTENT0 = 1
 Global Enum $FORMULA_ITEM_CONTENT0_KEY = 0, $FORMULA_ITEM_CONTENT0_VALUE = 1
+Global $LOAD_FORMULA_PARENT_WINDOW = 0
 
 
 ; Line parsing : Gives a line of TYPE = "Formula"/"Comment", "BLANK" or "OPTION"
@@ -372,39 +373,43 @@ EndFunc
 Func lf_labelClick()
 EndFunc
 
+#Region ### Form Variables
+Global $formula_chooser=0, $lf_Label1=0, $lf_ok=0, $lf_other_file=0, $lf_import_window=0, $lf_import_resolution=0, $lf_formula_tree=0, $lf_import_comment=0
+#EndRegion ### Form Variables
+
 Func GenerateLoadFormulaBox($fullpath)
   If $LOAD_FORMULA_EXISTS Then
     Return
   EndIf
   $LOAD_FORMULA_EXISTS = True
   #Region ### START Koda GUI section ### Form=C:\Documents and Settings\Mikaël\Mes documents\Reflex\LogicielOrdi\RenderReflex\ReflexRendererFormulaList.kxf
-  Global $formula_chooser = GUICreate($__formula_chooser__, 257, 346, 303, 219, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS))
+  $formula_chooser = GUICreate($__formula_chooser__, 257, 346, 303, 219, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS))
   GUISetOnEvent($GUI_EVENT_CLOSE, "formula_chooserClose")
   GUISetOnEvent($GUI_EVENT_MINIMIZE, "formula_chooserMinimize")
   GUISetOnEvent($GUI_EVENT_MAXIMIZE, "formula_chooserMaximize")
   GUISetOnEvent($GUI_EVENT_RESTORE, "formula_chooserRestore")
-  Global $lf_Label1 = GUICtrlCreateLabel($__choose_a_formula__, 8, 12, 108, 17)
+  $lf_Label1 = GUICtrlCreateLabel($__choose_a_formula__, 8, 12, 108, 17)
   GUICtrlSetResizing(-1, $GUI_DOCKTOP)
   GUICtrlSetOnEvent(-1, "lf_labelClick")
-  Global $lf_ok = GUICtrlCreateButton($__set_button__, 192, 8, 57, 25, 0)
+  $lf_ok = GUICtrlCreateButton($__set_button__, 192, 8, 57, 25, 0)
   GUICtrlSetResizing(-1, $GUI_DOCKTOP+$GUI_DOCKWIDTH+$GUI_DOCKHEIGHT)
   GUICtrlSetOnEvent(-1, "lf_OkClick")
-  Global $lf_other_file = GUICtrlCreateButton($__other_file__, 120, 8, 65, 25, 0)
+  $lf_other_file = GUICtrlCreateButton($__other_file__, 120, 8, 65, 25, 0)
   GUICtrlSetResizing(-1, $GUI_DOCKTOP+$GUI_DOCKWIDTH+$GUI_DOCKHEIGHT)
   GUICtrlSetOnEvent(-1, "lf_ControlClick")
-  Global $lf_import_window = GUICtrlCreateCheckbox($__import_window__, 4, 32, 122, 17)
+  $lf_import_window = GUICtrlCreateCheckbox($__import_window__, 4, 32, 122, 17)
   GUICtrlSetState(-1, $GUI_CHECKED)
   GUICtrlSetResizing(-1, $GUI_DOCKTOP+$GUI_DOCKHEIGHT)
   GUICtrlSetOnEvent(-1, "lf_ControlClick")
-  Global $lf_import_resolution = GUICtrlCreateCheckbox($__import_resolution__, 4, 48, 122, 17)
+  $lf_import_resolution = GUICtrlCreateCheckbox($__import_resolution__, 4, 48, 122, 17)
   GUICtrlSetState(-1, $GUI_CHECKED)
   GUICtrlSetResizing(-1, $GUI_DOCKTOP+$GUI_DOCKHEIGHT)
   GUICtrlSetOnEvent(-1, "lf_ControlClick")
-  Global $lf_formula_tree = GUICtrlCreateTreeView(8, 72, 241, 265)
+  $lf_formula_tree = GUICtrlCreateTreeView(8, 72, 241, 265)
   GUICtrlSetResizing(-1, $GUI_DOCKLEFT+$GUI_DOCKRIGHT+$GUI_DOCKTOP+$GUI_DOCKBOTTOM)
   GUICtrlSetOnEvent(-1, "lf_ControlClick")
   GUICtrlSetTip(-1, $__formula_chooser_hint__)
-  Global $lf_import_comment = GUICtrlCreateCheckbox($__import_comment__, 130, 40, 122, 17)
+  $lf_import_comment = GUICtrlCreateCheckbox($__import_comment__, 130, 40, 122, 17)
   GUICtrlSetState(-1, $GUI_CHECKED)
   GUICtrlSetResizing(-1, $GUI_DOCKTOP+$GUI_DOCKHEIGHT)
   GUICtrlSetOnEvent(-1, "lf_ControlClick")
@@ -412,7 +417,7 @@ Func GenerateLoadFormulaBox($fullpath)
   If loadLinesIntoTreeControl($fullpath, $lf_formula_tree) == -1 Then
     ;It's an error... but should not happen
   EndIf
-  $pos = WinGetPos($rri_win)
+  $pos = WinGetPos($LOAD_FORMULA_PARENT_WINDOW)
   WinMove($formula_chooser, "", $pos[0]+$pos[2], $pos[1])
 EndFunc
 

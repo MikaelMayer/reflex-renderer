@@ -14,6 +14,10 @@
 
 Global $ABOUT_BOX_EXISTS = False, $AboutBox = 0
 
+#Region ### Form Variables
+Global $AboutBox=0, $ab_icon=0, $ab_groupbox1=0, $ab_label_title=0, $ab_label_version=0, $ab_label_site=0, $ab_label_copyright=0, $ab_label_name=0, $ab_label_email=0, $ab_label_urlvideo=0, $ab_ButtonOK=0
+#EndRegion ### Form Variables
+
 Func GenerateAboutBox($main_window_handle)
   If $ABOUT_BOX_EXISTS Then
     ;GUISwitch($AboutBox)
@@ -28,37 +32,37 @@ Func GenerateAboutBox($main_window_handle)
     $__copyright__ = StringFormat($__copyright__, $COPYRIGHT_DATE)
   EndIf
   #Region ### START Koda GUI section ### Form=C:\Documents and Settings\Mikaël\Mes documents\Reflex\LogicielOrdi\RenderReflex\ReflexRendererAboutBox.kxf
-  Global $AboutBox = GUICreate($__about_box__, 355, 198, 396, 188)
+  $AboutBox = GUICreate($__about_box__, 355, 198, 396, 188)
   GUISetOnEvent($GUI_EVENT_CLOSE, "AboutBoxClose")
   GUISetOnEvent($GUI_EVENT_MINIMIZE, "AboutBoxMinimize")
   GUISetOnEvent($GUI_EVENT_MAXIMIZE, "AboutBoxMaximize")
   GUISetOnEvent($GUI_EVENT_RESTORE, "AboutBoxRestore")
-  Global $ab_icon = GUICtrlCreatePic("Release\nice_function.JPG", 15, 15, 128, 96, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
+  $ab_icon = GUICtrlCreatePic("Release\nice_function.JPG", 15, 15, 128, 96, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
   GUICtrlSetOnEvent(-1, "ab_labelClick")
-  Global $ab_groupbox1 = GUICtrlCreateGroup("", 8, 0, 337, 161)
-  Global $ab_label_title = GUICtrlCreateLabel($__reflex_renderer_interface__, 152, 17, 192, 17, $WS_GROUP)
+  $ab_groupbox1 = GUICtrlCreateGroup("", 8, 0, 337, 161)
+  $ab_label_title = GUICtrlCreateLabel($__reflex_renderer_interface__, 152, 17, 192, 17, $WS_GROUP)
   GUICtrlSetFont(-1, 8, 800, 0, "MS Sans Serif")
   GUICtrlSetOnEvent(-1, "ab_labelClick")
-  Global $ab_label_version = GUICtrlCreateLabel($__version__, 242, 33, 97, 17, BitOR($SS_RIGHT,$WS_GROUP))
+  $ab_label_version = GUICtrlCreateLabel($__version__, 242, 33, 97, 17, BitOR($SS_RIGHT,$WS_GROUP))
   GUICtrlSetOnEvent(-1, "ab_labelClick")
-  Global $ab_label_site = GUICtrlCreateLabel("http://meak.free.fr/reflex", 16, 118, 121, 17, $WS_GROUP)
+  $ab_label_site = GUICtrlCreateLabel("http://meak.free.fr/reflex", 16, 118, 121, 17, $WS_GROUP)
   GUICtrlSetColor(-1, 0x316AC5)
   GUICtrlSetOnEvent(-1, "ab_linkClick")
   GUICtrlSetCursor (-1, 0)
-  Global $ab_label_copyright = GUICtrlCreateLabel($__copyright__, 152, 33, 87, 17, $WS_GROUP)
+  $ab_label_copyright = GUICtrlCreateLabel($__copyright__, 152, 33, 87, 17, $WS_GROUP)
   GUICtrlSetOnEvent(-1, "ab_labelClick")
-  Global $ab_label_name = GUICtrlCreateLabel("Mikaël Mayer", 152, 66, 67, 17, $WS_GROUP)
+  $ab_label_name = GUICtrlCreateLabel("Mikaël Mayer", 152, 66, 67, 17, $WS_GROUP)
   GUICtrlSetOnEvent(-1, "ab_labelClick")
-  Global $ab_label_email = GUICtrlCreateLabel("mikael.mayer@polytechnique.org", 152, 82, 160, 17)
+  $ab_label_email = GUICtrlCreateLabel("mikael.mayer@polytechnique.org", 152, 82, 160, 17)
   GUICtrlSetColor(-1, 0x008000)
   GUICtrlSetOnEvent(-1, "ab_linkClick")
   GUICtrlSetCursor (-1, 0)
-  Global $ab_label_urlvideo = GUICtrlCreateLabel("http://www.youtube.com/watch?v=iHw6Hgs_qJ0", 16, 136, 241, 17, $WS_GROUP)
+  $ab_label_urlvideo = GUICtrlCreateLabel("http://www.youtube.com/watch?v=iHw6Hgs_qJ0", 16, 136, 241, 17, $WS_GROUP)
   GUICtrlSetColor(-1, 0x316AC5)
   GUICtrlSetOnEvent(-1, "ab_linkClick")
   GUICtrlSetCursor (-1, 0)
   GUICtrlCreateGroup("", -99, -99, 1, 1)
-  Global $ab_ButtonOK = GUICtrlCreateButton($__ok_button__, 144, 166, 75, 25)
+  $ab_ButtonOK = GUICtrlCreateButton($__ok_button__, 144, 166, 75, 25)
   GUICtrlSetOnEvent(-1, "ab_ButtonOKClick")
   #EndRegion ### END Koda GUI section ###
   WindowManager__registerWindow($AboutBox)

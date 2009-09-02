@@ -11,6 +11,7 @@
 ; Script Start - Add your code below here
 #include <Array.au3>
 #include <GUIConstantsEx.au3>
+#include "GlobalUtils.au3"
 
 Opt('TrayIconDebug', 1)
 
@@ -42,7 +43,7 @@ GUICtrlCreateLabel("Update", 20+$width, $step*$i+$offset, $width2-40)
 $i += 1
 $i0 = $i
 For $interface in $interfacesToUpdate
-  ConsoleWrite("Position: "&($step*$i+$offset)&@CRLF)
+  ;logging("Position: "&($step*$i+$offset)&@CRLF)
 	$interfacesEdit[$i-$i0] = GUICtrlCreateButton($interface[1], $offset, $step*$i+$offset, $width-20)
 	$interfacesUpdate[$i-$i0] = GUICtrlCreateButton($interface[1], $offset+$width, $step*$i+$offset, $width2-20)
 	$i += 1
@@ -140,7 +141,7 @@ Func updateFile($pp)
   FileClose($autoit_file)
   _ArrayDelete($autoit_content, 0)
   _ArrayDelete($interface_content, 0)
-  
+
   ;MsgBox(0, "Autoit content", $autoit_content[50])
   ;MsgBox(0, "Form content", $interface_content[20])
   ; TODO
@@ -149,6 +150,7 @@ Func updateFile($pp)
   ;Determine when #Region is in autoit_content and interface_content
   $begin_region_autoit    = posRegion($autoit_content)
   $end_region_autoit      = posEndRegion($autoit_content)
+
   $begin_region_interface = posRegion($interface_content)
   $end_region_interface   = posEndRegion($interface_content)
   If $begin_region_autoit == -1 Or $end_region_autoit < $begin_region_autoit Or _
@@ -158,12 +160,13 @@ $begin_region_interface == -1 Or $end_region_interface < $begin_region_interface
     ConsoleWriteError($end_region_autoit&@CRLF)
     ConsoleWriteError($begin_region_interface&@CRLF)
     ConsoleWriteError($end_region_interface&@CRLF)
-    ConsoleWrite(_ArrayToString($interface_content, @CRLF))
+    Logging(_ArrayToString($interface_content, @CRLF))
     Exit
   EndIf
-  
+
   ;Copy everything before to the new array
-  
+  Local $variables_array = emptySizedArray()
+
   $index_autoit = 0
   $index_interface = $begin_region_interface
   $max_index_autoit    = UBound($autoit_content)
@@ -177,6 +180,13 @@ $begin_region_interface == -1 Or $end_region_interface < $begin_region_interface
   ;Copy the interface content up to #endregion
   While $index_interface < $end_region_interface - 1
     $sentence = $interface_content[$index_interface]
+
+    $match = StringRegExp($sentence, "Global (\$(?:[[:alnum:]]|_)*)", 1)
+    If IsArray($match) Then
+      push($variables_array, $match[0])
+      $sentence = StringRegExpReplace($sentence, "Global ", "")
+    EndIf
+
     $sentence2 = StringRegExpReplace($sentence, '\"\%(.*?)\%\"', '$\1')
     If $sentence2<>$sentence Then
       $sentence = StringReplace($sentence2, "&", "")
@@ -190,20 +200,27 @@ $begin_region_interface == -1 Or $end_region_interface < $begin_region_interface
     _ArrayAdd($new_autoit_content, $autoit_content[$index_autoit])
     $index_autoit += 1
   WEnd
+
   _ArrayDelete($new_autoit_content, 0)
+  $collapsed_content = _ArrayToString($new_autoit_content, @CRLF)
+  logging(toString($variables_array))
+  $collapsed_content = updateFormVariables($collapsed_content, $variables_array)
+
   ;Create the new file and fill it with the new content
   $new_file = FileOpen($copy_file, 2)
-  FileWrite($new_file, _ArrayToString($new_autoit_content, @CRLF)) 
+
+
+  FileWrite($new_file, $collapsed_content)
   FileClose($new_file)
-  
+
   ;Make an unique copy of the original file
   $i = 0
-  ConsoleWrite(StringFormat("Copying from %s to %s"&@CRLF, $autoit_file_string, "tmp\snapshot"&$i&"\"&$autoit_file_string))
+  Logging(StringFormat("Copying from %s to %s"&@CRLF, $autoit_file_string, "tmp\snapshot"&$i&"\"&$autoit_file_string))
   While FileCopy($autoit_file_string, "tmp\snapshot"&$i&"\"&$autoit_file_string, 8)==0
     $i += 1
   WEnd
   FileCopy($autoit_file_string, "tmp\curent\"&$autoit_file_string, 9)
-  
+
   ;Move the new file to the original file
   ;MsgBox(0, "Deleting", FileDelete($autoit_file_string))
   FileMove($copy_file, $autoit_file_string, 1)
@@ -211,7 +228,6 @@ $begin_region_interface == -1 Or $end_region_interface < $begin_region_interface
 EndFunc
 
 Func pos($array, $prefixString)
-  ;TODO: To be stripped!
   $i = 0
   $found = False
   For $string in $array
@@ -229,12 +245,19 @@ Func pos($array, $prefixString)
   EndIf
 EndFunc
 
-Func posRegion($array)
-  return pos($array, "#region")
+Func updateFormVariables($content, $variable_array)
+  Local $variable_array_collapsed = "Global "&_ArrayToString($variable_array, "=0, ", 1)&"=0"
+  Local $previous_variable_region = "(?s)#Region ### Form Variables.*?#EndRegion ### Form Variables"
+  Local $new_variable_region = "#Region ### Form Variables"&@CRLF&$variable_array_collapsed&@CRLF&"#EndRegion ### Form Variables"
+  Local $result = StringRegExpReplace($content, $previous_variable_region, $new_variable_region)
+  Return $result
 EndFunc
 
+Func posRegion($array)
+  return pos($array, "#Region ### START Koda GUI section ###")
+EndFunc
 Func posEndRegion($array)
-  return pos($array, "#endregion")
+  return pos($array, "#EndRegion ### END Koda GUI section ###")
 EndFunc
 
 Func testFunctions()
@@ -244,7 +267,7 @@ Func testFunctions()
   assertPosGood($ar, "de", 3)
   assertPosGood($ar, "det", 4)
   assertPosGood($ar, "dett", -1)
-  ConsoleWrite(@CRLF&"Tests finished."&@CRLF)
+  Logging(@CRLF&"Tests finished."&@CRLF)
 EndFunc
 
 Func assertPosGood($ar, $str, $pos)

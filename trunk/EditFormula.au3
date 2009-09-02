@@ -22,6 +22,11 @@
 Global $EDIT_FORMULA_EXISTS = False, $EDIT_FORMULA_PREVIOUS_TEXT = "", $LOCK_SYNTAX_COLORING = False
 Global $EDIT_FORMULA_CALLBACK = "", $EDIT_FORMULA_PARENT_WINDOW = 0
 
+#Region ### Form Variables
+Global $ID_EDITFORMULA=0, $IDC_EDIT1=0, $IDC_F_Z=0, $IDC_F_X=0, $IDC_F_Y=0, $IDC_F_LEFT_PARENTHESIS=0, $IDC_F_RIGHT_PARENTHESIS=0, $IDC_F_RETOUR_ARRIERE=0, $ID_DRAW=0, $IDC_F_PLUS=0, $IDC_F_MOINS=0, $IDC_F_FOIS=0, $IDC_F_DIV=0, $IDC_F_EXPOSANT=0, $IDC_F_SUPPRIMER=0, $ID_CANCEL=0, $IDC_F_SIN=0, $IDC_F_COS=0, $IDC_F_TAN=0, $ID_INV=0, $IDC_F_RESET=0, $IDC_F_SINH=0, $IDC_F_COSH=0, $IDC_F_TANH=0, $IDC_F_LN=0, $IDC_F_EXP=0, $IDC_F_SQRT=0, $IDC_F_O=0, $IDC_F_OO=0, $IDC_F_RANDF=0, $IDC_F_RANDF_AUTO=0, $IDC_F_SUM=0, $IDC_F_PROD=0, $IDC_F_RANDH=0, $IDC_F_RANDH_AUTO=0, $IDC_F_COMP=0, $IDC_F_CIRCLE=0, $IDC_CHIFFRE7=0, $IDC_CHIFFRE8=0, $IDC_CHIFFRE9=0, $IDC_CHIFFRE_PI=0, $IDC_CHIFFRE4=0, $IDC_CHIFFRE5=0, $IDC_CHIFFRE6=0, $IDC_CHIFFRE_J=0, $IDC_CHIFFRE1=0, $IDC_CHIFFRE2=0, $IDC_CHIFFRE3=0, $IDC_CHIFFRE_I=0, $IDC_CHIFFRE0=0, $IDC_POINT=0, $IDC_VIRGULE=0, $IDC_DOLLARS=0, $IDC_F_REAL=0, $IDC_F_IMAG=0, $IDC_F_CONJ=0, $IDC_F_SEED=0, $IDC_INSERTVAR=0, $ID_RANDSEED=0
+#EndRegion ### Form Variables
+Global $IDC_EDIT1_OLD
+
 ;EditFormula("13", "0")
 
 ;Compatibility
@@ -70,7 +75,7 @@ Func insertText($hEdit, $text)
   _WinAPI_SetFocus($hEdit)
   _RichEdit_SetSel($hEdit, $begin-1, $end-1)
  EndFunc
- 
+
 Func deleteText($hEdit, $count)
   If $count==0  Then
     _GUICtrlEdit_SetSel($hEdit, 0, -1)
@@ -82,7 +87,7 @@ Func deleteText($hEdit, $count)
   $aSel = _GUICtrlEdit_GetSel($hEdit)
   $begin = $aSel[0]
   $end = $aSel[1]
-  
+
   If $begin<>$end Then    ;On supprime ce qui est sélectionné.
     _GUICtrlEdit_ReplaceSel($hEdit, '')
   Else
@@ -118,7 +123,7 @@ Func colorationSyntaxique($hEdit)
   Dim $color_otherstrings = 0x000000, $bold_otherstrings = False, $italic_otherstrings = False
   Dim $color_operators    = 0x6000A0, $bold_operators    = False, $italic_operators    = False
   Dim $color_numbers      = 0x000000, $bold_numbers      = False, $italic_numbers      = False
-  
+
   Dim $n = StringLen($contenu)
   ;Parentheses
   Dim $string = ""
@@ -175,7 +180,6 @@ Func setColorHedit($hEdit, $col=0x000000, $bold=False, $italic=False)
 EndFunc
 
 Func EditFormulaActivate()
-  ;GUISwitch($ID_EDITFORMULA)
   WinActivate($ID_EDITFORMULA)
 EndFunc
 
@@ -186,224 +190,224 @@ Func GenerateEditFormulaBox()
   EndIf
   $EDIT_FORMULA_EXISTS = True
   #Region ### START Koda GUI section ### Form=C:\Documents and Settings\Mikaël\Mes documents\Reflex\LogicielOrdi\RenderReflex\ReflexRendererEditFormula.kxf
-  Global $ID_EDITFORMULA = GUICreate($__edit_formula__, 248, 351, 301, 132, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS))
+  $ID_EDITFORMULA = GUICreate($__edit_formula__, 248, 351, 301, 132, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS))
   GUISetOnEvent($GUI_EVENT_CLOSE, "ID_EDITFORMULAClose")
   GUISetOnEvent($GUI_EVENT_MINIMIZE, "ID_EDITFORMULAMinimize")
   GUISetOnEvent($GUI_EVENT_MAXIMIZE, "ID_EDITFORMULAMaximize")
   GUISetOnEvent($GUI_EVENT_RESTORE, "ID_EDITFORMULARestore")
-  Global $IDC_EDIT1 = GUICtrlCreateEdit("", 8, 8, 233, 113, BitOR($ES_AUTOVSCROLL,$ES_WANTRETURN,$WS_VSCROLL))
+  $IDC_EDIT1 = GUICtrlCreateEdit("", 8, 8, 233, 113, BitOR($ES_AUTOVSCROLL,$ES_WANTRETURN,$WS_VSCROLL))
   GUICtrlSetData($IDC_EDIT1, "Edit1")
   GUICtrlSetOnEvent($IDC_EDIT1, "ef_insertionClick")
   GUICtrlSetState($IDC_EDIT1, $GUI_HIDE)
-  Global $IDC_F_Z = GUICtrlCreateButton("z", 8, 128, 25, 25, 0)
+  $IDC_F_Z = GUICtrlCreateButton("z", 8, 128, 25, 25, 0)
   GUICtrlSetResizing($IDC_F_Z, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_Z, "ef_insertionClick")
-  Global $IDC_F_X = GUICtrlCreateButton("x", 32, 128, 25, 25, 0)
+  $IDC_F_X = GUICtrlCreateButton("x", 32, 128, 25, 25, 0)
   GUICtrlSetResizing($IDC_F_X, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_X, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_X, $__x_hint__)
-  Global $IDC_F_Y = GUICtrlCreateButton("y", 56, 128, 25, 25, 0)
+  $IDC_F_Y = GUICtrlCreateButton("y", 56, 128, 25, 25, 0)
   GUICtrlSetResizing($IDC_F_Y, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_Y, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_Y, $__y_hint__)
-  Global $IDC_F_LEFT_PARENTHESIS = GUICtrlCreateButton("( )", 80, 128, 25, 25, 0)
+  $IDC_F_LEFT_PARENTHESIS = GUICtrlCreateButton("( )", 80, 128, 25, 25, 0)
   GUICtrlSetResizing($IDC_F_LEFT_PARENTHESIS, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_LEFT_PARENTHESIS, "ef_insertionClick")
-  Global $IDC_F_RIGHT_PARENTHESIS = GUICtrlCreateButton(")", 104, 128, 25, 25, 0)
+  $IDC_F_RIGHT_PARENTHESIS = GUICtrlCreateButton(")", 104, 128, 25, 25, 0)
   GUICtrlSetResizing($IDC_F_RIGHT_PARENTHESIS, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_RIGHT_PARENTHESIS, "ef_insertionClick")
-  Global $IDC_F_RETOUR_ARRIERE = GUICtrlCreateButton("<-", 136, 128, 49, 25, 0)
+  $IDC_F_RETOUR_ARRIERE = GUICtrlCreateButton("<-", 136, 128, 49, 25, 0)
   GUICtrlSetResizing($IDC_F_RETOUR_ARRIERE, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_RETOUR_ARRIERE, "ef_insertionClick")
-  Global $ID_DRAW = GUICtrlCreateButton($__set_button__, 192, 128, 49, 25, 0)
+  $ID_DRAW = GUICtrlCreateButton($__set_button__, 192, 128, 49, 25, 0)
   GUICtrlSetResizing($ID_DRAW, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($ID_DRAW, "ID_DRAWClick")
   GUICtrlSetTip($ID_DRAW, $__set_button_hint__)
-  Global $IDC_F_PLUS = GUICtrlCreateButton("+", 8, 152, 25, 25, 0)
+  $IDC_F_PLUS = GUICtrlCreateButton("+", 8, 152, 25, 25, 0)
   GUICtrlSetResizing($IDC_F_PLUS, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_PLUS, "ef_insertionClick")
-  Global $IDC_F_MOINS = GUICtrlCreateButton("-", 32, 152, 25, 25, 0)
+  $IDC_F_MOINS = GUICtrlCreateButton("-", 32, 152, 25, 25, 0)
   GUICtrlSetResizing($IDC_F_MOINS, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_MOINS, "ef_insertionClick")
-  Global $IDC_F_FOIS = GUICtrlCreateButton("*", 56, 152, 25, 25, 0)
+  $IDC_F_FOIS = GUICtrlCreateButton("*", 56, 152, 25, 25, 0)
   GUICtrlSetResizing($IDC_F_FOIS, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_FOIS, "ef_insertionClick")
-  Global $IDC_F_DIV = GUICtrlCreateButton("/", 80, 152, 25, 25, 0)
+  $IDC_F_DIV = GUICtrlCreateButton("/", 80, 152, 25, 25, 0)
   GUICtrlSetResizing($IDC_F_DIV, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_DIV, "ef_insertionClick")
-  Global $IDC_F_EXPOSANT = GUICtrlCreateButton("^", 104, 152, 25, 25, 0)
+  $IDC_F_EXPOSANT = GUICtrlCreateButton("^", 104, 152, 25, 25, 0)
   GUICtrlSetResizing($IDC_F_EXPOSANT, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_EXPOSANT, "ef_insertionClick")
-  Global $IDC_F_SUPPRIMER = GUICtrlCreateButton($__del_button__, 136, 152, 49, 25, 0)
+  $IDC_F_SUPPRIMER = GUICtrlCreateButton($__del_button__, 136, 152, 49, 25, 0)
   GUICtrlSetResizing($IDC_F_SUPPRIMER, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_SUPPRIMER, "ef_insertionClick")
-  Global $ID_CANCEL = GUICtrlCreateButton($__quit_button__, 192, 152, 49, 25, 0)
+  $ID_CANCEL = GUICtrlCreateButton($__quit_button__, 192, 152, 49, 25, 0)
   GUICtrlSetResizing($ID_CANCEL, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($ID_CANCEL, "ID_CANCELClick")
-  Global $IDC_F_SIN = GUICtrlCreateButton("sin", 8, 176, 37, 25, 0)
+  $IDC_F_SIN = GUICtrlCreateButton("sin", 8, 176, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_SIN, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_SIN, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_SIN, $__sin_hint__)
-  Global $IDC_F_COS = GUICtrlCreateButton("cos", 44, 176, 37, 25, 0)
+  $IDC_F_COS = GUICtrlCreateButton("cos", 44, 176, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_COS, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_COS, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_COS, $__cos_hint__)
-  Global $IDC_F_TAN = GUICtrlCreateButton("tan", 80, 176, 37, 25, 0)
+  $IDC_F_TAN = GUICtrlCreateButton("tan", 80, 176, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_TAN, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_TAN, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_TAN, $__tan_hint__)
-  Global $ID_INV = GUICtrlCreateCheckbox("inv", 120, 179, 65, 17)
+  $ID_INV = GUICtrlCreateCheckbox("inv", 120, 179, 65, 17)
   GUICtrlSetResizing($ID_INV, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($ID_INV, "ef_insertionClick")
   GUICtrlSetTip($ID_INV, $__inv_hint__)
-  Global $IDC_F_RESET = GUICtrlCreateButton($__reset_formula__, 192, 176, 49, 25, 0)
+  $IDC_F_RESET = GUICtrlCreateButton($__reset_formula__, 192, 176, 49, 25, 0)
   GUICtrlSetResizing($IDC_F_RESET, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_RESET, "ef_insertionClick")
-  Global $IDC_F_SINH = GUICtrlCreateButton("sinh", 8, 200, 37, 25, 0)
+  $IDC_F_SINH = GUICtrlCreateButton("sinh", 8, 200, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_SINH, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_SINH, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_SINH, $__sinh_hint__)
-  Global $IDC_F_COSH = GUICtrlCreateButton("cosh", 44, 200, 37, 25, 0)
+  $IDC_F_COSH = GUICtrlCreateButton("cosh", 44, 200, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_COSH, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_COSH, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_COSH, $__cosh_hint__)
-  Global $IDC_F_TANH = GUICtrlCreateButton("tanh", 80, 200, 37, 25, 0)
+  $IDC_F_TANH = GUICtrlCreateButton("tanh", 80, 200, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_TANH, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_TANH, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_TANH, $__tanh_hint__)
-  Global $IDC_F_LN = GUICtrlCreateButton("ln", 8, 224, 37, 25, 0)
+  $IDC_F_LN = GUICtrlCreateButton("ln", 8, 224, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_LN, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_LN, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_LN, $__ln_hint__)
-  Global $IDC_F_EXP = GUICtrlCreateButton("exp", 44, 224, 37, 25, 0)
+  $IDC_F_EXP = GUICtrlCreateButton("exp", 44, 224, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_EXP, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_EXP, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_EXP, $__exp_hint__)
-  Global $IDC_F_SQRT = GUICtrlCreateButton("sqrt", 80, 224, 37, 25, 0)
+  $IDC_F_SQRT = GUICtrlCreateButton("sqrt", 80, 224, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_SQRT, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_SQRT, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_SQRT, $__sqrt_hint__)
-  Global $IDC_F_O = GUICtrlCreateButton("o", 8, 248, 37, 25, 0)
+  $IDC_F_O = GUICtrlCreateButton("o", 8, 248, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_O, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_O, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_O, "o(f(z), g(z)) = f(g(z))")
-  Global $IDC_F_OO = GUICtrlCreateButton("oo", 44, 248, 37, 25, 0)
+  $IDC_F_OO = GUICtrlCreateButton("oo", 44, 248, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_OO, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_OO, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_OO, "oo(f(z), 4) = f(f(f(f(z))))")
-  Global $IDC_F_RANDF = GUICtrlCreateButton("randf", 80, 248, 37, 25, 0)
+  $IDC_F_RANDF = GUICtrlCreateButton("randf", 80, 248, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_RANDF, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_RANDF, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_RANDF, $__randf_hint__)
-  Global $IDC_F_RANDF_AUTO = GUICtrlCreateButton(">", 116, 248, 17, 25, 0)
+  $IDC_F_RANDF_AUTO = GUICtrlCreateButton(">", 116, 248, 17, 25, 0)
   GUICtrlSetOnEvent($IDC_F_RANDF_AUTO, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_RANDF_AUTO, $__randf_auto_hint__)
-  Global $IDC_F_SUM = GUICtrlCreateButton("sum", 8, 272, 37, 25, 0)
+  $IDC_F_SUM = GUICtrlCreateButton("sum", 8, 272, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_SUM, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_SUM, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_SUM, "sum(f($x, z), $x, 4, 10, 3) = f(4, z) + f(7, z) + f(10, z)")
-  Global $IDC_F_PROD = GUICtrlCreateButton("prod", 44, 272, 37, 25, 0)
+  $IDC_F_PROD = GUICtrlCreateButton("prod", 44, 272, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_PROD, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_PROD, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_PROD, "prod(f($x, z), $x, 5, 9, 2) = f(5, z) * f(7, z) * f(9, z)")
-  Global $IDC_F_RANDH = GUICtrlCreateButton("randh", 80, 272, 37, 25, 0)
+  $IDC_F_RANDH = GUICtrlCreateButton("randh", 80, 272, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_RANDH, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_RANDH, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_RANDH, $__randh_hint__)
-  Global $IDC_F_RANDH_AUTO = GUICtrlCreateButton(">", 116, 272, 17, 25, 0)
+  $IDC_F_RANDH_AUTO = GUICtrlCreateButton(">", 116, 272, 17, 25, 0)
   GUICtrlSetOnEvent($IDC_F_RANDH_AUTO, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_RANDH_AUTO, $__randh_auto_hint__)
-  Global $IDC_F_COMP = GUICtrlCreateButton("comp", 8, 296, 37, 25, 0)
+  $IDC_F_COMP = GUICtrlCreateButton("comp", 8, 296, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_COMP, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_COMP, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_COMP, "Comp(f($x, z), $x, 5, 3) = f(f(f(5, z), z), z)")
-  Global $IDC_F_CIRCLE = GUICtrlCreateButton("circle", 44, 296, 37, 25, 0)
+  $IDC_F_CIRCLE = GUICtrlCreateButton("circle", 44, 296, 37, 25, 0)
   GUICtrlSetResizing($IDC_F_CIRCLE, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_CIRCLE, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_CIRCLE, "circle(z) = conj(z) - 1/z")
-  Global $IDC_CHIFFRE7 = GUICtrlCreateButton("7", 144, 200, 25, 25, 0)
+  $IDC_CHIFFRE7 = GUICtrlCreateButton("7", 144, 200, 25, 25, 0)
   GUICtrlSetResizing($IDC_CHIFFRE7, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_CHIFFRE7, "ef_insertionClick")
-  Global $IDC_CHIFFRE8 = GUICtrlCreateButton("8", 168, 200, 25, 25, 0)
+  $IDC_CHIFFRE8 = GUICtrlCreateButton("8", 168, 200, 25, 25, 0)
   GUICtrlSetResizing($IDC_CHIFFRE8, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_CHIFFRE8, "ef_insertionClick")
-  Global $IDC_CHIFFRE9 = GUICtrlCreateButton("9", 192, 200, 25, 25, 0)
+  $IDC_CHIFFRE9 = GUICtrlCreateButton("9", 192, 200, 25, 25, 0)
   GUICtrlSetResizing($IDC_CHIFFRE9, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_CHIFFRE9, "ef_insertionClick")
-  Global $IDC_CHIFFRE_PI = GUICtrlCreateButton("p", 216, 200, 25, 25, 0)
+  $IDC_CHIFFRE_PI = GUICtrlCreateButton("p", 216, 200, 25, 25, 0)
   GUICtrlSetFont($IDC_CHIFFRE_PI, 10, 400, 0, "Symbol")
   GUICtrlSetResizing($IDC_CHIFFRE_PI, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_CHIFFRE_PI, "ef_insertionClick")
-  Global $IDC_CHIFFRE4 = GUICtrlCreateButton("4", 144, 224, 25, 25, 0)
+  $IDC_CHIFFRE4 = GUICtrlCreateButton("4", 144, 224, 25, 25, 0)
   GUICtrlSetResizing($IDC_CHIFFRE4, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_CHIFFRE4, "ef_insertionClick")
-  Global $IDC_CHIFFRE5 = GUICtrlCreateButton("5", 168, 224, 25, 25, 0)
+  $IDC_CHIFFRE5 = GUICtrlCreateButton("5", 168, 224, 25, 25, 0)
   GUICtrlSetResizing($IDC_CHIFFRE5, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_CHIFFRE5, "ef_insertionClick")
-  Global $IDC_CHIFFRE6 = GUICtrlCreateButton("6", 192, 224, 25, 25, 0)
+  $IDC_CHIFFRE6 = GUICtrlCreateButton("6", 192, 224, 25, 25, 0)
   GUICtrlSetResizing($IDC_CHIFFRE6, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_CHIFFRE6, "ef_insertionClick")
-  Global $IDC_CHIFFRE_J = GUICtrlCreateButton("j", 216, 224, 25, 25, 0)
+  $IDC_CHIFFRE_J = GUICtrlCreateButton("j", 216, 224, 25, 25, 0)
   GUICtrlSetFont($IDC_CHIFFRE_J, 10, 400, 2, "Times New Roman")
   GUICtrlSetResizing($IDC_CHIFFRE_J, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_CHIFFRE_J, "ef_insertionClick")
   GUICtrlSetTip($IDC_CHIFFRE_J, "exp(i*2pi/3)")
-  Global $IDC_CHIFFRE1 = GUICtrlCreateButton("1", 144, 248, 25, 25, 0)
+  $IDC_CHIFFRE1 = GUICtrlCreateButton("1", 144, 248, 25, 25, 0)
   GUICtrlSetResizing($IDC_CHIFFRE1, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_CHIFFRE1, "ef_insertionClick")
-  Global $IDC_CHIFFRE2 = GUICtrlCreateButton("2", 168, 248, 25, 25, 0)
+  $IDC_CHIFFRE2 = GUICtrlCreateButton("2", 168, 248, 25, 25, 0)
   GUICtrlSetResizing($IDC_CHIFFRE2, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_CHIFFRE2, "ef_insertionClick")
-  Global $IDC_CHIFFRE3 = GUICtrlCreateButton("3", 192, 248, 25, 25, 0)
+  $IDC_CHIFFRE3 = GUICtrlCreateButton("3", 192, 248, 25, 25, 0)
   GUICtrlSetResizing($IDC_CHIFFRE3, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_CHIFFRE3, "ef_insertionClick")
-  Global $IDC_CHIFFRE_I = GUICtrlCreateButton("i", 216, 248, 25, 25, 0)
+  $IDC_CHIFFRE_I = GUICtrlCreateButton("i", 216, 248, 25, 25, 0)
   GUICtrlSetFont($IDC_CHIFFRE_I, 10, 400, 2, "Times New Roman")
   GUICtrlSetResizing($IDC_CHIFFRE_I, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_CHIFFRE_I, "ef_insertionClick")
-  Global $IDC_CHIFFRE0 = GUICtrlCreateButton("0", 144, 272, 25, 25, 0)
+  $IDC_CHIFFRE0 = GUICtrlCreateButton("0", 144, 272, 25, 25, 0)
   GUICtrlSetResizing($IDC_CHIFFRE0, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_CHIFFRE0, "ef_insertionClick")
-  Global $IDC_POINT = GUICtrlCreateButton(".", 168, 272, 25, 25, 0)
+  $IDC_POINT = GUICtrlCreateButton(".", 168, 272, 25, 25, 0)
   GUICtrlSetFont($IDC_POINT, 8, 800, 0, "MS Sans Serif")
   GUICtrlSetResizing($IDC_POINT, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_POINT, "ef_insertionClick")
-  Global $IDC_VIRGULE = GUICtrlCreateButton(",", 192, 272, 25, 25, 0)
+  $IDC_VIRGULE = GUICtrlCreateButton(",", 192, 272, 25, 25, 0)
   GUICtrlSetResizing($IDC_VIRGULE, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_VIRGULE, "ef_insertionClick")
-  Global $IDC_DOLLARS = GUICtrlCreateButton("$", 216, 272, 25, 25, 0)
+  $IDC_DOLLARS = GUICtrlCreateButton("$", 216, 272, 25, 25, 0)
   GUICtrlSetResizing($IDC_DOLLARS, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_DOLLARS, "ef_insertionClick")
   GUICtrlSetTip($IDC_DOLLARS, $__dollar_hint__)
-  Global $IDC_F_REAL = GUICtrlCreateButton("Â", 144, 296, 33, 25, 0)
+  $IDC_F_REAL = GUICtrlCreateButton("Â", 144, 296, 33, 25, 0)
   GUICtrlSetFont($IDC_F_REAL, 8, 400, 0, "Symbol")
   GUICtrlSetResizing($IDC_F_REAL, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_REAL, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_REAL, $__real_hint__)
-  Global $IDC_F_IMAG = GUICtrlCreateButton("Á", 176, 296, 33, 25, 0)
+  $IDC_F_IMAG = GUICtrlCreateButton("Á", 176, 296, 33, 25, 0)
   GUICtrlSetFont($IDC_F_IMAG, 8, 400, 0, "Symbol")
   GUICtrlSetResizing($IDC_F_IMAG, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_IMAG, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_IMAG, $__imag_hint__)
-  Global $IDC_F_CONJ = GUICtrlCreateButton("conj", 208, 296, 33, 25, 0)
+  $IDC_F_CONJ = GUICtrlCreateButton("conj", 208, 296, 33, 25, 0)
   GUICtrlSetResizing($IDC_F_CONJ, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_CONJ, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_CONJ, $__conj_hint__)
-  Global $IDC_F_SEED = GUICtrlCreateInput("68742091", 82, 298, 61, 21, BitOR($ES_RIGHT,$ES_AUTOHSCROLL,$ES_NUMBER))
+  $IDC_F_SEED = GUICtrlCreateInput("68742091", 82, 298, 61, 21, BitOR($ES_RIGHT,$ES_AUTOHSCROLL,$ES_NUMBER))
   GUICtrlSetResizing($IDC_F_SEED, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_F_SEED, "ef_insertionClick")
   GUICtrlSetTip($IDC_F_SEED, $__seed_hint__)
-  Global $IDC_INSERTVAR = GUICtrlCreateButton($__insert_var__, 167, 320, 74, 25, 0)
+  $IDC_INSERTVAR = GUICtrlCreateButton($__insert_var__, 167, 320, 74, 25, 0)
   GUICtrlSetResizing($IDC_INSERTVAR, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($IDC_INSERTVAR, "ef_insertionClick")
-  Global $ID_RANDSEED = GUICtrlCreateCheckbox($__randomize_seed__, 8, 323, 137, 17)
+  $ID_RANDSEED = GUICtrlCreateCheckbox($__randomize_seed__, 8, 323, 137, 17)
   GUICtrlSetResizing($ID_RANDSEED, $GUI_DOCKAUTO)
   GUICtrlSetOnEvent($ID_RANDSEED, "ef_insertionClick")
   GUICtrlSetTip($ID_RANDSEED, $__randomize_seed_hint__)
   #EndRegion ### END Koda GUI section ###
   GUISetOnEvent($GUI_EVENT_RESIZED, 'ID_EDITFORMULAResize')
-  
-  Global $IDC_EDIT1_OLD = $IDC_EDIT1
+
+  $IDC_EDIT1_OLD = $IDC_EDIT1
   $pos = ControlGetPos($ID_EDITFORMULA, '', $IDC_EDIT1_OLD)
   ;GUICtrlDelete($IDC_EDIT1)
   ;logging($pos[0] &","& $pos[1] &","& $pos[2] &","& $pos[3])
@@ -417,7 +421,7 @@ Func GenerateEditFormulaBox()
   _RichEdit_BkColor($IDC_EDIT1, 0xFFFFFF)
   _RichEdit_SetEventMask($IDC_EDIT1 , BitOr($ENM_LINK, $ENM_PROTECTED, $ENM_MOUSEEVENTS, $ENM_KEYEVENTS, $ENM_SELCHANGE))
   GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
-  
+
   Variables__setParentWindow($ID_EDITFORMULA)
   WindowManager__registerWindow($ID_EDITFORMULA, "EditFormula", "DeleteEditFormulaBox")
 EndFunc
@@ -461,7 +465,7 @@ Func EditFormula($formula, $seed)
   colorationSyntaxique($IDC_EDIT1)
   GUICtrlSetData($IDC_F_SEED, $seed)
   If Not $efe_save Then
-    EditFormula__stickToParentWindow()    
+    EditFormula__stickToParentWindow()
     AnimateFromLeft($ID_EDITFORMULA)
   EndIf
   _WinAPI_RedrawWindow($IDC_EDIT1)
@@ -485,7 +489,7 @@ Func EditFormula__SaveKeyValue($win_handle)
   Return $formula&";;"&$seed
 EndFunc
 
-; randh()*$x => randh()*0.10 => cos(sin(x))*0.10 => 
+; randh()*$x => randh()*0.10 => cos(sin(x))*0.10 =>
 
 Func EditFormula__UpdateFormulaFromApplication($formula)
   If $EDIT_FORMULA_EXISTS Then
@@ -500,9 +504,13 @@ Func EditFormula__HighlightError($start, $end)
 EndFunc
 
 Func EditFormula__getFormulaText()
-  $sauv_sel = _GUICtrlEdit_GetSel($IDC_EDIT1)
-  $formula  = _GUICtrlEdit_GetText($IDC_EDIT1)
-  _GUICtrlEdit_SetSel($IDC_EDIT1, $sauv_sel[0], $sauv_sel[1])
+  If $EDIT_FORMULA_EXISTS Then
+    $sauv_sel = _GUICtrlEdit_GetSel($IDC_EDIT1)
+    $formula  = _GUICtrlEdit_GetText($IDC_EDIT1)
+    _GUICtrlEdit_SetSel($IDC_EDIT1, $sauv_sel[0], $sauv_sel[1])
+  Else
+    $formula = ""
+  EndIf
   return $formula
 EndFunc
 
@@ -510,12 +518,12 @@ Variables__setUpdateFunction("ID_DRAWClick")
 Func ID_DRAWClick($history_save = True)
   If Not IsDeclared("history_save") Then $history_save = True
   $result_formula  = EditFormula__getFormulaText()
-  
+
   $result_seed = GUICtrlRead($IDC_F_SEED)
   $result = _ArrayCreate(2, $result_formula, $result_seed)
-  
+
   ;logging("Going to callback on "&$result_formula)
-  
+
   Call($EDIT_FORMULA_CALLBACK, $result_formula, $result_seed, $history_save)
 EndFunc
 Func ID_CANCELClick()
@@ -541,9 +549,9 @@ Func ef_insertionClick()
   $nMsg = @GUI_CtrlId
   Local $r = isChecked($ID_INV)
   Local $randseed = isChecked($ID_RANDSEED)
-  
+
   Local $inverse_map = _ArrayCreate($IDC_F_SIN, $IDC_F_COS, $IDC_F_TAN, $IDC_F_SINH, $IDC_F_COSH, $IDC_F_TANH)
-  Switch $nMsg      
+  Switch $nMsg
     Case $IDC_F_SIN
       insertText($IDC_EDIT1, _Iif($r, TEXT('arcsin({[_]})'), TEXT('sin({[_]})')))
     Case $IDC_F_COS
@@ -562,13 +570,13 @@ Func ef_insertionClick()
       insertText($IDC_EDIT1, TEXT('exp({[_]})'))
     Case $IDC_F_OO
       insertText($IDC_EDIT1, TEXT('oo({_},[5])'))
-    Case $IDC_F_O 
+    Case $IDC_F_O
       insertText($IDC_EDIT1, TEXT('o({_},[z])'))
-    Case $IDC_F_Z 
+    Case $IDC_F_Z
       insertText($IDC_EDIT1, TEXT('z{[]}'))
-    Case $IDC_F_X 
+    Case $IDC_F_X
       insertText($IDC_EDIT1, TEXT('x{[]}'))
-    Case $IDC_F_Y 
+    Case $IDC_F_Y
       insertText($IDC_EDIT1, TEXT('y{[]}'))
     Case $IDC_F_LEFT_PARENTHESIS
       insertText($IDC_EDIT1, TEXT('({_})[]'))
@@ -631,7 +639,7 @@ Func ef_insertionClick()
     Case $IDC_CHIFFRE_PI
       insertText($IDC_EDIT1, TEXT('pi{[]}'))
     Case $IDC_DOLLARS
-      insertText($IDC_EDIT1, TEXT('${[]}'))
+      insertText($IDC_EDIT1, TEXT('${[var]}'))
     Case $IDC_F_RANDF
       insertText($IDC_EDIT1, TEXT('randf([{5}])'))
       If $randseed Then GUICtrlSetData($IDC_F_SEED, EditFormula__newSeed())
@@ -662,7 +670,7 @@ Func ef_insertionClick()
       Next
       _WinAPI_SetFocus($IDC_EDIT1)
     Case $IDC_INSERTVAR
-      GenerateVariableWindow()
+      GenerateVariableWindow(EditFormula__getFormulaText())
     Case $ID_RANDSEED
       GUICtrlSetState($IDC_F_SEED, _Iif($randseed, $GUI_DISABLE, $GUI_ENABLE))
     Case $ID_DRAW
@@ -699,15 +707,15 @@ Func WM_NOTIFY($hWnd, $iMsg, $iwParam, $ilParam)
       Local $iMessage = DllStructGetData($tENLINK, 4)
       Local $cpMin = DllStructGetData($tENLINK, 7)
       Local $cpMax = DllStructGetData($tENLINK, 8)
-      $Sel = _RichEdit_GetSelection($RichEdit)
+      $Sel = _RichEdit_GetSelection($IDC_EDIT1)
       Local $LinkText = StringLeft(StringTrimLeft(_RichEdit_GetText($hwndFrom), $cpMin), $cpMax - $cpMin)
       Select
         Case BitAND($iMessage, $WM_LBUTTONDBLCLK) = $WM_LBUTTONDBLCLK
-          GuiCtrlSetData($Label, "Double-Clik on: " & $LinkText & @CRLF)	
+          ;GuiCtrlSetData($Label, "Double-Clik on: " & $LinkText & @CRLF)
         Case BitAND($iMessage, $WM_RBUTTONDOWN) = $WM_RBUTTONDOWN
-          GuiCtrlSetData($Label, "R-Clik on: " & $LinkText & @CRLF)
+          ;GuiCtrlSetData($Label, "R-Clik on: " & $LinkText & @CRLF)
         Case BitAND($iMessage, $WM_LBUTTONDOWN) = $WM_LBUTTONDOWN
-          GuiCtrlSetData($Label, "L-Clik on: " & $LinkText & @CRLF)
+          ;GuiCtrlSetData($Label, "L-Clik on: " & $LinkText & @CRLF)
       EndSelect
       ;_RichEdit_SetSel($hWndFrom, $Sel[0], $Sel[0])
     Case $EN_PROTECTED
@@ -746,29 +754,29 @@ Func WM_NOTIFY($hWnd, $iMsg, $iwParam, $ilParam)
       $OldSel = _RichEdit_GetSelection($IDC_EDIT1)
       ;logging("iMessage="&$iMessage)
       Select
-        Case $iMessage = 513 
+        Case $iMessage = 513
             logging("Left Click")
-        Case $iMessage = 514 
+        Case $iMessage = 514
             logging("Left Up")
-        Case $iMessage = 515 
+        Case $iMessage = 515
             logging("Left Double")
-        Case $iMessage = 516 
+        Case $iMessage = 516
             logging("Right Click")
-        Case $iMessage = 517 
+        Case $iMessage = 517
             logging("Right Up")
-        Case $iMessage = 519 
+        Case $iMessage = 519
             logging("Wheel Click")
-        Case $iMessage = 520 
+        Case $iMessage = 520
             logging("Wheel Up")
         Case $iMessage = 522
-            logging("Wheel Scroll")	
-        Case $iMessage = 256 
+            logging("Wheel Scroll")
+        Case $iMessage = 256
             logging("Key Down")
-        Case $iMessage = 258 
-            logging("Key Still Down")	
-        Case $iMessage = 257 
-            logging("Key Up")	
-        ;Case $iMessage = 512 or $iMessage = 33 
+        Case $iMessage = 258
+            logging("Key Still Down")
+        Case $iMessage = 257
+            logging("Key Up")
+        ;Case $iMessage = 512 or $iMessage = 33
             ;Return
         ;Case Else
             ;ConsoleWrite($iMessage)
@@ -780,7 +788,7 @@ Func WM_NOTIFY($hWnd, $iMsg, $iwParam, $ilParam)
   Return $GUI_RUNDEFMSG
 EndFunc   ;==>WM_NOTIFY
 
-Func _RichEdit_SetFont($hWnd, $Set = -1, $FontColor = -1, $BkColor = -1, $sFontName = -1, $iFontSize = -1, $Selec = 1)	; 1: Bold, 2: Italic, 3: Underline, 4: StrikeOut 
+Func _RichEdit_SetFont($hWnd, $Set = -1, $FontColor = -1, $BkColor = -1, $sFontName = -1, $iFontSize = -1, $Selec = 1)	; 1: Bold, 2: Italic, 3: Underline, 4: StrikeOut
 	If $Set <> -1 Then
 		$Set = String($Set)
 		While StringLen($Set) < 4
@@ -791,9 +799,9 @@ Func _RichEdit_SetFont($hWnd, $Set = -1, $FontColor = -1, $BkColor = -1, $sFontN
 		_RichEdit_SetItalic ($hWnd, Number($SplitSet[2]), $Selec)
 		_RichEdit_SetUnderline ($hWnd, Number($SplitSet[3]), $Selec)
 		_RichEdit_SetStrikeOut ($hWnd, Number($SplitSet[4]), $Selec)
-	EndIf	
+	EndIf
 	If $FontColor <> -1 Then _RichEdit_SetFontColor ($hWnd, $FontColor, $Selec)
 	If $BkColor <> -1 Then _RichEdit_SetBkColor ($hWnd, $BkColor, $Selec)
 	If $sFontName <> -1 Then _RichEdit_SetFontName ($hWnd, $sFontName, $Selec)
 	If $iFontSize <> -1 Then _RichEdit_SetFontSize ($hWnd, $iFontSize, $Selec)
-EndFunc	
+EndFunc

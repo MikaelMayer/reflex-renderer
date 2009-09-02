@@ -31,6 +31,12 @@ Global $global_after_ms = 0
 Global $_Tutorial_texte_tutorial_sections = ""
 Global $tutorial_first_run = True
 
+#Region ### Form Variables
+Global $TutorialBox=0, $tb_texte=0, $tb_previous=0, $tb_next=0, $tb_autoplay=0, $tb_sections=0
+#EndRegion ### Form Variables
+; Form variables of the main window
+Global $rri_win=0, $rri_line_reset=0, $rri_zoom_box0=0, $rri_zoom_box1=0, $rri_zoom_box2=0, $rri_zoom_box3=0, $rri_zoom_box_gray0=0, $rri_zoom_box_gray1=0, $rri_zoom_box_gray2=0, $rri_zoom_box_gray3=0, $rri_out_rendu=0, $rri_group_reflex=0, $rri_group_options=0, $rri_Label1=0, $rri_in_formula=0, $rri_formula_editor=0, $rri_DimLabel=0, $rri_width=0, $rri_labelX=0, $rri_height=0, $rri_reset_resolution=0, $rri_preview=0, $rri_LabelWinMin=0, $rri_percent=0, $rri_winmin=0, $rri_LabelWinMax=0, $rri_winmax=0, $rri_reset_window=0, $rri_check_auto_render=0, $rri_render=0, $rri_output=0, $rri_PercentSign=0, $rri_progress=0, $rri_rendering_text=0, $rri_quicksave=0, $rri_save_noquick=0, $rri_seed=0, $rri_realmode=0, $rri_lucky_func=0, $rri_lucky_fract=0, $rri_switch_fract=0, $rri_display_folder=0, $rri_LabelTitre=0, $rri_navigation=0, $rri_visit_click=0, $rri_visit_rectangle=0, $rri_previous_window=0, $rri_next_window=0, $rri_zoom_factor=0, $rri_zoom_in_factor=0, $rri_zoom_out_factor=0, $rri_LabelZoomFactor=0, $rri_zoom_absolute=0, $rri_color_code_button=0, $rri_menu_tools=0, $rri_menu_save=0, $rri_menu_windows=0, $rri_window_1=0, $rri_window_2=0, $rri_window_4=0, $rri_window_8=0, $rri_window_pi=0, $rri_menu_resolutions=0, $rri_resolutions_201=0, $rri_resolutions_401=0, $rri_resolutions_801=0, $rri_resolutions_640=0, $rri_resolutions_1024=0, $rri_resolutions_1280=0, $rri_resolutions_1601=0, $rri_resolutions_16000=0, $rri_menu_export_formula=0, $rri_menu_tutorial=0, $rri_menu_quitnosave=0, $rri_menu_quit=0, $rri_menu_formula_editor=0, $rri_menu_formula_edito=0, $rri_menu_import_formula=0, $rri_menu_import_reflex=0, $rri_menu_formula_small_history=0, $rri_menu_formula_history=0, $rri_menu_language=0, $rri_menu_customize=0, $rri_all_parameters=0, $rri_reset_menu=0
+
 Func GenerateTutorialBox()
   If $TUTORIAL_BOX_EXISTS Then
     WinActivate($TutorialBox)
@@ -38,23 +44,23 @@ Func GenerateTutorialBox()
   EndIf
   $TUTORIAL_BOX_EXISTS = True
   #Region ### START Koda GUI section ### Form=C:\Documents and Settings\Mikaël\Mes documents\Reflex\LogicielOrdi\RenderReflex\ReflexRendererTutorial.kxf
-  Global $TutorialBox = GUICreate($__tutorial__, 484, 165, 281, 198)
+  $TutorialBox = GUICreate($__tutorial__, 484, 165, 281, 198)
   GUISetOnEvent($GUI_EVENT_CLOSE, "TutorialBoxClose")
   GUISetOnEvent($GUI_EVENT_MINIMIZE, "TutorialBoxMinimize")
   GUISetOnEvent($GUI_EVENT_MAXIMIZE, "TutorialBoxMaximize")
   GUISetOnEvent($GUI_EVENT_RESTORE, "TutorialBoxRestore")
-  Global $tb_texte = GUICtrlCreateEdit("", 0, 0, 360, 128, BitOR($ES_AUTOVSCROLL,$ES_READONLY,$ES_WANTRETURN,$WS_VSCROLL))
+  $tb_texte = GUICtrlCreateEdit("", 0, 0, 360, 128, BitOR($ES_AUTOVSCROLL,$ES_READONLY,$ES_WANTRETURN,$WS_VSCROLL))
   GUICtrlSetData(-1, "tb_texte")
   GUICtrlSetFont(-1, 12, 400, 0, "Arial")
   GUICtrlSetOnEvent(-1, "tb_texteChange")
-  Global $tb_previous = GUICtrlCreateButton($__previous__, 0, 130, 48, 33, 0)
+  $tb_previous = GUICtrlCreateButton($__previous__, 0, 130, 48, 33, 0)
   GUICtrlSetOnEvent(-1, "tb_previousClick")
-  Global $tb_next = GUICtrlCreateButton($__next__, 50, 130, 48, 33, 0)
+  $tb_next = GUICtrlCreateButton($__next__, 50, 130, 48, 33, 0)
   GUICtrlSetOnEvent(-1, "tb_nextClick")
-  Global $tb_autoplay = GUICtrlCreateCheckbox($__autoplay__, 104, 138, 217, 17)
+  $tb_autoplay = GUICtrlCreateCheckbox($__autoplay__, 104, 138, 217, 17)
   GUICtrlSetState(-1, $GUI_CHECKED)
   GUICtrlSetOnEvent(-1, "tb_autoplayClick")
-  Global $tb_sections = GUICtrlCreateList("", 360, 0, 121, 162, $WS_BORDER)
+  $tb_sections = GUICtrlCreateList("", 360, 0, 121, 162, $WS_BORDER)
   GUICtrlSetOnEvent(-1, "tb_sectionsClick")
   #EndRegion ### END Koda GUI section ###
   GUICtrlSetData(-1, $_Tutorial_texte_tutorial_sections)
@@ -350,6 +356,7 @@ EndFunc ;==>TutorialBoxMinimize
 Func TutorialBoxRestore()
 EndFunc ;==>TutorialBoxRestore
 
+Global $rri_win
 Func positionCenter($control, $main_win = $rri_win)
   Local $wpos = WinGetPos($main_win, "")
   Local $cpos = ControlGetPos($main_win, "", $control)
@@ -426,6 +433,7 @@ EndFunc
 
 ;=================== Tutorial pre-defined functions ===================;
 
+Global $rendering_thread = False
 Func _Tutorial_Quick0()
   If _Tutorial_cancel() Then Return
   If $rendering_thread Then  Return setTimeout("_Tutorial_Quick0", 500)
@@ -489,6 +497,7 @@ Func _Tutorial_LoadInit()
   If $rendering_thread Then  Return setTimeout("_Tutorial_LoadInit", 500)
   ResetSession()
   _Tutorial_StartTooltipWaiting(False)
+  _Tutorial_MouseMove($rri_render)
   renderIfAutoRenderDefault()
   _Tutorial_EndTooltipWaitingWhenFinished()
   ;If $tutorial_play Then _Tutorial_continue()
@@ -581,6 +590,7 @@ Func _Tutorial_Navig1_3()
   If $tutorial_play Then _Tutorial_continue()
 EndFunc
 
+Global $x, $y
 Func _Tutorial_Rectangle1()
   If _Tutorial_cancel() Then Return
   If $rendering_thread Then  Return setTimeout("_Tutorial_Rectangle1", 500)
@@ -670,6 +680,14 @@ Func _Tutorial_SaveQuick2()
   _Tutorial_MouseMove($rri_quicksave)
   setTimeout_external("WinWaitActive('"&$Quick_save&"');Sleep(500);Send('Vegetation');Sleep(500);Send('{ENTER}')", 0)
   MouseClick("left")
+  If $tutorial_play Then _Tutorial_continue()
+EndFunc
+
+Func _Tutorial_MouseOnReflexFolder()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_MouseOnReflexFolder", 500)
+  _Tutorial_MouseMove($rri_display_folder, Default, 30)
+  Sleep(1500)
   If $tutorial_play Then _Tutorial_continue()
 EndFunc
 

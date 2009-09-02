@@ -77,7 +77,7 @@ Function* getFunction(const char* string, const char* name) {
       << " at position " << parseur->getPosition() << endl;
     cerr << name << " error : ";
     for(int i = 0; i< parseur->getPosition(); i++) {
-      cerr << " ";
+      cerr << string[i];
     }
     cerr << "^" << endl;
   } else {
