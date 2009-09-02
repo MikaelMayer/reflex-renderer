@@ -13,7 +13,7 @@
 
 $zip_file = "Versions\ReflexRenderer"&$VERSION_NUMER&".zip"
 
-$folderout = "Versions\ReflexRendererv"&$VERSION_NUMER
+$folderout = "Versions\ReflexRenderer"&$VERSION_NUMER
 
 $filescript1 = "ReflexRenderer.au3"
 $filescript2 = "LoadFormulaFromFile.au3"

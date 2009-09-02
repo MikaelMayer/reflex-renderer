@@ -17,7 +17,7 @@
 #include <Array.au3>
 #include <Date.au3>
 
-Global Const $VERSION_NUMER = "2.8.2 beta"
+Global Const $VERSION_NUMER = "2.8.3 beta"
 Global Const $COPYRIGHT_DATE = "2009"
 
 Global $ERROR_DECODE_HANDLING = ""
@@ -62,7 +62,7 @@ EndFunc
 
 Func insertAfter(ByRef $queue, $element, $index)
   ;Logging("inserting "&formulaItemToString($element)&" into a queue")
-  If $index+1 > size($queue) Then 
+  If $index+1 > size($queue) Then
     push($queue, $element)
   Else
     _ArrayInsert($queue, $index+1, $element)
@@ -88,7 +88,7 @@ Func insertSortedObj(ByRef $queue, $obj, $increasing=True)
 EndFunc
 
 Func deleteAt(ByRef $queue, $index)
-  If $index > $queue[0] or $index < 1 Then 
+  If $index > $queue[0] or $index < 1 Then
     Return
   Else
     _ArrayDelete($queue, $index)
@@ -338,7 +338,7 @@ Func getNumberOfProcessors()
 EndFunc
 
 
-;=============== String management =============== 
+;=============== String management ===============
 
 ;Returns a boolean indicating if the string starts with a certain prefix (case insensitive)
 Func StringStartsWith($str, $start)
@@ -418,9 +418,9 @@ EndFunc
 
 ;Moves a LTRB (left/top/right/bottom) rectangle $pos_child_ltrb given that a rectangle moved from $pos_before_ltrb to $pos_after_ltrb
 Func move_ltrb(ByRef $pos_child_ltrb, ByRef $pos_before_ltrb, ByRef $pos_after_ltrb)
-  
+
   Local $x_dep = 0, $y_dep = 0
-  
+
   ;If the window can be hit if the window moves left or right
   ;logging(toString($pos_child_ltrb)&","&toString($pos_before_ltrb)&","&toString($pos_after_ltrb))
   If Not ($pos_child_ltrb[3] <= $pos_before_ltrb[1] Or $pos_child_ltrb[1] >= $pos_before_ltrb[3]) Then

@@ -5,7 +5,7 @@
 
  Script Function:
   ;Generates a language file for all strings in a file.
-  
+
   If the string  either:
   - ends with "Click", "Change" or ".au3"
   - contains a "\"
@@ -101,7 +101,7 @@ EndFunc
 
 Func parseFile($file)
   Local $file_changed = False
-  $f = FileOpen($file, 0) 
+  $f = FileOpen($file, 0)
   $region = False
   $matches = _ArrayCreate(6)
   While True
@@ -121,7 +121,7 @@ Func parseFile($file)
   $f2 = FileOpen($file_lang, 0)
   $content_lang = FileRead($f2)
   FileClose($f2)
-  
+
   For $match in $matches
     ;MsgBox(0, "", $match)
     ;$pos = StringInStr($content_lang, StringFormat("GUICtrlSetData($%s", $match[0]))
@@ -142,7 +142,7 @@ Func parseFile($file)
           $key = $res_split[1]
           $translation = $res_split[2]
         EndIf
-        $newline = StringFormat("add($affectations, ""%s"", $gui_section, '%s', '%s')", $match, $key, $translation)
+        $newline = StringFormat("Global $%s = sadd($affectations, ""%s"", $gui_section, '%s', '%s')", $match, $match, $key, $translation)
         $content_lang = StringReplace($content_lang, ";ADD_AFFECTATION", $newline&@CRLF&"  ;ADD_AFFECTATION", 1)
         $file_changed = True
         ;IniWrite($initranslation, 'GUI', $match[0], $res)
