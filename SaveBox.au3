@@ -21,6 +21,7 @@
 
 Global $SAVE_BOX_EXISTS = False
 Global $SAVE_BOX_CALLBACK="", $SAVE_BOX_PARENT_WINDOW = 0
+Global $formula_group_controls, $reflex_group_controls, $saveboxParametersMap, $saveboxCheckBoxMap
 
 Func SaveBox__setParentWindow($win)
   $SAVE_BOX_PARENT_WINDOW = $win
@@ -44,6 +45,10 @@ Func SaveSavebox($saveboxParametersMap, $saveboxCheckBoxMap)
   Next
 EndFunc
 
+#Region ### Form Variables
+Global $sb_savebox=0, $sb_saving_parameters=0, $sb_save_fr=0, $sb_save_f=0, $sb_save_r=0, $sb_save_button=0, $sb_cancel_button=0, $sb_save_formula=0, $sb_formula_comment=0, $sb_save_comment=0, $sb_formula_filename=0, $sb_open_formula_file=0, $sb_LabelFormulaFileName=0, $sb_LabelFormulaComment=0, $sb_save_window=0, $sb_save_resolution=0, $sb_Label1=0, $sb_save_reflex=0, $sb_save_highres_reflex=0, $sb_save_last_reflex=0, $sb_save_lowres_reflex=0, $sb_LabelReflexFileName=0, $sb_reflex_extension=0, $sb_reflex_filename=0, $sb_new_reflex_filename=0, $sb_use_formula_comment=0, $sb_save_settings=0
+#EndRegion ### Form Variables
+
 Func generateSaveBox($coordinates = 0)
   If $SAVE_BOX_EXISTS Then
     If Not $coordinates == 0 Then
@@ -55,85 +60,85 @@ Func generateSaveBox($coordinates = 0)
   $SAVE_BOX_EXISTS = True
 
   #Region ### START Koda GUI section ### Form=C:\Documents and Settings\Mikaël\Mes documents\Reflex\LogicielOrdi\RenderReflex\ReflexRendererSaveBox.kxf
-  Global $sb_savebox = GUICreate($__save_reflex_and_or_formula__, 283, 381, 252, 153)
+  $sb_savebox = GUICreate($__save_reflex_and_or_formula__, 283, 381, 252, 153)
   GUISetOnEvent($GUI_EVENT_CLOSE, "sb_saveboxClose")
   GUISetOnEvent($GUI_EVENT_MINIMIZE, "sb_saveboxMinimize")
   GUISetOnEvent($GUI_EVENT_MAXIMIZE, "sb_saveboxMaximize")
   GUISetOnEvent($GUI_EVENT_RESTORE, "sb_saveboxRestore")
-  Global $sb_saving_parameters = GUICtrlCreateGroup($__saving_parameters__, 9, 5, 153, 86)
-  Global $sb_save_fr = GUICtrlCreateRadio($__save_formula_reflex__, 20, 24, 136, 17)
+  $sb_saving_parameters = GUICtrlCreateGroup($__saving_parameters__, 9, 5, 153, 86)
+  $sb_save_fr = GUICtrlCreateRadio($__save_formula_reflex__, 20, 24, 136, 17)
   GUICtrlSetState($sb_save_fr, $GUI_CHECKED)
   GUICtrlSetOnEvent($sb_save_fr, "sb_save_typeClick")
-  Global $sb_save_f = GUICtrlCreateRadio($__save_only_formula__, 20, 45, 136, 17)
+  $sb_save_f = GUICtrlCreateRadio($__save_only_formula__, 20, 45, 136, 17)
   GUICtrlSetOnEvent($sb_save_f, "sb_save_typeClick")
-  Global $sb_save_r = GUICtrlCreateRadio($__save_only_reflex__, 20, 67, 136, 17)
+  $sb_save_r = GUICtrlCreateRadio($__save_only_reflex__, 20, 67, 136, 17)
   GUICtrlSetOnEvent($sb_save_r, "sb_save_typeClick")
   GUICtrlCreateGroup("", -99, -99, 1, 1)
-  Global $sb_save_button = GUICtrlCreateButton($__save_button__, 169, 13, 105, 25, 0)
+  $sb_save_button = GUICtrlCreateButton($__save_button__, 169, 13, 105, 25, 0)
   GUICtrlSetOnEvent($sb_save_button, "sb_save_buttonClick")
   GUICtrlSetTip($sb_save_button, $__hint_save_all_button__)
-  Global $sb_cancel_button = GUICtrlCreateButton($__cancel_button__, 169, 64, 105, 25, 0)
+  $sb_cancel_button = GUICtrlCreateButton($__cancel_button__, 169, 64, 105, 25, 0)
   GUICtrlSetOnEvent($sb_cancel_button, "sb_cancel_buttonClick")
-  Global $sb_save_formula = GUICtrlCreateGroup($__save_formula_group__, 9, 93, 265, 131)
-  Global $sb_formula_comment = GUICtrlCreateInput($__my_nice_function__, 82, 111, 185, 21)
+  $sb_save_formula = GUICtrlCreateGroup($__save_formula_group__, 9, 93, 265, 131)
+  $sb_formula_comment = GUICtrlCreateInput($__my_nice_function__, 82, 111, 185, 21)
   GUICtrlSetOnEvent($sb_formula_comment, "sb_formula_commentChange")
-  Global $sb_save_comment = GUICtrlCreateCheckbox($__save_comment__, 18, 154, 121, 17)
+  $sb_save_comment = GUICtrlCreateCheckbox($__save_comment__, 18, 154, 121, 17)
   GUICtrlSetState($sb_save_comment, $GUI_CHECKED)
   GUICtrlSetOnEvent($sb_save_comment, "sb_save_withClick")
-  Global $sb_formula_filename = GUICtrlCreateInput("c:\Images\fileFormula.txt", 16, 195, 217, 21)
+  $sb_formula_filename = GUICtrlCreateInput("c:\Images\fileFormula.txt", 16, 195, 217, 21)
   GUICtrlSetOnEvent($sb_formula_filename, "sb_formula_filenameChange")
-  Global $sb_open_formula_file = GUICtrlCreateButton("...", 239, 196, 28, 20, 0)
+  $sb_open_formula_file = GUICtrlCreateButton("...", 239, 196, 28, 20, 0)
   GUICtrlSetOnEvent($sb_open_formula_file, "sb_open_formula_fileClick")
-  Global $sb_LabelFormulaFileName = GUICtrlCreateLabel($__formula_file_name__, 17, 178, 129, 17)
+  $sb_LabelFormulaFileName = GUICtrlCreateLabel($__formula_file_name__, 17, 178, 129, 17)
   GUICtrlSetOnEvent($sb_LabelFormulaFileName, "sb_LabelFormulaFileNameClick")
-  Global $sb_LabelFormulaComment = GUICtrlCreateLabel($__comment__, 16, 113, 64, 17, $SS_RIGHT)
+  $sb_LabelFormulaComment = GUICtrlCreateLabel($__comment__, 16, 113, 64, 17, $SS_RIGHT)
   GUICtrlSetOnEvent($sb_LabelFormulaComment, "sb_LabelFormulaCommentClick")
-  Global $sb_save_window = GUICtrlCreateCheckbox($__save_window__, 146, 135, 113, 17)
+  $sb_save_window = GUICtrlCreateCheckbox($__save_window__, 146, 135, 113, 17)
   GUICtrlSetState($sb_save_window, $GUI_CHECKED)
   GUICtrlSetOnEvent($sb_save_window, "sb_save_withClick")
-  Global $sb_save_resolution = GUICtrlCreateCheckbox($__save_resolution__, 146, 154, 117, 17)
+  $sb_save_resolution = GUICtrlCreateCheckbox($__save_resolution__, 146, 154, 117, 17)
   GUICtrlSetState($sb_save_resolution, $GUI_CHECKED)
   GUICtrlSetOnEvent($sb_save_resolution, "sb_save_withClick")
-  Global $sb_Label1 = GUICtrlCreateLabel($__save_with__, 20, 136, 92, 17)
+  $sb_Label1 = GUICtrlCreateLabel($__save_with__, 20, 136, 92, 17)
   GUICtrlSetOnEvent($sb_Label1, "sb_Label1Click")
   GUICtrlCreateGroup("", -99, -99, 1, 1)
-  Global $sb_save_reflex = GUICtrlCreateGroup($__save_reflex_group__, 9, 226, 265, 145)
-  Global $sb_save_highres_reflex = GUICtrlCreateRadio($__high_resolution_reflex__, 19, 244, 193, 17)
+  $sb_save_reflex = GUICtrlCreateGroup($__save_reflex_group__, 9, 226, 265, 145)
+  $sb_save_highres_reflex = GUICtrlCreateRadio($__high_resolution_reflex__, 19, 244, 193, 17)
   GUICtrlSetState($sb_save_highres_reflex, $GUI_CHECKED)
   GUICtrlSetOnEvent($sb_save_highres_reflex, "sb_save_reflex_typeClick")
-  Global $sb_save_last_reflex = GUICtrlCreateRadio($__copy_last_reflex__, 19, 261, 193, 17)
+  $sb_save_last_reflex = GUICtrlCreateRadio($__copy_last_reflex__, 19, 261, 193, 17)
   GUICtrlSetOnEvent($sb_save_last_reflex, "sb_save_reflex_typeClick")
-  Global $sb_save_lowres_reflex = GUICtrlCreateRadio($__low_resolution_reflex__, 19, 279, 193, 17)
+  $sb_save_lowres_reflex = GUICtrlCreateRadio($__low_resolution_reflex__, 19, 279, 193, 17)
   GUICtrlSetOnEvent($sb_save_lowres_reflex, "sb_save_reflex_typeClick")
-  Global $sb_LabelReflexFileName = GUICtrlCreateLabel($__reflex_file_name__, 22, 304, 120, 17)
+  $sb_LabelReflexFileName = GUICtrlCreateLabel($__reflex_file_name__, 22, 304, 120, 17)
   GUICtrlSetOnEvent($sb_LabelReflexFileName, "sb_LabelReflexFileNameClick")
-  Global $sb_reflex_extension = GUICtrlCreateCombo("Jpeg (*.jpg)", 167, 298, 97, 25, BitOR($CBS_DROPDOWNLIST,$CBS_AUTOHSCROLL))
+  $sb_reflex_extension = GUICtrlCreateCombo("Jpeg (*.jpg)", 167, 298, 97, 25, BitOR($CBS_DROPDOWNLIST,$CBS_AUTOHSCROLL))
   GUICtrlSetData($sb_reflex_extension, "PNG (*.png)|Bitmap (*.bmp)")
   GUICtrlSetOnEvent($sb_reflex_extension, "sb_reflex_extensionChange")
-  Global $sb_reflex_filename = GUICtrlCreateInput("c:\Images\My nice function.jpg", 19, 321, 217, 21)
+  $sb_reflex_filename = GUICtrlCreateInput("c:\Images\My nice function.jpg", 19, 321, 217, 21)
   GUICtrlSetOnEvent($sb_reflex_filename, "sb_reflex_filenameChange")
   GUICtrlSetState($sb_reflex_filename, $GUI_DISABLE)
-  Global $sb_new_reflex_filename = GUICtrlCreateButton("...", 238, 321, 28, 20, 0)
+  $sb_new_reflex_filename = GUICtrlCreateButton("...", 238, 321, 28, 20, 0)
   GUICtrlSetOnEvent($sb_new_reflex_filename, "sb_new_reflex_filenameClick")
-  Global $sb_use_formula_comment = GUICtrlCreateCheckbox($__use_formula_comment__, 19, 347, 249, 17)
+  $sb_use_formula_comment = GUICtrlCreateCheckbox($__use_formula_comment__, 19, 347, 249, 17)
   GUICtrlSetState($sb_use_formula_comment, $GUI_CHECKED)
   GUICtrlSetOnEvent($sb_use_formula_comment, "sb_use_formula_commentClick")
   GUICtrlSetTip($sb_use_formula_comment, $__hint_use_formula_comment__)
   GUICtrlCreateGroup("", -99, -99, 1, 1)
-  Global $sb_save_settings = GUICtrlCreateButton($__just_save_settings__, 169, 39, 105, 25, 0)
+  $sb_save_settings = GUICtrlCreateButton($__just_save_settings__, 169, 39, 105, 25, 0)
   GUICtrlSetOnEvent($sb_save_settings, "sb_save_settingsClick")
   GUICtrlSetTip($sb_save_settings, $__hint_save_options_button__)
   #EndRegion ### END Koda GUI section ###
-  
+
   ;#include "SaveBox_lang.au3"
   ;$sb_formula_comment, _
   ;$sb_LabelFormulaComment _
-  Global $formula_group_controls = _ArrayCreate( _
+  $formula_group_controls = _ArrayCreate( _
     $sb_formula_filename, _
     $sb_open_formula_file, _
     $sb_LabelFormulaFileName _
   )
-  Global $reflex_group_controls = _ArrayCreate( _
+  $reflex_group_controls = _ArrayCreate( _
     $sb_save_highres_reflex, _
     $sb_save_last_reflex, _
 	$sb_save_lowres_reflex, _
@@ -143,15 +148,15 @@ Func generateSaveBox($coordinates = 0)
     $sb_new_reflex_filename, _
     $sb_use_formula_comment _
   )
-  
-  Global $saveboxParametersMap = _ArrayCreate( _
+
+  $saveboxParametersMap = _ArrayCreate( _
    _ArrayCreate('formulaComment', $sb_formula_comment, 'My nice function'), _
    _ArrayCreate('formulaFile', $sb_formula_filename, '%MY_DOCUMENTS%\Reflex\formulas.txt'), _
    _ArrayCreate('Extension', $sb_reflex_extension, 'Jpeg (*.jpg)'), _
    _ArrayCreate('reflexFile', $sb_reflex_filename, '%MY_DOCUMENTS%\Reflex\My nice function.jpg') _
   )
 
-  Global $saveboxCheckBoxMap = _ArrayCreate( _
+  $saveboxCheckBoxMap = _ArrayCreate( _
    _ArrayCreate('saveBoth', $sb_save_fr, 'TRUE'), _
    _ArrayCreate('saveFormula', $sb_save_f, 'FALSE'), _
    _ArrayCreate('saveReflex', $sb_save_r, 'FALSE'), _
@@ -167,12 +172,12 @@ Func generateSaveBox($coordinates = 0)
   LoadSavebox($saveboxParametersMap, $saveboxCheckBoxMap)
   GUICtrlSetData($sb_formula_filename, UpdateMyDocuments(GUICtrlRead($sb_formula_filename)))
   GUICtrlSetData($sb_reflex_filename, UpdateMyDocuments(GUICtrlRead($sb_reflex_filename)))
-  
+
   EnableDisableGroups($sb_save_fr, $sb_save_f, $sb_save_r, $formula_group_controls, $reflex_group_controls)
   $returnValue = -1
   maybeUpdateReflexFilename($sb_formula_comment, $sb_formula_filename, _
   $sb_use_formula_comment, $sb_reflex_filename, $sb_reflex_extension)
-    
+
   If $SAVE_BOX_PARENT_WINDOW <> 0 And $coordinates == 0 Then
     $pos = WinGetPos($SAVE_BOX_PARENT_WINDOW)
     WinMove($sb_savebox, "", $pos[0]+$pos[2], $pos[1])
@@ -180,10 +185,10 @@ Func generateSaveBox($coordinates = 0)
   If Not $coordinates == 0 Then
     SaveBox__Move($coordinates)
   EndIf
-  
+
   ;TODO: Save the temp parameters somewhere before closing (?)
   WindowManager__registerWindow($sb_savebox, "SaveBox", "DeleteSaveBox")
-  
+
   AnimateFromLeft($sb_savebox)
   GUISetState(@SW_SHOW, $sb_savebox)
 EndFunc
@@ -241,6 +246,13 @@ EndFunc
 
 Func sb_cancel_buttonClick()
   sb_saveboxClose()
+EndFunc
+
+Func sb_formula_commentSet($new_comment)
+  If $SAVE_BOX_EXISTS Then
+    GUICtrlSetData($sb_formula_comment, $new_comment)
+    sb_formula_commentChange()
+  EndIf
 EndFunc
 
 Func sb_formula_commentChange()
@@ -345,7 +357,7 @@ Func maybeUpdateReflexFilename($sb_formula_comment, $sb_formula_filename, _
       GUICtrlRead($sb_formula_comment), _
       GUICtrlRead($sb_formula_filename), _
       GUICtrlRead($sb_reflex_extension))
-    
+
     GUICtrlSetData($sb_reflex_filename, $newname)
     ;todo
   EndIf
@@ -430,7 +442,7 @@ Func saveFormulaIntoFile($filename, $formula, $comment, $b_saveComment, $b_saveR
   $fileExistedBefore = FileExists($filename)
   $f = FileOpen($filename, 9)
   If $f == -1 Then
-    MsgBox(0, $Error_title, StringFormat($__s__is_not_a_valsb_filename__s_Saving_canceled_, $filename, @CRLF))
+    MsgBox(0, $Error_title, StringFormat($__s__is_not_a_valid_filename__s_Saving_canceled_, $filename, @CRLF))
     Return False
   EndIf
   If $fileExistedBefore Then
@@ -460,7 +472,7 @@ Func incrementName($name)
   Until False
   If $size_number == 0 Then
     $maybe_space = " "
-    If StringIsSpace(StringRight($name, 1)) Then 
+    If StringIsSpace(StringRight($name, 1)) Then
       $maybe_space= ""
     EndIf
     Return $name&$maybe_space&"0002"

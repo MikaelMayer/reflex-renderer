@@ -183,9 +183,9 @@ puis d'y adjoindre les chaînes traduites de &Tools + ' > ' + &Save reflex / form
 
 HotKeySet('{ESC}', 'cancelDrag')
 
-$output_x = 312
-$output_y = 28
-$output_max_size=401
+Global $output_x = 312
+Global $output_y = 28
+Global $output_max_size=401
 
 Opt('MouseCoordMode', 2)
 
@@ -213,21 +213,6 @@ parseCommandLine()
 #include 'Translations.au3'
 #include 'WindowManager.au3'
 #include 'Tutorial.au3'
-
-Func retrieveRenderVideoAndAut2Exe()
-  $rv = @TempDir&"\RenderVideoExploded.au3"
-  $au2exe = @TempDir&"\Aut2Exe.exe"
-  $autoitscbin = @TempDir&"\AutoItSC.bin"
-  $rrx = @TempDir&"\Release\RenderReflex.exe"
-  FileInstall("RenderVideoExploded.au3", $rv, 1)
-  FileInstall("C:\Program Files\AutoIt3\Aut2Exe\Aut2Exe.exe", $au2exe, 1)
-  FileInstall("C:\Program Files\AutoIt3\Aut2Exe\AutoItSC.bin", $autoitscbin, 1)
-  logging("Copying "&$RenderReflexExe&" to "&$rrx)
-  FileDelete(@TempDir&"\Release")
-  DirCreate(@TempDir&"\Release")
-  FileCopy($RenderReflexExe, $rrx , 1+8)
-  Return _ArrayCreate($rv, $au2exe, $autoitscbin, $rrx )
-EndFunc   ;==>retrieveRenderVideoAndAut2Exe
 
 Global $noir_file = $bin_dir&'black.bmp'
 Global $gris_file = $bin_dir&'gray.bmp'
@@ -261,12 +246,33 @@ Global $x = 0, $y = 0, $dx = 0, $dy = 0
 Global $xprev = -1, $yprev = -1
 Global $k = 0
 
+#Region ### Form Variables
+Global $rri_win=0, $rri_line_reset=0, $rri_zoom_box0=0, $rri_zoom_box1=0, $rri_zoom_box2=0, $rri_zoom_box3=0, $rri_zoom_box_gray0=0, $rri_zoom_box_gray1=0, $rri_zoom_box_gray2=0, $rri_zoom_box_gray3=0, $rri_out_rendu=0, $rri_group_reflex=0, $rri_group_options=0, $rri_Label1=0, $rri_in_formula=0, $rri_formula_editor=0, $rri_DimLabel=0, $rri_width=0, $rri_labelX=0, $rri_height=0, $rri_reset_resolution=0, $rri_preview=0, $rri_LabelWinMin=0, $rri_percent=0, $rri_winmin=0, $rri_LabelWinMax=0, $rri_winmax=0, $rri_reset_window=0, $rri_check_auto_render=0, $rri_render=0, $rri_output=0, $rri_PercentSign=0, $rri_progress=0, $rri_rendering_text=0, $rri_quicksave=0, $rri_save_noquick=0, $rri_seed=0, $rri_realmode=0, $rri_lucky_func=0, $rri_lucky_fract=0, $rri_switch_fract=0, $rri_display_folder=0, $rri_LabelTitre=0, $rri_navigation=0, $rri_visit_click=0, $rri_visit_rectangle=0, $rri_previous_window=0, $rri_next_window=0, $rri_zoom_factor=0, $rri_zoom_in_factor=0, $rri_zoom_out_factor=0, $rri_LabelZoomFactor=0, $rri_zoom_absolute=0, $rri_color_code_button=0, $rri_menu_tools=0, $rri_menu_save=0, $rri_menu_windows=0, $rri_window_1=0, $rri_window_2=0, $rri_window_4=0, $rri_window_8=0, $rri_window_pi=0, $rri_menu_resolutions=0, $rri_resolutions_201=0, $rri_resolutions_401=0, $rri_resolutions_801=0, $rri_resolutions_640=0, $rri_resolutions_1024=0, $rri_resolutions_1280=0, $rri_resolutions_1601=0, $rri_resolutions_16000=0, $rri_menu_export_formula=0, $rri_menu_tutorial=0, $rri_menu_quitnosave=0, $rri_menu_quit=0, $rri_menu_formula_editor=0, $rri_menu_formula_edito=0, $rri_menu_import_formula=0, $rri_menu_import_reflex=0, $rri_menu_formula_small_history=0, $rri_menu_formula_history=0, $rri_menu_language=0, $rri_menu_customize=0, $rri_all_parameters=0, $rri_reset_menu=0
+#EndRegion ### Form Variables
+Global $rri_out_rendu2
+Global $zoomAbsolutePrevious
+
+Global $sessionParametersMap, $sessionCheckBoxMap, $resolutionsMap
+
 EditFormula__setCallbackFunction("EditFormulaCallBack")
 LoadFormulaFromFile__setCallbackFunction("loadFormulaCallback")
 SaveBox__setCallbackFunction("SaveBoxCallback")
 Tutorial__setCallbackFunction("TutorialCallback")
 
-rri_main()
+Func retrieveRenderVideoAndAut2Exe()
+  $rv = @TempDir&"\RenderVideoExploded.au3"
+  $au2exe = @TempDir&"\Aut2Exe.exe"
+  $autoitscbin = @TempDir&"\AutoItSC.bin"
+  $rrx = @TempDir&"\Release\RenderReflex.exe"
+  FileInstall("RenderVideoExploded.au3", $rv, 1)
+  FileInstall("C:\Program Files\AutoIt3\Aut2Exe\Aut2Exe.exe", $au2exe, 1)
+  FileInstall("C:\Program Files\AutoIt3\Aut2Exe\AutoItSC.bin", $autoitscbin, 1)
+  logging("Copying "&$RenderReflexExe&" to "&$rrx)
+  FileDelete(@TempDir&"\Release")
+  DirCreate(@TempDir&"\Release")
+  FileCopy($RenderReflexExe, $rrx , 1+8)
+  Return _ArrayCreate($rv, $au2exe, $autoitscbin, $rrx )
+EndFunc   ;==>retrieveRenderVideoAndAut2Exe
 
 Func rri_main()
   loadRRI()
@@ -311,213 +317,216 @@ Func rri_main()
   WEnd
 EndFunc   ;==>rri_main
 
-Func loadRRI()
+Func loadRRI($quiet = False)
   Opt('GUIOnEventMode', 1)
   #Region ### START Koda GUI section ### Form=C:\Documents and Settings\Mikaël\Mes documents\Reflex\LogicielOrdi\RenderReflex\ReflexRendererInterface.kxf
-  Global $rri_win = GUICreate($__reflex_renderer_interface__, 737, 468, 1, 1, BitOR($WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_BORDER,$WS_CLIPSIBLINGS,$DS_MODALFRAME), BitOR($WS_EX_ACCEPTFILES,$WS_EX_WINDOWEDGE))
+  $rri_win = GUICreate($__reflex_renderer_interface__, 737, 468, 1, 1, BitOR($WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_BORDER,$WS_CLIPSIBLINGS,$DS_MODALFRAME), BitOR($WS_EX_ACCEPTFILES,$WS_EX_WINDOWEDGE))
   GUISetOnEvent($GUI_EVENT_CLOSE, "rri_winClose")
   GUISetOnEvent($GUI_EVENT_MINIMIZE, "rri_winMinimize")
   GUISetOnEvent($GUI_EVENT_MAXIMIZE, "rri_winMaximize")
   GUISetOnEvent($GUI_EVENT_RESTORE, "rri_winRestore")
-  Global $rri_line_reset = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
+  $rri_line_reset = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
   GUICtrlSetOnEvent(-1, "rri_line_resetClick")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_zoom_box0 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
+  $rri_zoom_box0 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
   GUICtrlSetOnEvent(-1, "rri_zoom_box0Click")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_zoom_box1 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
+  $rri_zoom_box1 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
   GUICtrlSetOnEvent(-1, "rri_zoom_box1Click")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_zoom_box2 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
+  $rri_zoom_box2 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
   GUICtrlSetOnEvent(-1, "rri_zoom_box2Click")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_zoom_box3 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
+  $rri_zoom_box3 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
   GUICtrlSetOnEvent(-1, "rri_zoom_box3Click")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_zoom_box_gray0 = GUICtrlCreatePic("", -100, 8, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
+  $rri_zoom_box_gray0 = GUICtrlCreatePic("", -100, 8, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
   GUICtrlSetOnEvent(-1, "rri_zoom_box_gray0Click")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_zoom_box_gray1 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
+  $rri_zoom_box_gray1 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
   GUICtrlSetOnEvent(-1, "rri_zoom_box_gray1Click")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_zoom_box_gray2 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
+  $rri_zoom_box_gray2 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
   GUICtrlSetOnEvent(-1, "rri_zoom_box_gray2Click")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_zoom_box_gray3 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
+  $rri_zoom_box_gray3 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
   GUICtrlSetOnEvent(-1, "rri_zoom_box_gray3Click")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_out_rendu = GUICtrlCreatePic("", 312, 28, 401, 401, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
+  $rri_out_rendu = GUICtrlCreatePic("", 312, 28, 401, 401, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
   GUICtrlSetOnEvent(-1, "rri_out_renduClick")
-  Global $rri_group_reflex = GUICtrlCreateGroup($__reflex__, 296, 8, 433, 433)
+  $rri_group_reflex = GUICtrlCreateGroup($__reflex__, 296, 8, 433, 433)
   GUICtrlSetResizing(-1, $GUI_DOCKRIGHT+$GUI_DOCKTOP+$GUI_DOCKBOTTOM)
   GUICtrlCreateGroup("", -99, -99, 1, 1)
-  Global $rri_group_options = GUICtrlCreateGroup($__creating_options__, 8, 40, 281, 271)
+  $rri_group_options = GUICtrlCreateGroup($__creating_options__, 8, 40, 281, 271)
   GUICtrlSetResizing(-1, $GUI_DOCKLEFT+$GUI_DOCKTOP)
-  Global $rri_Label1 = GUICtrlCreateLabel($__formula__, 11, 87, 54, 17, $SS_RIGHT)
+  $rri_Label1 = GUICtrlCreateLabel($__formula__, 11, 87, 54, 17, $SS_RIGHT)
   GUICtrlSetOnEvent(-1, "rri_Label1Click")
-  Global $rri_in_formula = GUICtrlCreateInput("", 65, 85, 193, 21)
+  $rri_in_formula = GUICtrlCreateInput("", 65, 85, 193, 21)
   GUICtrlSetOnEvent(-1, "rri_in_formulaChange")
-  Global $rri_formula_editor = GUICtrlCreateButton("...", 261, 86, 21, 21, 0)
+  $rri_formula_editor = GUICtrlCreateButton("...", 261, 86, 21, 21, 0)
   GUICtrlSetOnEvent(-1, "rri_menu_formula_editorClick")
-  Global $rri_DimLabel = GUICtrlCreateLabel($__width_height__, 11, 116, 96, 17, $SS_RIGHT)
+  $rri_DimLabel = GUICtrlCreateLabel($__width_height__, 11, 116, 96, 17, $SS_RIGHT)
   GUICtrlSetOnEvent(-1, "rri_DimLabelClick")
-  Global $rri_width = GUICtrlCreateInput("201", 110, 114, 41, 21)
+  $rri_width = GUICtrlCreateInput("201", 110, 114, 41, 21)
   GUICtrlSetOnEvent(-1, "rri_widthChange")
-  Global $rri_labelX = GUICtrlCreateLabel("x", 153, 116, 9, 17)
+  $rri_labelX = GUICtrlCreateLabel("x", 153, 116, 9, 17)
   GUICtrlSetOnEvent(-1, "rri_labelXClick")
-  Global $rri_height = GUICtrlCreateInput("201", 163, 114, 41, 21)
+  $rri_height = GUICtrlCreateInput("201", 163, 114, 41, 21)
   GUICtrlSetOnEvent(-1, "rri_heightChange")
-  Global $rri_reset_resolution = GUICtrlCreateButton($__reset_resolution__, 241, 112, 41, 25, 0)
+  $rri_reset_resolution = GUICtrlCreateButton($__reset_resolution__, 241, 112, 41, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_reset_resolutionClick")
-  Global $rri_preview = GUICtrlCreateCheckbox($__preview__, 29, 140, 81, 17)
+  $rri_preview = GUICtrlCreateCheckbox($__preview__, 29, 140, 81, 17)
   GUICtrlSetOnEvent(-1, "rri_previewClick")
-  Global $rri_LabelWinMin = GUICtrlCreateLabel($__winmin__, 11, 166, 97, 17, BitOR($SS_RIGHT,$SS_RIGHTJUST))
+  $rri_LabelWinMin = GUICtrlCreateLabel($__winmin__, 11, 166, 97, 17, BitOR($SS_RIGHT,$SS_RIGHTJUST))
   GUICtrlSetOnEvent(-1, "rri_LabelWinMinClick")
-  Global $rri_percent = GUICtrlCreateInput("10", 110, 139, 33, 21)
+  $rri_percent = GUICtrlCreateInput("10", 110, 139, 33, 21)
   GUICtrlSetOnEvent(-1, "rri_percentChange")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_winmin = GUICtrlCreateInput("-4-4i", 110, 164, 129, 21)
+  $rri_winmin = GUICtrlCreateInput("-4-4i", 110, 164, 129, 21)
   GUICtrlSetOnEvent(-1, "rri_winminChange")
-  Global $rri_LabelWinMax = GUICtrlCreateLabel($__winmax__, 11, 188, 97, 17, $SS_RIGHT)
+  $rri_LabelWinMax = GUICtrlCreateLabel($__winmax__, 11, 188, 97, 17, $SS_RIGHT)
   GUICtrlSetOnEvent(-1, "rri_LabelWinMaxClick")
-  Global $rri_winmax = GUICtrlCreateInput("4+4i", 110, 186, 129, 21)
+  $rri_winmax = GUICtrlCreateInput("4+4i", 110, 186, 129, 21)
   GUICtrlSetOnEvent(-1, "rri_winmaxChange")
-  Global $rri_reset_window = GUICtrlCreateButton($__reset_window__, 241, 173, 41, 25, 0)
+  $rri_reset_window = GUICtrlCreateButton($__reset_window__, 241, 173, 41, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_reset_windowClick")
-  Global $rri_check_auto_render = GUICtrlCreateCheckbox($__auto_render__, 17, 217, 118, 17)
+  $rri_check_auto_render = GUICtrlCreateCheckbox($__auto_render__, 17, 217, 118, 17)
   GUICtrlSetOnEvent(-1, "rri_check_auto_renderClick")
   GUICtrlSetTip(-1, $__auto_render_hint__)
-  Global $rri_render = GUICtrlCreateButton($__render_reflex__, 137, 215, 145, 25, $BS_DEFPUSHBUTTON)
+  $rri_render = GUICtrlCreateButton($__render_reflex__, 137, 215, 145, 22, $BS_DEFPUSHBUTTON)
   GUICtrlSetFont(-1, 11, 400, 0, "MS Sans Serif")
   GUICtrlSetOnEvent(-1, "rri_renderClick")
-  Global $rri_output = GUICtrlCreateInput("c:\My_nice_function.bmp", 261, 139, 17, 21)
+  $rri_output = GUICtrlCreateInput("c:\My_nice_function.bmp", 261, 139, 17, 21)
   GUICtrlSetOnEvent(-1, "rri_outputChange")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_PercentSign = GUICtrlCreateLabel("%", 145, 142, 12, 17)
+  $rri_PercentSign = GUICtrlCreateLabel("%", 145, 142, 12, 17)
   GUICtrlSetOnEvent(-1, "rri_PercentSignClick")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_progress = GUICtrlCreateProgress(11, 272, 271, 16)
-  Global $rri_rendering_text = GUICtrlCreateLabel($__rendering__, 17, 254, 102, 17)
+  $rri_progress = GUICtrlCreateProgress(11, 288, 271, 16)
+  $rri_rendering_text = GUICtrlCreateLabel($__rendering__, 17, 270, 102, 17)
   GUICtrlSetOnEvent(-1, "rri_rendering_textClick")
-  Global $rri_quicksave = GUICtrlCreateButton($__quick_save__, 137, 239, 89, 25, 0)
+  $rri_quicksave = GUICtrlCreateButton($__quick_save__, 137, 236, 89, 22, 0)
   GUICtrlSetOnEvent(-1, "rri_quicksaveClick")
   GUICtrlSetTip(-1, $__quicksave_hint__)
-  Global $rri_save_noquick = GUICtrlCreateButton($__noquick_save__, 225, 239, 57, 25, 0)
+  $rri_save_noquick = GUICtrlCreateButton($__noquick_save__, 225, 236, 57, 22, 0)
   GUICtrlSetOnEvent(-1, "rri_menu_saveClick")
   GUICtrlSetTip(-1, $__noquick_save_hint__)
-  Global $rri_seed = GUICtrlCreateInput("", 241, 139, 17, 21)
+  $rri_seed = GUICtrlCreateInput("", 241, 139, 17, 21)
   GUICtrlSetOnEvent(-1, "rri_seedChange")
   GUICtrlSetState(-1, $GUI_HIDE)
-  Global $rri_realmode = GUICtrlCreateCheckbox($__real_mode__, 17, 235, 113, 17)
+  $rri_realmode = GUICtrlCreateCheckbox($__real_mode__, 17, 235, 113, 17)
   GUICtrlSetOnEvent(-1, "rri_realmodeClick")
-  Global $rri_lucky_func = GUICtrlCreateButton($__lucky_func__, 14, 56, 90, 25, 0)
+  $rri_lucky_func = GUICtrlCreateButton($__lucky_func__, 14, 56, 90, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_lucky_funcClick")
   GUICtrlSetTip(-1, $__lucky_func_hint__)
-  Global $rri_lucky_fract = GUICtrlCreateButton($__lucky_fractal__, 103, 56, 90, 25, 0)
+  $rri_lucky_fract = GUICtrlCreateButton($__lucky_fractal__, 103, 56, 90, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_lucky_fractClick")
   GUICtrlSetTip(-1, $__lucky_fractal_hint__)
-  Global $rri_switch_fract = GUICtrlCreateButton($__switch_fractal__, 192, 56, 90, 25, 0)
+  $rri_switch_fract = GUICtrlCreateButton($__switch_fractal__, 192, 56, 90, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_switch_fractClick")
   GUICtrlSetTip(-1, $__switch_fractal_hint__)
+  $rri_display_folder = GUICtrlCreateButton($__display_folder__, 136, 258, 145, 22, 0)
+  GUICtrlSetOnEvent(-1, "rri_display_folderClick")
+  GUICtrlSetTip(-1, $__display_folder_hint__)
   GUICtrlCreateGroup("", -99, -99, 1, 1)
-  Global $rri_LabelTitre = GUICtrlCreateLabel($__reflex_renderer_interface__, 9, 8, 244, 28, $SS_CENTER)
+  $rri_LabelTitre = GUICtrlCreateLabel($__reflex_renderer_interface__, 9, 8, 244, 28, $SS_CENTER)
   GUICtrlSetFont(-1, 14, 400, 0, "MS Sans Serif")
   GUICtrlSetOnEvent(-1, "rri_LabelTitreClick")
-  Global $rri_navigation = GUICtrlCreateGroup($__navigation__, 8, 312, 281, 129)
+  $rri_navigation = GUICtrlCreateGroup($__navigation__, 8, 312, 281, 129)
   GUICtrlSetResizing(-1, $GUI_DOCKLEFT+$GUI_DOCKBOTTOM)
-  Global $rri_visit_click = GUICtrlCreateRadio($__visit_click__, 168, 326, 113, 20)
+  $rri_visit_click = GUICtrlCreateRadio($__visit_click__, 168, 326, 113, 20)
   GUICtrlSetState(-1, $GUI_CHECKED)
   GUICtrlSetOnEvent(-1, "rri_visit_clickClick")
-  Global $rri_visit_rectangle = GUICtrlCreateRadio($__visit_rectangle__, 168, 349, 113, 20)
+  $rri_visit_rectangle = GUICtrlCreateRadio($__visit_rectangle__, 168, 349, 113, 20)
   GUICtrlSetOnEvent(-1, "rri_visit_rectangleClick")
-  Global $rri_previous_window = GUICtrlCreateButton($__previous_window__, 168, 374, 113, 25, 0)
+  $rri_previous_window = GUICtrlCreateButton($__previous_window__, 168, 374, 113, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_previous_windowClick")
   GUICtrlSetState(-1, $GUI_DISABLE)
-  Global $rri_next_window = GUICtrlCreateButton($__next_window__, 168, 408, 113, 25, 0)
+  $rri_next_window = GUICtrlCreateButton($__next_window__, 168, 408, 113, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_next_windowClick")
   GUICtrlSetState(-1, $GUI_DISABLE)
-  Global $rri_zoom_factor = GUICtrlCreateInput("2", 96, 374, 58, 21)
+  $rri_zoom_factor = GUICtrlCreateInput("2", 96, 374, 58, 21)
   GUICtrlSetOnEvent(-1, "rri_zoom_factorChange")
   GUICtrlSetTip(-1, $__zoom_factor_hint__)
-  Global $rri_zoom_in_factor = GUICtrlCreateButton($__zoom_in_factor__, 37, 343, 58, 25, 0)
+  $rri_zoom_in_factor = GUICtrlCreateButton($__zoom_in_factor__, 37, 343, 58, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_zoom_in_factorClick")
-  Global $rri_zoom_out_factor = GUICtrlCreateButton($__zoom_out_factor__, 96, 343, 58, 25, 0)
+  $rri_zoom_out_factor = GUICtrlCreateButton($__zoom_out_factor__, 96, 343, 58, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_zoom_out_factorClick")
-  Global $rri_LabelZoomFactor = GUICtrlCreateLabel($__zoom_factor__, 10, 376, 84, 17, $SS_RIGHT)
+  $rri_LabelZoomFactor = GUICtrlCreateLabel($__zoom_factor__, 10, 376, 84, 17, $SS_RIGHT)
   GUICtrlSetOnEvent(-1, "rri_LabelZoomFactorClick")
   GUICtrlSetTip(-1, $__zoom_factor_hint__)
-  Global $rri_zoom_absolute = GUICtrlCreateSlider(16, 397, 150, 45, BitOR($TBS_AUTOTICKS,$TBS_TOP,$TBS_LEFT,$TBS_FIXEDLENGTH))
+  $rri_zoom_absolute = GUICtrlCreateSlider(16, 397, 150, 45, BitOR($TBS_AUTOTICKS,$TBS_TOP,$TBS_LEFT,$TBS_FIXEDLENGTH))
   GUICtrlSetLimit(-1, 50, 0)
   GUICtrlSetData(-1, 25)
   GUICtrlSetOnEvent(-1, "rri_zoom_absoluteChange")
   GUICtrlSetTip(-1, $__zoom_absolute_hint__)
   GUICtrlCreateGroup("", -99, -99, 1, 1)
-  Global $rri_color_code_button = GUICtrlCreateButton("Code", 257, 12, 32, 26, 0)
+  $rri_color_code_button = GUICtrlCreateButton("Code", 257, 12, 32, 26, 0)
   GUICtrlSetOnEvent(-1, "rri_color_code_buttonClick")
   GUICtrlSetTip(-1, $__hint_color_code_button__)
-  Global $rri_menu_tools = GUICtrlCreateMenu($__tools__)
+  $rri_menu_tools = GUICtrlCreateMenu($__tools__)
   GUICtrlSetOnEvent(-1, "rri_menu_toolsClick")
-  Global $rri_menu_save = GUICtrlCreateMenuItem($__menu_save__, $rri_menu_tools)
+  $rri_menu_save = GUICtrlCreateMenuItem($__menu_save__, $rri_menu_tools)
   GUICtrlSetOnEvent(-1, "rri_menu_saveClick")
-  Global $rri_menu_windows = GUICtrlCreateMenu($__menu_windows__, $rri_menu_tools)
+  $rri_menu_windows = GUICtrlCreateMenu($__menu_windows__, $rri_menu_tools)
   GUICtrlSetOnEvent(-1, "rri_menu_windowsClick")
-  Global $rri_window_1 = GUICtrlCreateMenuItem("-1-i, 1+i", $rri_menu_windows, -1 , 1)
+  $rri_window_1 = GUICtrlCreateMenuItem("-1-i, 1+i", $rri_menu_windows, -1 , 1)
   GUICtrlSetOnEvent(-1, "windowClick")
-  Global $rri_window_2 = GUICtrlCreateMenuItem("-2-2i, 2+2i", $rri_menu_windows, -1 , 1)
+  $rri_window_2 = GUICtrlCreateMenuItem("-2-2i, 2+2i", $rri_menu_windows, -1 , 1)
   GUICtrlSetOnEvent(-1, "windowClick")
-  Global $rri_window_4 = GUICtrlCreateMenuItem("-4-4i, 4+4i", $rri_menu_windows, -1 , 1)
+  $rri_window_4 = GUICtrlCreateMenuItem("-4-4i, 4+4i", $rri_menu_windows, -1 , 1)
   GUICtrlSetState(-1, $GUI_CHECKED)
   GUICtrlSetOnEvent(-1, "windowClick")
-  Global $rri_window_8 = GUICtrlCreateMenuItem("-8-8i, 8+8i", $rri_menu_windows, -1 , 1)
+  $rri_window_8 = GUICtrlCreateMenuItem("-8-8i, 8+8i", $rri_menu_windows, -1 , 1)
   GUICtrlSetOnEvent(-1, "windowClick")
-  Global $rri_window_pi = GUICtrlCreateMenuItem("-pi-i*pi, pi+i*pi", $rri_menu_windows, -1 , 1)
+  $rri_window_pi = GUICtrlCreateMenuItem("-pi-i*pi, pi+i*pi", $rri_menu_windows, -1 , 1)
   GUICtrlSetOnEvent(-1, "windowClick")
-  Global $rri_menu_resolutions = GUICtrlCreateMenu($__menu_resolutions__, $rri_menu_tools)
+  $rri_menu_resolutions = GUICtrlCreateMenu($__menu_resolutions__, $rri_menu_tools)
   GUICtrlSetOnEvent(-1, "rri_menu_resolutionsClick")
-  Global $rri_resolutions_201 = GUICtrlCreateMenuItem("201 x 201", $rri_menu_resolutions, -1 , 1)
+  $rri_resolutions_201 = GUICtrlCreateMenuItem("201 x 201", $rri_menu_resolutions, -1 , 1)
   GUICtrlSetState(-1, $GUI_CHECKED)
   GUICtrlSetOnEvent(-1, "resolutionsClick")
-  Global $rri_resolutions_401 = GUICtrlCreateMenuItem("401 x 401", $rri_menu_resolutions, -1 , 1)
+  $rri_resolutions_401 = GUICtrlCreateMenuItem("401 x 401", $rri_menu_resolutions, -1 , 1)
   GUICtrlSetOnEvent(-1, "resolutionsClick")
-  Global $rri_resolutions_801 = GUICtrlCreateMenuItem("801 x 801", $rri_menu_resolutions, -1 , 1)
+  $rri_resolutions_801 = GUICtrlCreateMenuItem("801 x 801", $rri_menu_resolutions, -1 , 1)
   GUICtrlSetOnEvent(-1, "resolutionsClick")
-  Global $rri_resolutions_640 = GUICtrlCreateMenuItem("640 x 480", $rri_menu_resolutions, -1 , 1)
+  $rri_resolutions_640 = GUICtrlCreateMenuItem("640 x 480", $rri_menu_resolutions, -1 , 1)
   GUICtrlSetOnEvent(-1, "resolutionsClick")
-  Global $rri_resolutions_1024 = GUICtrlCreateMenuItem("1024 x 768", $rri_menu_resolutions, -1 , 1)
+  $rri_resolutions_1024 = GUICtrlCreateMenuItem("1024 x 768", $rri_menu_resolutions, -1 , 1)
   GUICtrlSetOnEvent(-1, "resolutionsClick")
-  Global $rri_resolutions_1280 = GUICtrlCreateMenuItem("1280 x 800", $rri_menu_resolutions, -1 , 1)
+  $rri_resolutions_1280 = GUICtrlCreateMenuItem("1280 x 800", $rri_menu_resolutions, -1 , 1)
   GUICtrlSetOnEvent(-1, "resolutionsClick")
-  Global $rri_resolutions_1601 = GUICtrlCreateMenuItem("1601 x 1601", $rri_menu_resolutions)
+  $rri_resolutions_1601 = GUICtrlCreateMenuItem("1601 x 1601", $rri_menu_resolutions)
   GUICtrlSetOnEvent(-1, "resolutionsClick")
-  Global $rri_resolutions_16000 = GUICtrlCreateMenuItem("16000 x 16000", $rri_menu_resolutions, -1 , 1)
+  $rri_resolutions_16000 = GUICtrlCreateMenuItem("16000 x 16000", $rri_menu_resolutions, -1 , 1)
   GUICtrlSetOnEvent(-1, "resolutionsClick")
-  Global $rri_menu_export_formula = GUICtrlCreateMenuItem($__export_formula__, $rri_menu_tools)
+  $rri_menu_export_formula = GUICtrlCreateMenuItem($__export_formula__, $rri_menu_tools)
   GUICtrlSetOnEvent(-1, "rri_menu_export_formulaClick")
-  Global $rri_menu_tutorial = GUICtrlCreateMenuItem($__open_tutorial__, $rri_menu_tools)
+  $rri_menu_tutorial = GUICtrlCreateMenuItem($__open_tutorial__, $rri_menu_tools)
   GUICtrlSetOnEvent(-1, "rri_menu_tutorialClick")
-  Global $rri_menu_quitnosave = GUICtrlCreateMenuItem($__menu_quitnosave__, $rri_menu_tools)
+  $rri_menu_quitnosave = GUICtrlCreateMenuItem($__menu_quitnosave__, $rri_menu_tools)
   GUICtrlSetOnEvent(-1, "rri_menu_quitnosaveClick")
-  Global $rri_menu_quit = GUICtrlCreateMenuItem($__menu_quit__, $rri_menu_tools)
+  $rri_menu_quit = GUICtrlCreateMenuItem($__menu_quit__, $rri_menu_tools)
   GUICtrlSetOnEvent(-1, "rri_menu_quitClick")
-  Global $rri_menu_formula_editor = GUICtrlCreateMenu($__formula_menu__)
+  $rri_menu_formula_editor = GUICtrlCreateMenu($__formula_menu__)
   GUICtrlSetOnEvent(-1, "rri_menu_formula_editorClick")
-  Global $rri_menu_formula_edito = GUICtrlCreateMenuItem($__menu_formula_editor__, $rri_menu_formula_editor)
+  $rri_menu_formula_edito = GUICtrlCreateMenuItem($__menu_formula_editor__, $rri_menu_formula_editor)
   GUICtrlSetOnEvent(-1, "rri_menu_formula_editorClick")
-  Global $rri_menu_import_formula = GUICtrlCreateMenuItem($__menu_formula_import__, $rri_menu_formula_editor)
+  $rri_menu_import_formula = GUICtrlCreateMenuItem($__menu_formula_import__, $rri_menu_formula_editor)
   GUICtrlSetOnEvent(-1, "rri_menu_import_formulaClick")
-  Global $rri_menu_import_reflex = GUICtrlCreateMenuItem($__menu_formula_import_reflex__, $rri_menu_formula_editor)
+  $rri_menu_import_reflex = GUICtrlCreateMenuItem($__menu_formula_import_reflex__, $rri_menu_formula_editor)
   GUICtrlSetOnEvent(-1, "rri_menu_import_reflexClick")
-  Global $rri_menu_formula_small_history = GUICtrlCreateMenuItem($__menu_formula_small_history__, $rri_menu_formula_editor)
+  $rri_menu_formula_small_history = GUICtrlCreateMenuItem($__menu_formula_small_history__, $rri_menu_formula_editor)
   GUICtrlSetOnEvent(-1, "rri_menu_formula_small_historyClick")
-  Global $rri_menu_formula_history = GUICtrlCreateMenuItem($__menu_formula_history__, $rri_menu_formula_editor)
+  $rri_menu_formula_history = GUICtrlCreateMenuItem($__menu_formula_history__, $rri_menu_formula_editor)
   GUICtrlSetOnEvent(-1, "rri_menu_formula_historyClick")
-  Global $rri_menu_language = GUICtrlCreateMenu($__language_menu__)
+  $rri_menu_language = GUICtrlCreateMenu($__language_menu__)
   GUICtrlSetOnEvent(-1, "rri_menu_languageClick")
-  Global $rri_menu_customize = GUICtrlCreateMenu($__customize_menu__)
+  $rri_menu_customize = GUICtrlCreateMenu($__customize_menu__)
   GUICtrlSetOnEvent(-1, "rri_menu_customizeClick")
-  Global $rri_all_parameters = GUICtrlCreateMenuItem($__customize_menu_all_parameters__, $rri_menu_customize)
+  $rri_all_parameters = GUICtrlCreateMenuItem($__customize_menu_all_parameters__, $rri_menu_customize)
   GUICtrlSetOnEvent(-1, "rri_all_parametersClick")
-  Global $rri_reset_menu = GUICtrlCreateMenuItem($__reset_menu__, $rri_menu_customize)
+  $rri_reset_menu = GUICtrlCreateMenuItem($__reset_menu__, $rri_menu_customize)
   GUICtrlSetOnEvent(-1, "rri_reset_menuClick")
   #EndRegion ### END Koda GUI section ###
 
@@ -538,7 +547,7 @@ Func loadRRI()
 
   ;WindowManager__registerWindow($rri_win)
 
-  Global $sessionParametersMap = _ArrayCreate( _
+  $sessionParametersMap = _ArrayCreate( _
    _ArrayCreate('formula', $rri_in_formula, 'oo(cosh(z)-i*argsh(j*z)-z/(x^y),5)'), _
    _ArrayCreate('width', $rri_width, '401'), _
    _ArrayCreate('height', $rri_height, '401'), _
@@ -550,7 +559,7 @@ Func loadRRI()
    _ArrayCreate('seed', $rri_seed, '1986') _
   )
 
-  Global $sessionCheckBoxMap = _ArrayCreate( _
+  $sessionCheckBoxMap = _ArrayCreate( _
    _ArrayCreate('preview', $rri_preview, 'FALSE'), _
    _ArrayCreate('AutoRender', $rri_check_auto_render, 'TRUE'), _
    _ArrayCreate('RealMode', $rri_realmode, 'FALSE') _
@@ -560,7 +569,7 @@ Func loadRRI()
   ; _ArrayCreate('')
   ;)
 
-  Global $resolutionsMap = _ArrayCreate( _
+  $resolutionsMap = _ArrayCreate( _
     _ArrayCreate($rri_resolutions_201, '201 x 201'), _
     _ArrayCreate($rri_resolutions_401, '401 x 401'), _
     _ArrayCreate($rri_resolutions_801, '801 x 801'), _
@@ -598,7 +607,7 @@ Func loadRRI()
 
   LoadSession()
 
-  Global $zoomAbsolutePrevious = Number(GUICtrlRead($rri_zoom_absolute))
+  $zoomAbsolutePrevious = Number(GUICtrlRead($rri_zoom_absolute))
   updateWinmin()
   updateWinmax()
   calculateWidthHeight()
@@ -617,8 +626,12 @@ Func loadRRI()
   LoadFormulaFromFile__setParentWindow($rri_win)
   SaveBox__setParentWindow($rri_win)
   Tutorial__setParentWindow($rri_win)
-
-  AnimateFromTopLeft($rri_win)
+  If $quiet Then
+    GUISetState(@SW_SHOW, $rri_win)
+  Else
+    AnimateFromTopLeft($rri_win)
+    GUISetState(@SW_SHOW, $rri_win)
+  EndIf
 
   If Not FileExists($ini_file) Then
     Tutorial__Load()
@@ -833,12 +846,14 @@ Func rri_quicksaveClick()
   $defaultComment = IniReadSavebox('formulaComment', $My_nice_function)
   $defaultComment = getFirstAvailableComment($defaultComment)
   $result = InputBox($Quick_save, $Give_a_comment_for_this_reflex_&@CRLF&@CRLF& _
-StringFormat($To_change_the_saving_directory__go_to, _
-StringReplace($__tools__, "&", ""), _
-StringReplace($__menu_save__, "&", "")), _
-$defaultComment, ' M')
+      StringFormat($To_change_the_saving_directory__go_to, _
+      StringReplace($__tools__, "&", ""), _
+      StringReplace($__menu_save__, "&", "")), _
+      $defaultComment, ' M')
   if $result == '' Then Return
   IniWriteSavebox('formulaComment', $result)
+  sb_formula_commentSet($result)
+
   If isSavebox('useComment') Then
     $rfn = reflexFileNameFromComment( _
         IniReadSavebox('formulaComment',$defaultComment), _
@@ -850,9 +865,13 @@ $defaultComment, ' M')
     EndIf
     IniWriteSavebox('reflexFile', $rfn)
   EndIf
-  SaveSession()
+  SaveSession() ; TODO : pas forcément intelligent de sauvegarder la session.
   saveboxSave()
 EndFunc   ;==>rri_quicksaveClick
+Func rri_display_folderClick()
+  Run("C:\WINDOWS\EXPLORER.EXE /n,/select," & UpdateMyDocuments(IniReadSavebox('reflexFile', '')))
+EndFunc
+
 Func rri_menu_toolsClick()
 
 EndFunc   ;==>rri_menu_toolsClick
@@ -1458,7 +1477,10 @@ Func handleFinishedRendering()
   EndIf
 
   if $errors_pid <> '' Then
-    MsgBox(0, $Errors, $errors_pid);
+    If StringStartsWith($errors_pid, "Formula error") Then
+      $errors_pid = $__if_error_formula__&@CRLF&$errors_pid
+    EndIf
+    MsgBox(0, $Errors, $errors_pid)
     If $EDIT_FORMULA_EXISTS Then
       $p_str = StringInStr($errors_pid, "position ")
       $position = Int(StringMid($errors_pid, $p_str + 9))
@@ -1539,7 +1561,7 @@ Func saveReflex()
   $isJpeg = StringEndsWith($reflex_file, '.jpeg') Or StringEndsWith($reflex_file, '.jpg')
   $isPng =  StringEndsWith($reflex_file, '.png')
   If Not ($isBmp Or $isJpeg Or $isPng) Then
-    MsgBox(0, $Error_title, StringFormat($unknown_file_format_s, $reflex_file))
+    MsgBox(0, $Error_title, StringFormat($__unknown_file_format_s__, $reflex_file))
     Return
   EndIf
   $lowres = isSavebox('LRReflex')
@@ -1679,7 +1701,7 @@ Func updatePos()
 EndFunc   ;==>updatePos
 
 Func updatePic()
-  Global $rri_out_rendu2 = GUICtrlCreatePic('', 0, 0, 1, 1, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
+  $rri_out_rendu2 = GUICtrlCreatePic('', 0, 0, 1, 1, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
   GUICtrlSetState($rri_out_rendu2, $GUI_HIDE)
   ;Logging("updatePic - repositionneRendu")
   repositionneRendu($rri_out_rendu2, 0, 0)
@@ -2054,8 +2076,8 @@ Func menu_setLang()
   WindowManager__closeAll()
   LoadTranslations()
   Local $old_rri_win = $rri_win
-  AnimateToBottomRight($old_rri_win)
-  LoadRRI()
+  LoadRRI(True)
+;  AnimateToBottomRight($old_rri_win)
   GUIDelete($old_rri_win)
   ;MsgBox(0, $changement_langue_titre, StringFormat($changement_langue_text__s, $language_name))
 EndFunc   ;==>menu_setLang
@@ -2083,13 +2105,15 @@ EndFunc   ;==>rri_menu_formula_historyClick
 
 ;============================= Color code ==================================;
 
+Global $rcc_base_x, $rcc_base_y, $rcc_win, $rcc_color_code
 Func rri_color_code_buttonClick()
-  Global $rcc_base_x = 484, $rcc_base_y = 408
-  Global $rcc_win = GUICreate($__hint_color_code_button__, $rcc_base_x, $rcc_base_y, Default, Default, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS,$DS_MODALFRAME))
+  $rcc_base_x = 484
+  $rcc_base_y = 408
+  $rcc_win = GUICreate($__hint_color_code_button__, $rcc_base_x, $rcc_base_y, Default, Default, BitOR($WS_MAXIMIZEBOX,$WS_MINIMIZEBOX,$WS_SIZEBOX,$WS_THICKFRAME,$WS_SYSMENU,$WS_CAPTION,$WS_OVERLAPPEDWINDOW,$WS_TILEDWINDOW,$WS_POPUP,$WS_POPUPWINDOW,$WS_GROUP,$WS_TABSTOP,$WS_BORDER,$WS_CLIPSIBLINGS,$DS_MODALFRAME))
   GUISetOnEvent($GUI_EVENT_CLOSE, 'rcc_winClose', $rcc_win)
   GUISetOnEvent($GUI_EVENT_MAXIMIZE, 'rcc_winResize', $rcc_win)
   GUISetOnEvent($GUI_EVENT_RESIZED, 'rcc_winResize', $rcc_win)
-  Global $rcc_color_code = GUICtrlCreatePic($bin_dir&"RenderCodeColor.JPG", 0, 0, $rcc_base_x, $rcc_base_y)
+  $rcc_color_code = GUICtrlCreatePic($bin_dir&"RenderCodeColor.JPG", 0, 0, $rcc_base_x, $rcc_base_y)
   GUICtrlSetResizing ( $rcc_color_code, $GUI_DOCKLEFT+$GUI_DOCKTOP + $GUI_DOCKRIGHT+$GUI_DOCKBOTTOM)
   rcc_winResize()
   AnimateFromTopLeft($rcc_win)
@@ -2155,12 +2179,14 @@ EndFunc   ;==>updateFormula
 Func rri_lucky_funcClick()
   updateFormula("randf(16)") ;TODO: Externalize 16
   updateSeed() ;Put a random seed.
+  LoadDefaultWindow()
   renderIfAutoRenderDefault()
 EndFunc ;==>rri_lucky_funcClick
 
 Func rri_lucky_fractClick()
   updateFormula("oo(randf(16),5)") ;TODO: Externalize 16 and 5
   updateSeed() ;Put a random seed.
+  LoadDefaultWindow()
   renderIfAutoRenderDefault()
 EndFunc ;==>rri_lucky_fractClick
 
@@ -2275,3 +2301,6 @@ Func SaveSession()
     Next
   EndIf
 EndFunc   ;==>SaveSession
+
+
+rri_main()

@@ -85,9 +85,10 @@ Remarquez que l'image est recalculée en haute résolution.
 Fermons la fenêtre d'enregistrement.
 Si nous changeons l'image, il suffit de cliquer sur "Enregistrer" et de spécifier un nouveau nom. Notre nouvelle image sera alors enregistrée dans le même dossier que précédemment.
 
-@5,,0
+@2,MouseOnReflexFolder,0
 Il est aussi possible d'importer une image déjà enregistrée en .png ou .jpeg par ce logiciel.
-Procédez simplement un glisser-déposer ou importez-la avec le menu Formules > Importer.
+Vous avez la possibilité d'accéder à celles-ci par le bouton "Dossier Reflex"
+Faites simplement un glisser-déposer ou importez-la avec le menu Formules > Importer.
 
 @@8,OpenColors,8
 Pour comprendre le sens des couleurs, cliquons sur l'icône colorée à côté du titre.

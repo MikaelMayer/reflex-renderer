@@ -24,17 +24,17 @@ V Use the comment and/or proposes one.
 #include "translations.au3"
 #include "RenderVideoIniConfig.au3"
 #include "AssistantGenerator.au3"
-;#include "Variables.au3"
 
+Global $width_highres, $height_highres
 Func RenderingBox__create($formula, $varname, $varmin, $varmax)
-  
+
   Local $default_comment = IniReadSavebox('formulaComment', 'MyNiceVideo')
   $default_comment = StringStripWS(StringRegExpReplace($default_comment, "([^0-9])[0-9]*\z", "\1"), 1+2)
-  
+
   $ini_file = FileOpenDialog("Store video generator", "", "Video config files (*.ini)|All (*.*)", Default, $default_comment&".ini")
   FileChangeDir(@ScriptDir)
   If $ini_file == "" Then Return
-  
+
   Dim $options = emptySizedArray()
   push($options, _ArrayCreate($AS_TYPE_TITLE, "", "Export video settings"))
   push($options, _ArrayCreate($AS_TYPE_TAB, "", "Video", ""))
@@ -83,7 +83,7 @@ Func RenderingBox__create($formula, $varname, $varmin, $varmax)
   FileWriteLine($f, "# http://meak.free.fr/reflex")
   FileWriteLine($f, "##########################")
   FileClose($f)
-  
+
   For $i = 1 To size($options)
     $t = $options[$i]
     Switch $t[$AS_COMMENT]
@@ -95,7 +95,7 @@ Func RenderingBox__create($formula, $varname, $varmin, $varmax)
       EndIf
     EndSwitch
   Next
-  
+
 ;~   IniWrite($ini_file, $INI_VIDEO, $INI_VIDEO_FORMULA, $formula)
 ;~   IniWrite($ini_file, $INI_VIDEO, $INI_VIDEO_VARNAME, $varname)
 ;~   IniWrite($ini_file, $INI_VIDEO, $INI_VIDEO_STARTVALUE, $varmin)
@@ -121,18 +121,18 @@ Func GenerateVideoExeFromIni($ini_file)
   Local $folder = FileFolder($ini_file)
   Local $default_comment = StringRegExpReplace($ini_file, "\.[^\.]*\z", "")
   $default_comment = StringRegExpReplace($default_comment, ".*\\", "")
-  
+
   $ra = retrieveRenderVideoAndAut2Exe()
   $renderVideoAu3 = $ra[0]
   $Aut2ExeZxe = $ra[1]
   FileReplaceContent($renderVideoAu3, $renderVideoAu3, "___INI_VIDEO_FULLFILE___", $ini_file)
   FileReplaceContent($renderVideoAu3, $renderVideoAu3, "___INI_VIDEO_FILE_BASENAME___", $base_ini_file )
   Local $output_bin = $folder&"RenderVideo"&$default_comment&".exe"
-  
+
   $cmd = StringFormat('%s /in "%s" /out "%s" /nopack', $Aut2ExeZxe, $renderVideoAu3, $output_bin)
   logging("Running "&$cmd)
   RunWait($cmd, @TempDir)
-  
+
   For $file In $ra
     logging("Deleting "&$file)
     FileDelete($file)

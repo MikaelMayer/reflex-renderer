@@ -286,7 +286,7 @@
 						<property name="Left" vt="Int16">129</property>
 						<property name="Top" vt="Int16">175</property>
 						<property name="Width" vt="Int16">145</property>
-						<property name="Height" vt="Int8">25</property>
+						<property name="Height" vt="Int8">22</property>
 						<property name="Caption" vt="String">%__render_reflex__%</property>
 						<property name="Font.Charset" vt="Ident">DEFAULT_CHARSET</property>
 						<property name="Font.Color" vt="Ident">clWindowText</property>
@@ -318,7 +318,7 @@
 				<object type="TAProgress" name="rri_progress">
 					<properties>
 						<property name="Left" vt="Int8">3</property>
-						<property name="Top" vt="Int16">232</property>
+						<property name="Top" vt="Int16">248</property>
 						<property name="Width" vt="Int16">271</property>
 						<property name="Height" vt="Int8">16</property>
 						<property name="TabOrder" vt="Int8">19</property>
@@ -331,7 +331,7 @@
 				<object type="TALabel" name="rri_rendering_text">
 					<properties>
 						<property name="Left" vt="Int8">9</property>
-						<property name="Top" vt="Int16">214</property>
+						<property name="Top" vt="Int16">230</property>
 						<property name="Width" vt="Int8">102</property>
 						<property name="Height" vt="Int8">17</property>
 						<property name="AutoSize" vt="False">False</property>
@@ -390,9 +390,9 @@
 				<object type="TAButton" name="rri_quicksave">
 					<properties>
 						<property name="Left" vt="Int16">129</property>
-						<property name="Top" vt="Int16">199</property>
+						<property name="Top" vt="Int16">196</property>
 						<property name="Width" vt="Int8">89</property>
-						<property name="Height" vt="Int8">25</property>
+						<property name="Height" vt="Int8">22</property>
 						<property name="Hint" vt="String">%__quicksave_hint__%</property>
 						<property name="Caption" vt="String">%__quick_save__%</property>
 						<property name="TabOrder" vt="Int8">21</property>
@@ -405,9 +405,9 @@
 				<object type="TAButton" name="rri_save_noquick">
 					<properties>
 						<property name="Left" vt="Int16">217</property>
-						<property name="Top" vt="Int16">199</property>
+						<property name="Top" vt="Int16">196</property>
 						<property name="Width" vt="Int8">57</property>
-						<property name="Height" vt="Int8">25</property>
+						<property name="Height" vt="Int8">22</property>
 						<property name="Hint" vt="String">%__noquick_save_hint__%</property>
 						<property name="Caption" vt="String">%__noquick_save__%</property>
 						<property name="TabOrder" vt="Int8">22</property>
@@ -498,6 +498,21 @@
 						<property name="Hint" vt="String">%__switch_fractal_hint__%</property>
 						<property name="Caption" vt="String">%__switch_fractal__%</property>
 						<property name="TabOrder" vt="Int8">27</property>
+						<property name="CtrlStyle" vt="Int32">1342259200</property>
+						<property name="CtrlExStyle" vt="Int8">0</property>
+						<property name="Resizing" vt="Set">DockWidth, DockHeight</property>
+					</properties>
+					<components/>
+				</object>
+				<object type="TAButton" name="rri_display_folder">
+					<properties>
+						<property name="Left" vt="Int16">128</property>
+						<property name="Top" vt="Int16">218</property>
+						<property name="Width" vt="Int16">145</property>
+						<property name="Height" vt="Int8">22</property>
+						<property name="Hint" vt="String">%__display_folder_hint__%</property>
+						<property name="Caption" vt="String">%__display_folder__%</property>
+						<property name="TabOrder" vt="Int8">28</property>
 						<property name="CtrlStyle" vt="Int32">1342259200</property>
 						<property name="CtrlExStyle" vt="Int8">0</property>
 						<property name="Resizing" vt="Set">DockWidth, DockHeight</property>

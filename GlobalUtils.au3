@@ -16,6 +16,8 @@
 #include <GDIPlus.au3>
 #include <Array.au3>
 #include <Date.au3>
+#include <Misc.au3>
+#include <Math.au3>
 
 Global Const $VERSION_NUMER = "2.8.3 beta"
 Global Const $COPYRIGHT_DATE = "2009"
@@ -385,6 +387,24 @@ EndFunc
 
 ; Animation and windows
 
+Func AnimateFadeIn($win)
+  WinSetTrans($win, "", 0)
+  GUISetState(@SW_SHOW, $win)
+  Local $delay = 500
+  Local $init = TimerInit()
+  Do
+    $d = TimerDiff($init)
+    WinSetTrans($win, "", _Max($d*255/$delay, 255))
+  Until $d > $delay
+  WinSetTrans($win, "", 255)
+EndFunc
+
+Func AnimateFadeOut($win)
+  For $i = 255 To 0 Step 5
+    WinSetTrans($win, "", $i)
+  Next
+EndFunc
+
 Func AnimateFromTopLeft($win)
   DllCall("user32.dll", "int", "AnimateWindow", "hwnd", $win, "int", 200, "long", 0x00040005);diag slide-in from Top-left
   GUISetState(@SW_SHOW, $win)
@@ -516,6 +536,14 @@ Func parseTimeOutFunctions()
       EndIf
     EndIf
   EndIf
+EndFunc
+
+Func clear_tooltip_after_ms($ms)
+  setTimeout("clear_tooltip", $ms)
+EndFunc
+
+Func clear_tooltip()
+  ToolTip("")
 EndFunc
 
 ; ==================== Testing ====================;
