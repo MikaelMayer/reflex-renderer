@@ -23,6 +23,8 @@ Global $SAVE_BOX_EXISTS = False
 Global $SAVE_BOX_CALLBACK="", $SAVE_BOX_PARENT_WINDOW = 0
 Global $formula_group_controls, $reflex_group_controls, $saveboxParametersMap, $saveboxCheckBoxMap
 
+Global $SaveBox__comment = ""
+
 Func SaveBox__setParentWindow($win)
   $SAVE_BOX_PARENT_WINDOW = $win
 EndFunc
@@ -255,6 +257,11 @@ Func sb_formula_commentSet($new_comment)
   EndIf
 EndFunc
 
+Func SaveBox__updateComment($new_comment)
+  $SaveBox__comment = $new_comment
+  sb_formula_commentSet($new_comment)
+  IniWriteSavebox('formulaComment', $new_comment)
+EndFunc
 Func sb_formula_commentChange()
   sb_save_withClick()
 EndFunc
@@ -363,7 +370,7 @@ Func maybeUpdateReflexFilename($sb_formula_comment, $sb_formula_filename, _
   EndIf
 EndFunc
 
-Func saveboxSave()
+Func saveboxSave($width_local=Default, $height_local=Default)
   $save_fr = isSavebox('saveBoth')
   $save_f  = isSavebox('saveFormula') or $save_fr
   $save_r  = isSavebox('saveReflex') or $save_fr
@@ -375,7 +382,7 @@ Func saveboxSave()
     If Not $continue Then Return
   EndIf
   If $save_r Then
-    saveReflex()
+    saveReflex($width_local, $height_local)
   EndIf
 EndFunc
 ;saveReflex() is defined in ReflexRender.au3
@@ -418,10 +425,10 @@ Func saveFormulaString($formula, $comment, $save_comment, $save_resolution, $sav
   Return $formula_string
 EndFunc
 
-Func getFirstAvailableComment($comment)
-  $filename = UpdateMyDocuments(IniReadSavebox('formulafile', ''))
-  If FileExists($filename) Then
-    $content = FileRead($filename)
+Func getFirstAvailableComment($comment, $formula_file = Default)
+  If $formula_file == Default Then $formula_file = UpdateMyDocuments(IniReadSavebox('formulafile', ''))
+  If FileExists($formula_file) Then
+    $content = FileRead($formula_file)
     While StringInStr($content, $comment) > 0
       $comment = incrementName($comment)
     WEnd
@@ -429,13 +436,13 @@ Func getFirstAvailableComment($comment)
   Return $comment
 EndFunc
 
-Func saveFormula()
-  SaveSession()
-  $filename = UpdateMyDocuments(IniReadSavebox('formulafile', ''))
-  $formula = IniRead($ini_file, 'Session', 'formula', '')
-  $comment = IniReadSavebox('formulaComment', '')
-  $comment = getFirstAvailableComment($comment)
-  Return saveFormulaIntoFile($filename, $formula, $comment, isSavebox('saveComment'), isSavebox('saveResolution'), isSavebox('saveWindow'))
+Func saveFormula($formula=Default, $comment=Default, $formula_file=Default)
+  If $formula == Default Then  $formula = IniRead($ini_file, 'Session', 'formula', '')
+  If $comment == Default Then  $comment = IniReadSavebox('formulaComment', '')
+  If $formula_file == Default Then $formula_file = UpdateMyDocuments(IniReadSavebox('formulafile', ''))
+  $comment = getFirstAvailableComment($comment, $formula_file)
+
+  Return saveFormulaIntoFile($formula_file, $formula, $comment, isSavebox('saveComment'), isSavebox('saveResolution'), isSavebox('saveWindow'))
 EndFunc
 
 Func saveFormulaIntoFile($filename, $formula, $comment, $b_saveComment, $b_saveResolution, $b_saveWindow)

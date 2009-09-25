@@ -22,7 +22,8 @@ Global $interfacesToUpdate = _ArrayCreate( _
  _ArrayCreate("ReflexRendererSaveBox.kxf",     "SaveBox.au3",             True), _
  _ArrayCreate("ReflexRendererAboutBox.kxf",    "AboutBox.au3",            True), _
  _ArrayCreate("ReflexRendererVariables.kxf",   "Variables.au3",           True), _
- _ArrayCreate("ReflexRendererTutorial.kxf",    "Tutorial.au3",            True) _
+ _ArrayCreate("ReflexRendererTutorial.kxf",    "Tutorial.au3",            True), _
+ _ArrayCreate("ReflexRendererQuickSaveBox.kxf",    "QuickSaveBox.au3",            True) _
 )
 
 ;updateInterfaces()
@@ -31,15 +32,20 @@ Global $interfacesToUpdate = _ArrayCreate( _
 Dim $interfacesEdit[UBound($interfacesToUpdate)]
 Dim $interfacesUpdate[UBound($interfacesToUpdate)]
 Dim $title = "Update interfaces"
-Dim $step = 41, $offset = 10
+Dim $step = 25, $offset = 10
 $width = 150
 $width2 = 150
-GUICreate($title, $width + $width2, 500)
+$i = 1
+For $interface in $interfacesToUpdate
+  $i += 1
+Next
+
+GUICreate($title, $width + $width2, ($i+1)*$step+$offset*2)
 $i = 0
 $all_button = GUICtrlCreateButton("Update all!", 20, $step*$i+$offset, $width-40)
 $i += 1
-GUICtrlCreateLabel("Edit", 20, $step*$i+$offset, $width-40)
-GUICtrlCreateLabel("Update", 20+$width, $step*$i+$offset, $width2-40)
+GUICtrlCreateLabel("Edit", 20, $step*$i+$offset+5 , $width-40)
+GUICtrlCreateLabel("Update", 20+$width, $step*$i+$offset+5, $width2-40)
 $i += 1
 $i0 = $i
 For $interface in $interfacesToUpdate
@@ -48,7 +54,7 @@ For $interface in $interfacesToUpdate
 	$interfacesUpdate[$i-$i0] = GUICtrlCreateButton($interface[1], $offset+$width, $step*$i+$offset, $width2-20)
 	$i += 1
 Next
-WinMove($title, "", Default, Default, $width + $width2, ($i+1)*$step+$offset)
+;WinMove($title, "", Default, Default, $width + $width2, ($i+1)*$step+$offset)
 GUISetState(@SW_SHOW)
 
 While True
