@@ -213,6 +213,8 @@ Global $__display_folder_hint__
 Global $__if_error_formula__
 Global $__variable_already_opened__
 Global $__unknown_file_format_s__
+  Global $__quick_save_that__
+  Global $__ok__
   ;ADD_DECLARATION
 
 LoadTranslations()
@@ -433,6 +435,8 @@ add($affectations, "__wait_while_generating__", $gui_section, 'Wait while genera
   add($affectations, "__if_error_formula__", $gui_section, 'if error formula', '[In a formula error, the second line stops at the error point]')
   add($affectations, "__variable_already_opened__", $gui_section, 'Variable already opened', 'Variable already opened')
   add($affectations, "__unknown_file_format_s__", $gui_section, '__unknown_file_format_s__', 'Unknown file format %s')
+  add($affectations, "__quick_save_that__", $gui_section, '__quick_save_that__', 'quick save that')
+  add($affectations, "__ok__", $gui_section, '__ok__', 'OK')
   ;ADD_AFFECTATION
 
   If $updates and Not @Compiled Then

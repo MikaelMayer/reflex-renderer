@@ -11,6 +11,7 @@
 #include "translations.au3"
 #include "GlobalUtils.au3"
 #include <GuiConstants.au3>
+#Include <GuiMenu.au3>
 
 Global Enum $N_WLS_TYPE, $N_WLS_LOAD, $N_WLS_SAVE, $N_WLS_COUNT
 Global $wm_load_save_methods = emptySizedArray()
@@ -29,7 +30,7 @@ Global $wm_registered_windows = emptySizedArray()
 ;   * parameter_set_function : A string containing a function taking one argument to set the field.
 ;   * parameter_get_function : A string containing a function returning the value of the field (to be stored in the ini file)
 ;   * ini_section : A string containing the section where the value has to be stored at closing time.
-;   * ini_variable : The corresponding variable name 
+;   * ini_variable : The corresponding variable name
 Func WindowManager__registerWindow($win_handle, $win_type="", $win_close="")
   ;logging("Registering window type "&$win_type&" ("&$win_handle&")")
   Local $t[$N_WIN_COUNT]
@@ -80,10 +81,15 @@ Func WindowManager__restoreAll()
 EndFunc
 
 Func WindowManager__closeAll()
+  Local $size
   While $wm_registered_windows[0] > 0
     ;logging("State : "&toString($wm_registered_windows))
     $t = $wm_registered_windows[1]
+    $size = $wm_registered_windows[0]
     Call($t[$N_WIN_CLOSE], $t[$N_WIN_HANDLE])
+    If $size == $wm_registered_windows[0] Then ; Was not deleted
+      deleteAt($wm_registered_windows, 1)
+    EndIf
   WEnd
 EndFunc
 
@@ -94,7 +100,7 @@ Func WindowManager__resizeAll($pos_before, $pos_after)
   Next
 EndFunc
 
-Func _WindowManager__resizeOne($win_handle, $pos_before, $pos_after)    
+Func _WindowManager__resizeOne($win_handle, $pos_before, $pos_after)
     $pos_child = WinGetPos($win_handle)
     ;logging("Resize one:"&toString($pos_before)&";"&toString($pos_after)&";"&toString($pos_child))
     $pos_after_ltrb        = leftTopWithHeight_to_leftTopRightBottom($pos_after)
@@ -102,9 +108,9 @@ Func _WindowManager__resizeOne($win_handle, $pos_before, $pos_after)
     $pos_child_ltrb     = leftTopWithHeight_to_leftTopRightBottom($pos_child)
 
     move_ltrb($pos_child_ltrb, $pos_before_ltrb, $pos_after_ltrb)
-    
+
     $pos_child = leftTopRightBottom_to_leftTopWithHeight($pos_child_ltrb)
-    
+
     WinMove($win_handle, "", $pos_child[0], $pos_child[1], $pos_child[2], $pos_child[3])
 EndFunc
 

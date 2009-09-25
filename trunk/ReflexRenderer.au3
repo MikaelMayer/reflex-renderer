@@ -7,17 +7,17 @@
   A user-friendly interface for the RenderReflex program
 
 Doing:
- - Reflex renderer video: Generate program to generate images (self-executable?) should be able to be loaded back
-
+ But list:
+  If quicksave while a render is in progress, it does not store the highresolution picture.
+  Défractaliser ne met pas à jour l'éditeur de formule
  Wish List:
 
- - If window reset / next / previous, smooth transition.
- - 'Reset all' button
+ - Reflex renderer video: Generate program to generate images (self-executable?) should be able to be loaded back
+ - If window reset / next / previous, smooth transition if possible.
  - Save/open session(s) in ini files
  - Axes
- - An option dialog box (gray/black zooming box, if save session when leaving, display axes, default NaN color, black rendering for realmode,
+ - A general option dialog box (gray/black zooming box, if save session when leaving, display axes, default NaN color, black rendering for realmode,
    how many formulas in history before it gets stored again, if stores in history and where, how many in local history, etc.)
- - Interface to render openOffice Formula
 
  Design questions:
  - Little "cancel" button close to the "Rentering..." label.
@@ -27,7 +27,6 @@ Doing:
  - Explanation and demo script / tutorial ?
 
  ===== Need feed-back or bug reproduction ====
- - Bug redim en 640 x 480 + zoom avant, pas bon le redimensionnement, à reproduire?
 
  ==== Erwin's notes ====
 V Ne pas avoir besoin de cliquer pour relâcher le drag, quand on veut naviguer sur la réflex. Il faudrait que ça actualise lorsqu'on relâche le bouton de la souris.
@@ -48,6 +47,8 @@ V "Libeller la Reflex comme la formule" m'a fait penser au début que ça mettrait
  ===== Done ====
 
 Mik notes :
+ V Minimal Interface to render openOffice Formula
+ V 'Reset all' button
  V Done the main script to render a video from an ini file.
  V Export to a readable OpenOffice formula string (renderreflex.exe --simplify --openoffice --formula "z+sqrt(x/y)")
  V Corrected bug when changing percentage, the internal width was not modified
@@ -88,7 +89,7 @@ Mik notes :
  V 1/z^ is crashing (and a lot of other bugs)
  V Error when something is missing in formula: window does not respond
  V Il me met missing « , » at position 2 : oo(tan(ln(sinh(cosh(i*z)))))*z,5)
- V rendering percent displayed on title (AutoItWinSetTitle($g_szVersion))
+ V rendering percent displayed on title (WinSetTitle())
 
 Previous version: 2.5.0.1
 
@@ -213,6 +214,7 @@ parseCommandLine()
 #include 'Translations.au3'
 #include 'WindowManager.au3'
 #include 'Tutorial.au3'
+#include 'QuickSaveBox.au3'
 
 Global $noir_file = $bin_dir&'black.bmp'
 Global $gris_file = $bin_dir&'gray.bmp'
@@ -302,12 +304,10 @@ Func rri_main()
       $xprev = $xy[0]
       $yprev = $xy[1]
     ElseIf $rendering_thread Then
-      WinSetTitle($rri_win, "", GUICtrlRead($rri_progress)&"% done")
       If handleRenderingAndIsFinished() Then
         If handleFinishedRendering() Then
           handlePostFinishedRendering()
         EndIf
-        WinSetTitle($rri_win, "", $__reflex_renderer_interface__)
         $rendering_thread = False
       EndIf
     Else
@@ -764,6 +764,12 @@ Func rri_winminChange()
   winChange()
   renderIfAutoRenderDefault()
 EndFunc   ;==>rri_winminChange
+Func rri_winminmaxChange()
+  updateWinmin()
+  updateWinmax()
+  winChange()
+  renderIfAutoRenderDefault()
+EndFunc   ;==>rri_winminmaxChange
 Func winChange()
   GUICtrlSetState($rri_window_1, $GUI_UNCHECKED)
   GUICtrlSetState($rri_window_2, $GUI_UNCHECKED)
@@ -842,17 +848,22 @@ Func SaveBoxCallback($savingParameters)
 EndFunc   ;==>SaveBoxCallback
 
 Func rri_quicksaveClick()
+  generateQuickSaveBox($rri_win, $width_highres, $height_highres)
+  Return
   ;Only prompt the comment.
   $defaultComment = IniReadSavebox('formulaComment', $My_nice_function)
   $defaultComment = getFirstAvailableComment($defaultComment)
+  ; TODO: include default and custom resolutions
+  ; 1280x800, 1600x1200, 1600x1600, 16000x16000 (bmp only)
+  ; Include path as well !
   $result = InputBox($Quick_save, $Give_a_comment_for_this_reflex_&@CRLF&@CRLF& _
       StringFormat($To_change_the_saving_directory__go_to, _
       StringReplace($__tools__, "&", ""), _
       StringReplace($__menu_save__, "&", "")), _
       $defaultComment, ' M')
   if $result == '' Then Return
-  IniWriteSavebox('formulaComment', $result)
-  sb_formula_commentSet($result)
+
+  SaveBox__updateComment($result)
 
   If isSavebox('useComment') Then
     $rfn = reflexFileNameFromComment( _
@@ -865,7 +876,6 @@ Func rri_quicksaveClick()
     EndIf
     IniWriteSavebox('reflexFile', $rfn)
   EndIf
-  SaveSession() ; TODO : pas forcément intelligent de sauvegarder la session.
   saveboxSave()
 EndFunc   ;==>rri_quicksaveClick
 Func rri_display_folderClick()
@@ -928,8 +938,11 @@ Func rri_moveWindowToMousePosition()
   $moving = True
   $old_navigation = $navigation
   $navigation = $VISIT_CLICK
+  $old_visit_click_drag = $visit_click_drag
+  $visit_click_drag = True
   rri_winMouseLeftUp()
   $navigation = $old_navigation
+  $visit_click_drag = $old_visit_click_drag
   $xy2 = MouseGetPos()
   ;Logging(StringFormat("Moved from %d, %d to %d, %d", $new_x, $new_y, $xy2[0], $xy2[1]))
   If $new_x == $xy2[0] and $new_y == $xy2[1] Then
@@ -1038,7 +1051,9 @@ EndFunc   ;==>rri_winMouseLeftUp
 Func handleFinishMouseMove($xy)
   Switch $navigation
     Case $VISIT_CLICK
+      logging("Visit click")
       If $visit_click_drag Then
+        logging("Visit click drag")
         $visit_click_drag = False
         move_window()
         updatePic()
@@ -1278,8 +1293,7 @@ EndFunc   ;==>winChangeState
 Func setWinminmax($winmin, $winmax)
   GUICtrlSetData($rri_winmin, $winmin)
   GUICtrlSetData($rri_winmax, $winmax)
-  updateWinmin()
-  updateWinmax()
+  rri_winminmaxChange()
 EndFunc
 
 ;   $winmin :
@@ -1451,6 +1465,7 @@ Func handleRenderingAndIsFinished()
     Next
     If $p >= 0 Then
       GUICtrlSetData($rri_progress, $p)
+      WinSetTitle($rri_win, "", GUICtrlRead($rri_progress)&"% done")
     EndIf
     If $zooming <> 0 and $p >= 0 Then
       Local $growing = $zoomvars[2]/$zoomvars[6]
@@ -1471,6 +1486,7 @@ Func handleFinishedRendering()
   GUICtrlSetState($rri_rendering_text, $GUI_HIDE)
   GUICtrlSetState($rri_progress, $GUI_HIDE)
   $REFLEX_RENDERED_FINISHED = True
+  WinSetTitle($rri_win, "", $__reflex_renderer_interface__)
 
   If $zooming <> 0 Then
     $zooming = 0
@@ -1553,8 +1569,8 @@ Func getFirstAvailableFileName($filename)
   Return $filename
 EndFunc   ;==>getFirstAvailableFileName
 
-Func saveReflex()
-  SaveSession()
+Func saveReflex($width_local=Default, $height_local=Default)
+  logging("Save Reflex with parameters : "&$width_local&", "&$height_local)
   Local $reflex_file = UpdateMyDocuments(IniReadSavebox('reflexFile', ''))
   $reflex_file = getFirstAvailableFileName($reflex_file)
   $isBmp =  StringEndsWith($reflex_file, '.bmp')
@@ -1564,18 +1580,31 @@ Func saveReflex()
     MsgBox(0, $Error_title, StringFormat($__unknown_file_format_s__, $reflex_file))
     Return
   EndIf
+  Local $out_raw_file = IniRead($ini_file, $ini_file_session, 'outputFile', '')
   $lowres = isSavebox('LRReflex')
   $highres = isSavebox('HRReflex')
-  ;logging(StringFormat("Valeur: highres=%d, lowres=%d, reflex_rendered=%d", $highres, $lowres, $reflex_rendered))
+
+  logging(StringFormat("Valeur: highres=%d, lowres=%d, reflex_rendered=%d", $highres, $lowres, $reflex_rendered))
+  ; TODO: Have a look at this condition which is quite awful.
   If ($highres And $REFLEX_RENDERED <> $REFLEX_RENDERED_IN_HR) Or ($lowres And $REFLEX_RENDERED <> $REFLEX_RENDERED_IN_LR) _
-Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Then
+Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Or $width_local <> Default Then
+  logging("Rendering again ...")
+    $out_raw_file = $reflex_file
+    If $isJpeg Then
+      $out_raw_file = StringRegExpReplace($reflex_file, "\.jpe?g\z", ".bmp")
+    EndIf
+    If $isPng Then
+      $out_raw_file = StringRegExpReplace($reflex_file, "\.png\z", ".bmp")
+    EndIf
     ;Renders the reflex depending on the resolution (low or high)
-    $width_local = Int(IniRead($ini_file, $ini_file_session, 'width', ''))
-    $height_local = Int(IniRead($ini_file, $ini_file_session, 'height', ''))
-    If $lowres Then
-      $percent_preview = Number(IniRead($ini_file, $ini_file_session, 'percentPreview', ''))
-      $width_local = Int(($width_local * $percent_preview)/100)
-      $height_local =Int(($height_local * $percent_preview)/100)
+    If $width_local == Default Or $height_local == Default Then
+      $width_local = Int(IniRead($ini_file, $ini_file_session, 'width', ''))
+      $height_local = Int(IniRead($ini_file, $ini_file_session, 'height', ''))
+      If $lowres Then
+        Local $percent_preview = Number(IniRead($ini_file, $ini_file_session, 'percentPreview', ''))
+        $width_local = Int(($width_local * $percent_preview)/100)
+        $height_local =Int(($height_local * $percent_preview)/100)
+      EndIf
     EndIf
     Dim $flags = ""
     addFlag($flags, "formula", IniRead($ini_file, $ini_file_session, 'formula', ''))
@@ -1583,49 +1612,60 @@ Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Then
     addFlag($flags, "height",  $height_local)
     addFlag($flags, "winmin",  IniRead($ini_file, $ini_file_session, 'winmin', ''))
     addFlag($flags, "winmax",  IniRead($ini_file, $ini_file_session, 'winmax', ''))
-    If $isBmp Then ;On le rend directement à la bonne place!
-      addFlag($flags, "output", $reflex_file)
-    Else
-      addFlag($flags, "output", IniRead($ini_file, $ini_file_session, 'outputFile', ''))
-    EndIf
+    addFlag($flags, "output", $out_raw_file)
 	addFlag($flags, "seed",     GUICtrlRead($rri_seed))
     If isChecked($rri_realmode) Then addFlag($flags, "realmode")
     addFlag($flags, "colornan", $color_NaN_complex)
-    If renderWithFlags($flags, $highres) Then
+    If $pid_rendering <> 0 or $rendering_thread Then
+      ;Kill the previous process first
+      ProcessClose($pid_rendering)
+      $rendering_thread = False
+      ; TODO: Make everything greyed (not active)
+    EndIf
+    Local $success
+    Do
+      $success = renderWithFlags($flags, $highres)
+      If Not $success Or Not FileExists($out_raw_file) Then
+        If 1 == MsgBox(1, "Error", "Could not render with flags. Try again ?") then ContinueLoop
+        ExitLoop
+      EndIf
+    Until $success
+    If $success Then
       repositionneRendu($rri_out_rendu, 0, 0)
-      GUICtrlSetImage($rri_out_rendu,  GUICtrlRead($rri_output))
+      GUICtrlSetImage($rri_out_rendu, $out_raw_file)
     EndIf
     ;FocusRenderButton()
   EndIf
-  $existing = IniRead($ini_file, $ini_file_session, 'outputFile', '')
   If $isBmp Then
     ;If FileGetSize($reflex_file) < 10000000 Then
-      ;FileCopy($reflex_file, $existing, 1)
+      ;FileCopy($reflex_file, $out_raw_file, 1)
       ;If @error Then
-      ;  MsgBox(0, $Error_title, StringFormat($Could_not_copy_from___s__to___s_, $reflex_file, $existing))
+      ;  MsgBox(0, $Error_title, StringFormat($Could_not_copy_from___s__to___s_, $reflex_file, $out_raw_file))
       ;EndIf
     GUICtrlSetImage($rri_out_rendu,  $reflex_file)
     ;EndIf
   ElseIf $isJpeg Then
     ;Logging("Copying to "&$reflex_file)
-    ImageConvert($existing, $reflex_file)
+    ImageConvert($out_raw_file, $reflex_file)
     If Not FileExists($reflex_file) Then
-      FileMove($existing, StringReplace(StringReplace($reflex_file, ".jpg", ".bmp"), ".jpeg", ".bmp"))
-      MsgBox(0, $Error_title, StringFormat($Could_not_convert_from___s__to___s_, $existing, $reflex_file))
+      ;FileMove($out_raw_file, StringReplace(StringReplace($reflex_file, ".jpg", ".bmp"), ".jpeg", ".bmp"))
+      MsgBox(0, $Error_title, StringFormat($Could_not_convert_from___s__to___s_, $out_raw_file, $reflex_file))
     Else
       $formula_and_options = defaultFormulaString()
       Dim $informations = _ArrayCreate(2, _ArrayCreate("title", "Reflex"), _ArrayCreate("comment", $formula_and_options))
       WriteXPSections($reflex_file, $informations)
+      FileDelete($out_raw_file)
     EndIf
   ElseIf $isPng Then
-    ImageConvert($existing, $reflex_file)
+    ImageConvert($out_raw_file, $reflex_file)
     If Not FileExists($reflex_file) Then
-      FileMove($existing, StringReplace($reflex_file, ".png", ".bmp"))
-      MsgBox(0, $Error_title, StringFormat($Could_not_convert_from___s__to___s_, $existing, $reflex_file))
+      ;FileMove($out_raw_file, StringRegExpReplace($reflex_file, "\.png\z", ".bmp"))
+      MsgBox(0, $Error_title, StringFormat($Could_not_convert_from___s__to___s_, $out_raw_file, $reflex_file))
     Else
       $formula_and_options = defaultFormulaString()
       Dim $informations = _ArrayCreate(3, _ArrayCreate("Title", "Reflex"), _ArrayCreate("Comment", $formula_and_options), _ArrayCreate("Software", "ReflexRenderer v."&$VERSION_NUMER))
       WritePngTextChunks($reflex_file, $informations)
+      FileDelete($out_raw_file)
     EndIf
   EndIf
 EndFunc   ;==>saveReflex
@@ -2177,14 +2217,14 @@ Func formulaChanged($formula)
 EndFunc   ;==>updateFormula
 
 Func rri_lucky_funcClick()
-  updateFormula("randf(16)") ;TODO: Externalize 16
+  updateFormula($lucky_func_default) ;TODO: Externalize 16
   updateSeed() ;Put a random seed.
   LoadDefaultWindow()
   renderIfAutoRenderDefault()
 EndFunc ;==>rri_lucky_funcClick
 
 Func rri_lucky_fractClick()
-  updateFormula("oo(randf(16),5)") ;TODO: Externalize 16 and 5
+  updateFormula($lucky_frac_default) ;TODO: Externalize 16 and 5
   updateSeed() ;Put a random seed.
   LoadDefaultWindow()
   renderIfAutoRenderDefault()
@@ -2199,6 +2239,7 @@ Func rri_switch_fractClick()
   Else
     updateFormula('oo('&$formula&',5)')
   EndIf
+  EditFormula__UpdateFormulaFromApplication(GUICtrlRead($rri_in_formula))
   renderIfAutoRenderDefault()
 EndFunc ;==>rri_switch_fractClick
 
@@ -2247,8 +2288,7 @@ EndFunc   ;==>LoadDefaultResolution
 Func LoadDefaultWindow()
   If Not LoadDefaultParameter('winmin', $rri_winmin) Then ReloadDefaultParameter('winmin')
   If Not LoadDefaultParameter('winmax', $rri_winmax) Then ReloadDefaultParameter('winmax')
-  rri_winminChange()
-  rri_winmaxChange()
+  rri_winminmaxChange()
 EndFunc   ;==>LoadDefaultWindow
 Func ReloadDefaultParameter($name)
   For $singlemap in $sessionParametersMap

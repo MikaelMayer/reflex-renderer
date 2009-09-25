@@ -95,6 +95,7 @@ copyAllMissingIniConfig($initocopy, $folderout)
 copyAllFiles($tocopy, $folderout)
 copyAllDirectories($dirtocopy, $folderout)
 compressAll($folderout, $zip_file)
+updateDropBox(@ScriptDir&"\"&$zip_file)
 
 Func assertFileExists($filename)
   If FileExists($filename)== 0 Then
@@ -126,7 +127,7 @@ Func copyAllMissingIniConfig($arrayIniFiles, $folder)
   Return
   $default_string = "/\/\/%ùl^^*"
   For $iniFilename In $arrayIniFiles
-    $other_iniFilename = $folder&"\"&$iniFilename 
+    $other_iniFilename = $folder&"\"&$iniFilename
     $sectionNames = IniReadSectionNames($iniFilename)
     toBasicArray($sectionNames)
     For $sectionName In $sectionNames
@@ -148,4 +149,24 @@ Func compressAll($folderout, $zip_file)
   Local $cmd = "zip.exe -r """&$zip_file&""" """&$folderout&""""
   RunWait($cmd)
   Return
+EndFunc
+
+Func updateDropBox($path_zip_file)
+  Local $base_folder = "C:\Documents and Settings\Mikaël\Mes documents\My Dropbox\Reflex\Reflex Tracer"
+  Local $base_folder_old = $base_folder&"\old\"
+  Local $save_working_dir = @WorkingDir
+  FileChangeDir($base_folder)
+  $search = FileFindFirstFile("Reflex*.zip")
+  ; Check if the search was successful
+  While 1
+      $file = FileFindNextFile($search)
+      If @error Then ExitLoop
+      logging("File moved : "&$file&" to "&$base_folder_old)
+      FileMove($file, $base_folder_old, 8+1)
+  WEnd
+  FileCopy($path_zip_file, $base_folder)
+  ; Close the search handle
+  FileClose($search)
+  ; Move all versions to the "old" folder
+  FileChangeDir($save_working_dir)
 EndFunc

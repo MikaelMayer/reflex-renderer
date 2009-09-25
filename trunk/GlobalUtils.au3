@@ -19,7 +19,7 @@
 #include <Misc.au3>
 #include <Math.au3>
 
-Global Const $VERSION_NUMER = "2.8.3 beta"
+Global Const $VERSION_NUMER = "2.8.4 beta"
 Global Const $COPYRIGHT_DATE = "2009"
 
 Global $ERROR_DECODE_HANDLING = ""
@@ -287,7 +287,7 @@ EndFunc
 ;$RenderReflexExe should be declared outside in global (like in Parameters.au3)
 Func runReflexWithArguments($args)
   $cmd = StringFormat("%s %s", $RenderReflexExe, $args)
-  ;logging("Running "&$cmd)
+  logging("Running "&$cmd)
   Local $pid = Run($cmd, '', @SW_HIDE, 2+4)
   ;If @error <> 0 Then
     ;logging("Error while running reflexrenderer")
