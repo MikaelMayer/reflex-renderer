@@ -337,7 +337,7 @@ int calculateNewWindow(int width, int height, const char* winmin_string,
   return 0;
 }
 
-int simplify_formula(const char* formula_string, int seed_init, bool openoffice_formula) {
+int simplify_formula(const char* formula_string, int seed_init, STRING_TYPE formula_style) {
   bool fine = true;
   int errpos = 0;
 
@@ -355,7 +355,7 @@ int simplify_formula(const char* formula_string, int seed_init, bool openoffice_
     funcString = new TCHAR[size_func + 1];
     TCHAR* funcStringMax = funcString+size_func;
 
-    funcStringEnd = f_formula->toStringConst(funcString, funcStringMax, openoffice_formula?OPENOFFICE3_TYPE: DEFAULT_TYPE);
+    funcStringEnd = f_formula->toStringConst(funcString, funcStringMax, formula_style);
     if(funcStringEnd == funcStringMax) {
       delete funcString;
       size_func *= 2;
@@ -435,6 +435,8 @@ int main(int argc, char** argv) {
   unsigned int colornan = 0xFFFFFF;
   bool realmode;
   bool openoffice_formula;
+  bool latex_formula;
+  STRING_TYPE formula_style = DEFAULT_TYPE;
 
   as >> parameter('f', "formula", formula_string, "A formula like (1+2-x)/sin(z)", false)
      >> parameter('w', "width", width, "The rendering width in pixels", false)
@@ -445,9 +447,10 @@ int main(int argc, char** argv) {
      >> parameter('s', "seed", seed, "The seed used by the functions randh and randf", false)
      >> parameter('c', "colornan", colornan, "The default NaN color in hex", false)
      >> option('r', "realmode", realmode, "If it only renders the real part")
+     >> option('p', "openoffice", openoffice_formula, "If it outputs the formule using OpenOffice style")
+     >> option('l', "latex", latex_formula, "If it outputs the formule using LaTeX style")
      >> parameter('d', "delta_x", deltax_string, "The horizontal shift", false)
      >> parameter('e', "delta_y", deltay_string, "The vertical shift", false)
-     >> option("openoffice", openoffice_formula, "If it outputs the formule using OpenOffice style")
      >> help();
 
   sscanf_s(deltax_string.c_str(), "%d", &delta_x);
@@ -463,6 +466,9 @@ int main(int argc, char** argv) {
     exit(1);
   }
 
+  if(openoffice_formula) formula_style = OPENOFFICE3_TYPE;
+  if(latex_formula)      formula_style = LATEX_TYPE;
+
   if(render_mode) {
     return renderBmp(formula_string.c_str(), width, height,
                      winmin_string.c_str(), winmax_string.c_str(), output_string.c_str(),
@@ -470,7 +476,7 @@ int main(int argc, char** argv) {
                      );
   }
   if(simplify_mode) {
-    return simplify_formula(formula_string.c_str(), seed, openoffice_formula);
+    return simplify_formula(formula_string.c_str(), seed, formula_style);
   }
   if(new_window) {
     //cout << width << ", " << height << ", " << delta_x << ", " << delta_y << endl;

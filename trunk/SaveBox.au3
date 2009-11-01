@@ -282,7 +282,7 @@ EndFunc
 Func sb_open_formula_fileClick()
     $f = FileOpenDialog($Open_Formula_file, '', $Formula_file____txt__All______ , 8, IniReadSavebox('formulaFile', ''))
     if @error <> 1 Then
-          FileChangeDir(@ScriptDir)
+      FileChangeDir(@ScriptDir)
       GUICtrlSetData($sb_formula_filename, $f)
       maybeUpdateReflexFilename($sb_formula_comment, $sb_formula_filename, _
         $sb_use_formula_comment, $sb_reflex_filename, $sb_reflex_extension)
@@ -329,10 +329,6 @@ EndFunc
 
 Func SaveBox__createInstance($coordinates = 0)
   generateSaveBox($coordinates)
-EndFunc
-
-Func UpdateMyDocuments($str)
-  Return StringReplace($str, "%MY_DOCUMENTS%", @MyDocumentsDir)
 EndFunc
 
 Func AllGUIctrlSetState($gui_controls, $state)

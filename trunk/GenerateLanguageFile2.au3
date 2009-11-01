@@ -142,7 +142,7 @@ Func parseFile($file)
           $key = $res_split[1]
           $translation = $res_split[2]
         EndIf
-        $newline = StringFormat("add($affectations, ""%s"", $gui_section, '%s', '%s')", $match, $match, $key, $translation)
+        $newline = StringFormat("add($affectations, ""%s"", $gui_section, '%s', '%s')", $match, $key, $translation)
         $content_lang = StringReplace($content_lang, ";ADD_AFFECTATION", $newline&@CRLF&"  ;ADD_AFFECTATION", 1)
         $content_lang = StringReplace($content_lang, ";ADD_DECLARATION", "Global $"&$match&@CRLF&"  ;ADD_DECLARATION", 1)
 
