@@ -19,6 +19,7 @@ class StringRendering;
 enum STRING_TYPE {
   DEFAULT_TYPE,
   OPENOFFICE3_TYPE,
+  LATEX_TYPE
 };
 
 class Function {
@@ -515,6 +516,16 @@ public:
   StringRendering& operator<<(Function *const f);
   StringRendering& operator<<(TCHAR tch);
   STRING_TYPE type() { return OPENOFFICE3_TYPE; }
+};
+
+class StringRenderingLaTeX:public StringRendering {
+public:
+  StringRenderingLaTeX(TCHAR* const data, TCHAR* const max_data);
+
+  /// Override
+  StringRendering& operator<<(Function *const f);
+  StringRendering& operator<<(TCHAR tch);
+  STRING_TYPE type() { return LATEX_TYPE; }
 };
 
 #endif

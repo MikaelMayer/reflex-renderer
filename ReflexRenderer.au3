@@ -8,6 +8,7 @@
 
 Doing:
  But list:
+ - Always save the options.
   If quicksave while a render is in progress, it does not store the highresolution picture.
   Défractaliser ne met pas à jour l'éditeur de formule
  Wish List:
@@ -186,7 +187,7 @@ HotKeySet('{ESC}', 'cancelDrag')
 
 Global $output_x = 312
 Global $output_y = 28
-Global $output_max_size=401
+Global $output_max_size=400
 
 Opt('MouseCoordMode', 2)
 
@@ -224,6 +225,8 @@ Global $nPreviousWindows = 0
 Global $nNextWindows = 0
 Global $currentWindow = 0
 Global $pid_rendering = 0, $rendering_thread = False
+Global $pid_rendering_timer_1 = TimerInit(), $pid_rendering_timer_2 = TimerInit(), $pid_current_timer = 1
+Global $percent_start_timer_1 = 0, $percent_start_timer_2 = 0
 Global Enum $VISIT_CLICK = 0, $VISIT_RECTANGLE
 Global $RENDERING_IMAGE_TO_UPDATE = 0
 Global $UPDATE_PIC = False
@@ -247,6 +250,7 @@ Global $winmin, $winmax
 Global $x = 0, $y = 0, $dx = 0, $dy = 0
 Global $xprev = -1, $yprev = -1
 Global $k = 0
+Global $rri_comment = IniReadSavebox('formulaComment', 'My nice function')
 
 #Region ### Form Variables
 Global $rri_win=0, $rri_line_reset=0, $rri_zoom_box0=0, $rri_zoom_box1=0, $rri_zoom_box2=0, $rri_zoom_box3=0, $rri_zoom_box_gray0=0, $rri_zoom_box_gray1=0, $rri_zoom_box_gray2=0, $rri_zoom_box_gray3=0, $rri_out_rendu=0, $rri_group_reflex=0, $rri_group_options=0, $rri_Label1=0, $rri_in_formula=0, $rri_formula_editor=0, $rri_DimLabel=0, $rri_width=0, $rri_labelX=0, $rri_height=0, $rri_reset_resolution=0, $rri_preview=0, $rri_LabelWinMin=0, $rri_percent=0, $rri_winmin=0, $rri_LabelWinMax=0, $rri_winmax=0, $rri_reset_window=0, $rri_check_auto_render=0, $rri_render=0, $rri_output=0, $rri_PercentSign=0, $rri_progress=0, $rri_rendering_text=0, $rri_quicksave=0, $rri_save_noquick=0, $rri_seed=0, $rri_realmode=0, $rri_lucky_func=0, $rri_lucky_fract=0, $rri_switch_fract=0, $rri_display_folder=0, $rri_LabelTitre=0, $rri_navigation=0, $rri_visit_click=0, $rri_visit_rectangle=0, $rri_previous_window=0, $rri_next_window=0, $rri_zoom_factor=0, $rri_zoom_in_factor=0, $rri_zoom_out_factor=0, $rri_LabelZoomFactor=0, $rri_zoom_absolute=0, $rri_color_code_button=0, $rri_menu_tools=0, $rri_menu_save=0, $rri_menu_windows=0, $rri_window_1=0, $rri_window_2=0, $rri_window_4=0, $rri_window_8=0, $rri_window_pi=0, $rri_menu_resolutions=0, $rri_resolutions_201=0, $rri_resolutions_401=0, $rri_resolutions_801=0, $rri_resolutions_640=0, $rri_resolutions_1024=0, $rri_resolutions_1280=0, $rri_resolutions_1601=0, $rri_resolutions_16000=0, $rri_menu_export_formula=0, $rri_menu_tutorial=0, $rri_menu_quitnosave=0, $rri_menu_quit=0, $rri_menu_formula_editor=0, $rri_menu_formula_edito=0, $rri_menu_import_formula=0, $rri_menu_import_reflex=0, $rri_menu_formula_small_history=0, $rri_menu_formula_history=0, $rri_menu_language=0, $rri_menu_customize=0, $rri_all_parameters=0, $rri_reset_menu=0
@@ -826,7 +830,7 @@ Func loadFormulaCallback($formula)
       updateWindow($item[1])
       $render_again = True
     Case "comment"
-      ;TODO : Put a variable, even hidden (like seed), containing the comment, so that it can be changed dynamically, not on the file.
+      $rri_comment = $item[1]
     Case "resolution"
       updateResolution($item[1])
       $render_again = True
@@ -849,34 +853,6 @@ EndFunc   ;==>SaveBoxCallback
 
 Func rri_quicksaveClick()
   generateQuickSaveBox($rri_win, $width_highres, $height_highres)
-  Return
-  ;Only prompt the comment.
-  $defaultComment = IniReadSavebox('formulaComment', $My_nice_function)
-  $defaultComment = getFirstAvailableComment($defaultComment)
-  ; TODO: include default and custom resolutions
-  ; 1280x800, 1600x1200, 1600x1600, 16000x16000 (bmp only)
-  ; Include path as well !
-  $result = InputBox($Quick_save, $Give_a_comment_for_this_reflex_&@CRLF&@CRLF& _
-      StringFormat($To_change_the_saving_directory__go_to, _
-      StringReplace($__tools__, "&", ""), _
-      StringReplace($__menu_save__, "&", "")), _
-      $defaultComment, ' M')
-  if $result == '' Then Return
-
-  SaveBox__updateComment($result)
-
-  If isSavebox('useComment') Then
-    $rfn = reflexFileNameFromComment( _
-        IniReadSavebox('formulaComment',$defaultComment), _
-        IniReadSavebox('formulaFile',''), _
-        IniReadSavebox('Extension','') )
-    if $rfn == '' Then
-      MsgBox(0, '', $Error_while_quick_saving_in_file)
-      Return
-    EndIf
-    IniWriteSavebox('reflexFile', $rfn)
-  EndIf
-  saveboxSave()
 EndFunc   ;==>rri_quicksaveClick
 Func rri_display_folderClick()
   Run("C:\WINDOWS\EXPLORER.EXE /n,/select," & UpdateMyDocuments(IniReadSavebox('reflexFile', '')))
@@ -1124,7 +1100,7 @@ Func rri_menu_quitClick()
 EndFunc   ;==>rri_menu_quitClick
 Func rri_menu_export_formulaClick()
   $flags = getCurrentFlags()
-  Local $pid = runReflexWithArguments('--simplify --openoffice'&$flags)
+  Local $pid = runReflexWithArguments('--simplify --latex'&$flags)
   Local $lines = ''
   Local $f = ''
   While True
@@ -1140,16 +1116,23 @@ Func rri_menu_export_formulaClick()
     MsgBox(0, $Errors, $errors_pid);
     Return -1
   EndIf
-  $lines = StringSplit($lines, @LF)
-  For $i = 1 To $lines[0]
-    If StringStartsWith($lines[$i], 'formula:') Then
-      $f = StringMid($lines[$i], 9)
+  $lines_array = StringSplit($lines, @LF)
+  For $i = 1 To $lines_array[0]
+    If StringStartsWith($lines_array[$i], 'formula:') Then
+      $f = StringMid($lines_array[$i], 9)
       ExitLoop
     EndIf
   Next
   If $f <> "" Then
     ClipPut($f)
-    MsgBox(0, $__formula_exported__, $__formula_correctly_exported_to_clipboard__&@CRLF&$f)
+    ;TODO: Continue + First used, not defined
+    Dim $szDrive, $szDir, $szFName, $szExt
+    $TestPath = _PathSplit(UpdateMyDocuments(IniReadSavebox('reflexFile', '')), $szDrive, $szDir, $szFName, $szExt)
+    Local $folder = $szDrive&$szDir
+    $file = FileSaveDialog("Save formula picture", $folder, "PNG formula (*.png)", 2+16, $rri_comment&".png")
+    ;MsgBox(0, $__formula_exported__, $__formula_correctly_exported_to_clipboard__&@CRLF&$f)
+  Else
+    MsgBox(0, $Error_title, "I was not able to export the formula but I don't know why:"&@CRLF&$lines)
   EndIf
 EndFunc
 Func rri_menu_tutorialClick()
@@ -1434,13 +1417,22 @@ Func startRendering($flags)
   $REFLEX_RENDERING = _Iif(isChecked($rri_preview), $REFLEX_RENDERED_IN_LR, $REFLEX_RENDERED_IN_HR)
   $REFLEX_RENDERED_FINISHED = False
   $pid_rendering = runReflexWithArguments('--render'&$flags)
+  startTimers()
   $rendering_thread = True
 EndFunc   ;==>startRendering
 
+Func startTimers()
+  $pid_rendering_timer_1 = TimerInit()
+  $pid_rendering_timer_2 = TimerInit()
+  $pid_current_timer = 1
+  $percent_start_timer_1 = 0
+  $percent_start_timer_2 = 0
+EndFunc
+
 Func handleRenderingAndIsFinished()
-  Local $lines, $p = -1
+  Local $lines, $p = -1, $p_float = -1
   $text = StdoutRead($pid_rendering)
-  If @error Then
+  If @error And (Not ProcessExists($pid_rendering)) Then
     Return True
   Else
     $lines = StringSplit($text, @CRLF, 1)
@@ -1458,14 +1450,61 @@ Func handleRenderingAndIsFinished()
       Else
         $progress = StringSplit($current_line, '/')
         If $progress[0]>=2 Then
-          $p = 100*Int($progress[1])/Int($progress[2])
-
+          $p_float = Number($progress[1])/Number($progress[2])
+          $p = Int(100*$p_float)
         EndIf
       EndIf
     Next
     If $p >= 0 Then
+      Local $text_time_remaining = "[...]"
+      Local $time_diff_1 = TimerDiff($pid_rendering_timer_1)
+      Local $time_diff_2 = TimerDiff($pid_rendering_timer_2)
+      If ($p_float > $percent_start_timer_1 And $pid_current_timer == 1) Or ($p_float > $percent_start_timer_2 And $pid_current_timer == 2)  Then
+        If $pid_current_timer == 1 Then
+          If $time_diff_2 > 3000 And $time_diff_1 > 6000 Then ; Enough information to change timers and reset this one
+            $pid_rendering_timer_1 = TimerInit()
+            $time_diff_1 = 0
+            $percent_start_timer_1 = $p_float
+            $pid_current_timer = 2
+          Else
+            If $time_diff_1 > 3000 And $time_diff_2 > 6000 Then
+              $pid_rendering_timer_2 = TimerInit()
+              $percent_start_timer_2 = $p_float
+            EndIf
+          EndIf
+        Else ; $pid_current_timer == 2
+          If $time_diff_1 > 3000 And $time_diff_2 > 6000 Then ; Enough information to change timers and reset this one
+            $pid_rendering_timer_2 = TimerInit()
+            $time_diff_2 = 0
+            $percent_start_timer_2 = $p_float
+            $pid_current_timer = 1
+          Else
+            If $time_diff_2 > 3000 And $time_diff_1 > 6000 Then
+              $pid_rendering_timer_1 = TimerInit()
+              $percent_start_timer_1 = $p_float
+            EndIf
+          EndIf
+        EndIf
+        Local $seconds_remaining = 0
+        If $pid_current_timer == 1 Then
+          $seconds_remaining = Int(($time_diff_1*(1 - $p_float)/($p_float - $percent_start_timer_1))/1000+1)
+        Else ; $pid_current_timer == 2
+          $seconds_remaining = Int(($time_diff_2*(1 - $p_float)/($p_float - $percent_start_timer_2))/1000+1)
+        EndIf
+        ;$seconds_remaining = Int((TimerDiff($pid_current_timer_1)*(1/$p_float-1))/1000+1)
+
+        $text_time_remaining = Mod($seconds_remaining, 60)&"s"
+        $minuts_remaining = Int($seconds_remaining/60)
+        If $minuts_remaining <> 0 Then
+          $text_time_remaining = Mod($minuts_remaining, 60)& "m " & $text_time_remaining
+          $hours_remaining = Int($minuts_remaining/60)
+          If $hours_remaining <> 0 Then
+            $text_time_remaining = $hours_remaining & "h " & $text_time_remaining
+          EndIf
+        EndIf
+      EndIf
       GUICtrlSetData($rri_progress, $p)
-      WinSetTitle($rri_win, "", GUICtrlRead($rri_progress)&"% done")
+      WinSetTitle($rri_win, "", GUICtrlRead($rri_progress)&$__percent_done__&" ("&$text_time_remaining&" "&$__time_remaining__&")")
     EndIf
     If $zooming <> 0 and $p >= 0 Then
       Local $growing = $zoomvars[2]/$zoomvars[6]
@@ -1645,6 +1684,7 @@ Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Or $width_local <> Default Then
     GUICtrlSetImage($rri_out_rendu,  $reflex_file)
     ;EndIf
   ElseIf $isJpeg Then
+    WinSetTitle($rri_win, "", $__converting_to_jpeg__)
     ;Logging("Copying to "&$reflex_file)
     ImageConvert($out_raw_file, $reflex_file)
     If Not FileExists($reflex_file) Then
@@ -1653,10 +1693,14 @@ Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Or $width_local <> Default Then
     Else
       $formula_and_options = defaultFormulaString()
       Dim $informations = _ArrayCreate(2, _ArrayCreate("title", "Reflex"), _ArrayCreate("comment", $formula_and_options))
+      WinSetTitle($rri_win, "", $__writing_reflex_informations__)
       WriteXPSections($reflex_file, $informations)
+      WinSetTitle($rri_win, "", $__removing_temporary_files__)
       FileDelete($out_raw_file)
     EndIf
+    WinSetTitle($rri_win, "", $__reflex_renderer_interface__)
   ElseIf $isPng Then
+    WinSetTitle($rri_win, "", $__converting_to_png__)
     ImageConvert($out_raw_file, $reflex_file)
     If Not FileExists($reflex_file) Then
       ;FileMove($out_raw_file, StringRegExpReplace($reflex_file, "\.png\z", ".bmp"))
@@ -1664,15 +1708,18 @@ Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Or $width_local <> Default Then
     Else
       $formula_and_options = defaultFormulaString()
       Dim $informations = _ArrayCreate(3, _ArrayCreate("Title", "Reflex"), _ArrayCreate("Comment", $formula_and_options), _ArrayCreate("Software", "ReflexRenderer v."&$VERSION_NUMER))
+      WinSetTitle($rri_win, "", $__writing_reflex_informations__)
       WritePngTextChunks($reflex_file, $informations)
+      WinSetTitle($rri_win, "", $__removing_temporary_files__)
       FileDelete($out_raw_file)
     EndIf
+    WinSetTitle($rri_win, "", $__reflex_renderer_interface__)
   EndIf
 EndFunc   ;==>saveReflex
 
 Func defaultFormulaString()
-  $comment = IniReadSavebox('formulaComment', '')
-  $formula_and_options = saveFormulaString(IniRead($ini_file, 'Session', 'formula', ''), $comment, isSavebox('saveComment'), isSavebox('saveResolution'), isSavebox('saveWindow'))
+  Local $comment = IniReadSavebox('formulaComment', '')
+  Local $formula_and_options = saveFormulaString(IniRead($ini_file, 'Session', 'formula', ''), $comment, isSavebox('saveComment'), isSavebox('saveResolution'), isSavebox('saveWindow'))
   return $formula_and_options
 EndFunc   ;==>defaultFormulaString
 
@@ -1846,23 +1893,29 @@ Func zoomForward($x0, $y0, $x1, $y1)
   if $xmin == $xmax and $ymin == $ymax Then Return
   $zoom_forward_pos = $rri_out_rendu_pos
 
-  AnimateZoomForward($zoom_forward_pos, $xmin, $ymin, $xmax, $ymax)
-
   $deltax_min = $xmin - $zoom_forward_pos[0]
   $deltay_min = -$ymax + ($zoom_forward_pos[1]+$zoom_forward_pos[3])
   $deltax_max = $xmax - ($zoom_forward_pos[0]+$zoom_forward_pos[2])
   $deltay_max = - $ymin + $zoom_forward_pos[1]
-  $winminmax = getWinMinMaxMoved(($deltax_min * $maxwh / $output_max_size), ($deltay_min * $maxwh / $output_max_size))
-  $future_winmin = $winminmax[1] ;TODO: Sécuriser !
-
-  $winminmax = getWinMinMaxMoved(($deltax_max * $maxwh / $output_max_size), ($deltay_max * $maxwh / $output_max_size))
-  ;Winmax part
-  If Not IsArray($winminmax) Or UBound($winminmax) < 3 Then
-    ;Error detected !
-    ;logging("winminmax="&toString($winminmax))
-
-  EndIf
-  $future_winmax = $winminmax[2] ; TODO: Secure this !
+  Local $max_i = 5
+  For $i = 1 To $max_i
+    $winminmax1 = getWinMinMaxMoved(($deltax_min * $maxwh / $output_max_size), ($deltay_min * $maxwh / $output_max_size))
+    $winminmax2 = getWinMinMaxMoved(($deltax_max * $maxwh / $output_max_size), ($deltay_max * $maxwh / $output_max_size))
+    If Not IsArray($winminmax1) Or UBound($winminmax1) < 3 Or Not IsArray($winminmax2) Or UBound($winminmax2) < 3 Then
+      ;Error detected !
+      If $i == $max_i Then
+        Local $str = "getWinMinMaxMoved(("&$deltax_min&" * "&$maxwh&" / "&$output_max_size&"), ("&$deltay_min&" * "&$maxwh&" / "&$output_max_size&"))"
+        ClipPut($str)
+        MsgBox(0, $Errors, $__problems_while_computing_coordinates__&@CRLF&$str)
+        Return
+      EndIf
+      ContinueLoop
+    EndIf
+    ExitLoop
+  Next
+  AnimateZoomForward($zoom_forward_pos, $xmin, $ymin, $xmax, $ymax)
+  $future_winmin = $winminmax1[1] ;TODO: Sécuriser !
+  $future_winmax = $winminmax2[2] ; TODO: Secure this !
   setWinminmax($future_winmin, $future_winmax)
 EndFunc   ;==>zoomForward
 
@@ -1930,13 +1983,24 @@ Func zoomBackward($x0, $y0, $x1, $y1)
   $deltax_max = $xmax - ($pos[0]+$pos[2])
   $deltay_max = - $ymin + $pos[1]
 
-  $winminmax = getWinMinMaxMoved(($deltax_min * $maxwh / $output_max_size), ($deltay_min * $maxwh / $output_max_size))
-  $future_winmin = $winminmax[1]
-
-  $winminmax = getWinMinMaxMoved(($deltax_max * $maxwh / $output_max_size), ($deltay_max * $maxwh / $output_max_size))
-  ;Winmax part
-  $future_winmax = $winminmax[2]
-
+  Local $max_i = 5
+  For $i = 1 To $max_i
+    $winminmax1 = getWinMinMaxMoved(($deltax_min * $maxwh / $output_max_size), ($deltay_min * $maxwh / $output_max_size))
+    $winminmax2 = getWinMinMaxMoved(($deltax_max * $maxwh / $output_max_size), ($deltay_max * $maxwh / $output_max_size))
+    If Not IsArray($winminmax1) Or UBound($winminmax1) < 3 Or Not IsArray($winminmax2) Or UBound($winminmax2) < 3 Then
+      ;Error detected !
+      If $i == $max_i Then
+        Local $str = "getWinMinMaxMoved(("&$deltax_min&" * "&$maxwh&" / "&$output_max_size&"), ("&$deltay_min&" * "&$maxwh&" / "&$output_max_size&"))"
+        ClipPut($str)
+        MsgBox(0, $Errors, $__problems_while_computing_coordinates__&@CRLF&$str)
+        Return
+      EndIf
+      ContinueLoop
+    EndIf
+    ExitLoop
+  Next
+  $future_winmin = $winminmax1[1] ;TODO: Sécuriser !
+  $future_winmax = $winminmax2[2] ; TODO: Secure this !
 
   setWinminmax($future_winmin, $future_winmax)
 EndFunc   ;==>zoomBackward
@@ -2217,14 +2281,14 @@ Func formulaChanged($formula)
 EndFunc   ;==>updateFormula
 
 Func rri_lucky_funcClick()
-  updateFormula($lucky_func_default) ;TODO: Externalize 16
+  updateFormula($lucky_func_default)
   updateSeed() ;Put a random seed.
   LoadDefaultWindow()
   renderIfAutoRenderDefault()
 EndFunc ;==>rri_lucky_funcClick
 
 Func rri_lucky_fractClick()
-  updateFormula($lucky_frac_default) ;TODO: Externalize 16 and 5
+  updateFormula($lucky_frac_default)
   updateSeed() ;Put a random seed.
   LoadDefaultWindow()
   renderIfAutoRenderDefault()

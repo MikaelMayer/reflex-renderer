@@ -46,6 +46,7 @@ Global $total_of_frames = 0 ; Set up in ConvertAndCheckEverything()
 Global $video_framestorender = ""
 
 Global $ini_video_parameters = emptySizedArray()
+Global $video_formula, $video_varname, $video_startvalue, $video_endvalue, $video_startframe, $video_lastframe, $video_numframes, $video_framestorender, $video_inclastframe, $video_output_model, $video_output_type, $image_width, $image_height, $image_winmin, $image_winmax, $image_colornan
 push($ini_video_parameters, _ArrayCreate("video_formula", $INI_VIDEO, $INI_VIDEO_FORMULA, ""))
 push($ini_video_parameters, _ArrayCreate("video_varname", $INI_VIDEO, $INI_VIDEO_VARNAME, ""))
 push($ini_video_parameters, _ArrayCreate("video_startvalue", $INI_VIDEO, $INI_VIDEO_STARTVALUE, ""))
@@ -66,7 +67,7 @@ push($ini_video_parameters, _ArrayCreate("image_winmax", $INI_IMAGE, $INI_IMAGE_
 push($ini_video_parameters, _ArrayCreate("image_colornan", $INI_IMAGE, $INI_IMAGE_COLORNAN, "0xFFFFFF"))
 
 Global $percent = 0
-Global $maintext = "Rendering video " 
+Global $maintext = "Rendering video "
 Global $subtext = "Rendering video, please wait."&@CRLF&"CTRL+SHIFT+ALT+E : cancel/exit, CTRL+SHIFT+ALT+P : pause/resume"
 Global $subtext_pause = "Rendering paused."&@CRLF&"CTRL+SHIFT+ALT+E : cancel/exit, CTRL+SHIFT+ALT+P : pause/resume"
 Global $state_rendering = True
@@ -107,14 +108,14 @@ Func RenderVideo()
   Local $thread_output  = emptySizedArray()      ; output array
   ;Local $thread_custom_output  = emptySizedArray()      ; output array
   Local $thread_formula = emptySizedArray()      ; Formula array
-  
+
   ;We launch as many rendering as there are available processors.
   Local $list_frames_to_render = $video_framestorender
   Local $done = 0
 
   ProgressOn($maintext, $maintext, $subtext, Default, Default, 16); +2 if not on top wanted.
   ProgressSet(0)
-  
+
   While Not ($list_frames_to_render = "" and size($thread_pid) = 0)
     While size($thread_pid) == $n Or ($list_frames_to_render = "" And size($thread_pid) > 0)
       $i = 1
@@ -126,12 +127,12 @@ Func RenderVideo()
           $done += 1
           $percent = Int(100 * $done / $total_of_frames)
           ProgressSet($percent, $subtext, $maintext&$percent&"%")
-          
-          $formula = $thread_formula[$i]
+          Local $formula = getFormulaFromPid($thread_pid[$i])
+          If $formula == "" Then $formula = $thread_formula[$i]
           $output  = $thread_output[$i]
-          
+
           postTreatment($output, $formula)
-          
+
           deleteAt($thread_pid, $i)
           deleteAt($thread_formula, $i)
           deleteAt($thread_output, $i)
@@ -144,15 +145,15 @@ Func RenderVideo()
       ;logging("la:"&$list_frames_to_render)
       $frame = popFrameNumber($list_frames_to_render)
       ;logging("lp:"&$list_frames_to_render)
-      
+
       $formula = getFormulaForFrame($frame)
       $output = getOutputForFrame($frame)
       ;$custom_output = getCustomOutputForFrame($frame) ; Contains the true extension
       ;logging("computing formula "&$formula&" at frame "&$frame)
-      
+
       $cmd = getRenderingCommandForFormulaOutput($formula, $output)
-      
-      $pid = Run($cmd, "", @SW_HIDE)
+
+      $pid = Run($cmd, "", @SW_HIDE, 0x2)
       push($thread_pid, $pid)
       push($thread_formula, $formula)
       push($thread_output, $output)
@@ -200,12 +201,12 @@ Func popFrameNumber(ByRef $list_frames_to_render)
   failWith("Unable to locate next frame to render in sequence"&@CRLF&$list_frames_to_render)
   Exit
 EndFunc
-  
+
 Func ConvertAndCheckEverything()
   $video_startvalue = Number($video_startvalue)
   $video_endvalue   = Number($video_endvalue)
   $video_startframe = Int($video_startframe)
-  
+
   If $video_lastframe = $TOCALCULATE_STRING Then
     If $video_numframes = $TOCALCULATE_STRING Then
       Return failwith("You have to specify one of the keys '"&$INI_VIDEO_LASTFRAME&"' or '"&$INI_VIDEO_NUMFRAMES&"' in section "&$INI_VIDEO)
@@ -218,14 +219,14 @@ Func ConvertAndCheckEverything()
   If $video_numframes = $TOCALCULATE_STRING Then
     $video_numframes = $video_lastframe - $video_startframe + 1
   EndIf
-  
-  
+
+
   $video_numframes  = Int($video_numframes)
-  
+
   If $video_lastframe - $video_startframe + 1 <> $video_numframes Then
     Return failWith("The number of frames given by start("&$video_startvalue&"), last("&$video_lastframe&") and num of frames("&$video_numframes&") are not coherent.")
   EndIf
-  
+
   If $video_framestorender = $TOCALCULATE_STRING Then
     $video_framestorender = $video_startframe&"-"&$video_lastframe
   EndIf
@@ -263,11 +264,11 @@ Func AssignVideoParameters($ini_file, $ini_video_parameters)
     For $i = 1 To $ini_video_parameters[0]
       $tab = $ini_video_parameters[$i]
       $varname = $tab[$INI_N_VARNAME]
-      
+
       $section = $tab[$INI_N_SECTION]
       $sectionvar = $tab[$INI_N_SECTIONVAR]
       $default = $tab[$INI_N_DEFAULT]
-      
+
       $value = IniRead($ini_file, $section, $sectionvar, $default)
       ;logging("new value:"&$value)
       If $value == "" Then
@@ -290,8 +291,13 @@ Func failWith($msg)
 EndFunc
 
 Func getFormulaForFrame($frame)
-  $part = ($frame - $video_startframe) / ($video_lastframe - $video_startframe)
-  $varvalue = complex_calculate(StringFormat("%s*(%s)+%s*(%s)", 1-$part, $video_startvalue, $part, $video_endvalue))
+  Local $varvalue
+  If $video_lastframe == $video_startframe Then
+    $varvalue = $video_startvalue
+  Else
+    $part = ($frame - $video_startframe) / ($video_lastframe - $video_startframe)
+    $varvalue = complex_calculate(StringFormat("%s*(%s)+%s*(%s)", 1-$part, $video_startvalue, $part, $video_endvalue))
+  EndIf
   $formula = replaceVariableString($video_formula, $video_varname, $varvalue)
   Return $formula
 EndFunc
@@ -309,13 +315,27 @@ Func getRenderingCommandForFormulaOutput($formula, $output)
   addFlag($flags, "winmin", $image_winmin)
   addFlag($flags, "winmax", $image_winmax)
   addFlag($flags, "color_nan", $image_colornan)
-  
+
   addFlag($flags, "output", $output)
+  addFlag($flags, "seed", String(Random(0, 2147483647, 1)))
 
   $cmd = @ScriptDir&"\"&$RenderReflexExe&" "&$flags
   ;logging($cmd)
 
   Return $cmd
+EndFunc
+
+Func getFormulaFromPid($pid)
+  Local $formula = ""
+  $lines = StdoutRead($pid)
+  $lines_array = StringSplit($lines, @LF)
+  For $i = 1 To $lines_array[0]
+    If StringStartsWith($lines_array[$i], 'formula:') Then
+      $formula = StringStripWS(StringMid($lines_array[$i], 9),1+2)
+      ExitLoop
+    EndIf
+  Next
+  Return $formula
 EndFunc
 
 
@@ -328,7 +348,7 @@ Func formula_and_options($formula)
   push($options, 'height='&$image_height)
   toBasicArray($options)
   $options_string = _ArrayToString($options, "; ")
-  
+
   Return $formula&@CRLF&$options_line_string&$options_string
 EndFunc
 
@@ -342,10 +362,10 @@ Func postTreatment($output, $formula)
       Exit
     EndIf
     FileDelete($output)
-    
+
     $isJpeg = StringEndsWith($output_with_extension, '.jpeg') Or StringEndsWith($output_with_extension, '.jpg')
     $isPng =  StringEndsWith($output_with_extension, '.png')
-  
+
     If $isJpeg Then
       $formula_and_options = formula_and_options($formula)
       Dim $informations = _ArrayCreate(2, _ArrayCreate("title", "Reflex"), _ArrayCreate("comment", $formula_and_options))
@@ -355,7 +375,7 @@ Func postTreatment($output, $formula)
       Dim $informations = _ArrayCreate(3, _ArrayCreate("Title", "Reflex"), _ArrayCreate("Comment", $formula_and_options), _ArrayCreate("Software", "ReflexRenderer v."&$VERSION_NUMER))
       WritePngTextChunks($output_with_extension, $informations)
     EndIf
-  EndIf  
+  EndIf
 EndFunc
 
 ; Input ("myfile####", 15, 120) output "myfile0015"
@@ -364,18 +384,18 @@ Func ReplaceSharpsByValue($file, $number, $max)
   StringReplace($file, '#', "")
   $size_sharps = @extended
   $size_max = StringLen(""&$max)
-  
+
   ;We keep only one sharp
   If $size_sharps >= 2 Then
     $file = StringReplace($file, '#', "", $size_sharps - 1)
   EndIf
-  
+
   $size_number = _Max($size_sharps, $size_max)
   $number_sized = ""&$number
   While StringLen($number_sized) < $size_number
     $number_sized = "0"&$number_sized
   WEnd
-  
+
   If $size_sharps == 0 Then
     Return $file&$number_sized
   Else

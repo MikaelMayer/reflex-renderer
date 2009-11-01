@@ -10,23 +10,27 @@
 
 TCHAR *Function::toStringConst(TCHAR* const data_const, TCHAR *max_data, STRING_TYPE string_type) {
   TCHAR* data = data_const;
-  if(string_type == DEFAULT_TYPE) {
-    StringRendering s(data_const, max_data);
-    s << this;
-    return s.data;
-
-  } else { //if(string_type == OPENOFFICE3_TYPE){
+  if(string_type == OPENOFFICE3_TYPE) {
     StringRenderingOpenOffice s(data_const, max_data);
     s << this;
     return s.data;
+  } else if(string_type == LATEX_TYPE) {
+    StringRenderingLaTeX s(data_const, max_data);
+    s << this;
+    return s.data;
   }
+  //if(string_type == DEFAULT_TYPE) {
+      StringRendering s(data_const, max_data);
+      s << this;
+      return s.data;
+  //}
 }
 
 void FunctionUnary::toString_name(StringRendering &s,
                                   TCHAR* function_name, bool parenthesis) {
   if(parenthesis)
     s << function_name << TEXT('(') << argument << TEXT(')');
-  else if(s.type() == OPENOFFICE3_TYPE)
+  else if(s.type() == OPENOFFICE3_TYPE || s.type() == LATEX_TYPE)
     s << function_name << TEXT('{') << argument << TEXT('}');
   else
     s << function_name << argument;
@@ -35,7 +39,7 @@ void FunctionUnary::toString_name(StringRendering &s,
 void FunctionBinary::toString_symbol(StringRendering &s, TCHAR* symbol, bool parentheses_possibles) {
   if(argument->priorite() < priorite() && parentheses_possibles) {
     s << TEXT('(') << argument << TEXT(')');
-  } else if(s.type() == OPENOFFICE3_TYPE) {
+  } else if(s.type() == OPENOFFICE3_TYPE || s.type() == LATEX_TYPE) {
     s << TEXT('{') << argument << TEXT('}');
   } else {
     s << argument;
@@ -45,7 +49,7 @@ void FunctionBinary::toString_symbol(StringRendering &s, TCHAR* symbol, bool par
 
 	if(argument2->priorite() <= priorite())
     s << TEXT('(') << argument2 << TEXT(')');
-  else if(s.type() == OPENOFFICE3_TYPE)
+  else if(s.type() == OPENOFFICE3_TYPE || s.type() == LATEX_TYPE)
     s << TEXT('{') << argument2 << TEXT('}');
   else
     s << argument2;
@@ -73,7 +77,9 @@ void Soustraction::toString(StringRendering &s) {
 
 void Multiplication::toString(StringRendering &s) {
 	if(s.type() == OPENOFFICE3_TYPE)
-  	toString_symbol(s, TEXT(" cdot ")); //TODO: ameliore
+  	toString_symbol(s, TEXT(" cdot "));
+  else if(s.type() == LATEX_TYPE)
+    toString_symbol(s, TEXT("\\cdot{}"));
   else
   	toString_symbol(s, TEXT("*"));
 }
@@ -81,37 +87,55 @@ void Multiplication::toString(StringRendering &s) {
 void Division::toString(StringRendering &s) {
   if(s.type() == OPENOFFICE3_TYPE)
   	toString_symbol(s, TEXT(" over "), false);
-  else
+  else if(s.type() == LATEX_TYPE) {
+    s << TEXT("\\frac");
+    s << TEXT('{') << argument << TEXT('}');
+    s << TEXT('{') << argument2 << TEXT('}');
+  } else
   	toString_symbol(s, TEXT("/"));
 }
 
 void ExposantComplexe::toString(StringRendering &s) {
-	s << TEXT('(') << argument << TEXT(')');
+  if(argument->priorite() <= priorite()) {
+    s << TEXT('(') << argument << TEXT(')');
+  } else if(s.type() == OPENOFFICE3_TYPE || s.type() == LATEX_TYPE) {
+    s << TEXT('{') << argument << TEXT('}');
+  } else {
+    s << argument;
+  }
   s << TEXT('^');
-  if(s.type() == OPENOFFICE3_TYPE)
+  if(s.type() == OPENOFFICE3_TYPE || s.type() == LATEX_TYPE)
     s << TEXT('{') << argument2 << TEXT('}');
   else
 	  s << TEXT('(') << argument2 << TEXT(')');
 }
 
 void Compose::toString(StringRendering &s) {
-  s << TEXT("o");
+  if(s.type() == LATEX_TYPE) {
+    s << TEXT("\\text{o}");
+  } else
+    s << TEXT("o");
   s << TEXT('(') << argument << TEXT(',') << argument2 << TEXT(')');
 }
 
 void CompositionRecursive::toString(StringRendering &s) {
-  s << TEXT("oo");
+  if(s.type() == LATEX_TYPE) {
+    s << TEXT("\\text{oo}");
+  } else
+    s << TEXT("oo");
   s << TEXT('(') << argument << TEXT(',') << nbCompose << TEXT(')');
 }
 
 
 void Exposant::toString(StringRendering &s) {
-  if(argument->priorite() > priorite()) {
-	    s << argument;
-  } else {
+  if(argument->priorite() <= priorite()) {
     s << TEXT('(');
 	    s << argument;
     s << TEXT(')');
+  } else if(s.type() == OPENOFFICE3_TYPE || s.type() == LATEX_TYPE) {
+    s << TEXT('{') << argument << TEXT('}');
+  } else {
+	  s << argument;
   }
   s << TEXT('^') << exposant;
 }
@@ -130,94 +154,143 @@ void Oppose::toString(StringRendering &s) {
 }
 
 void Sin::toString(StringRendering &s) {
-  FunctionUnary::toString_name(s, TEXT("sin"));
+  if(s.type() == LATEX_TYPE)
+    FunctionUnary::toString_name(s, TEXT("\\sin"));
+  else
+    FunctionUnary::toString_name(s, TEXT("sin"));
 }
 
 void Cos::toString(StringRendering &s) {
-  FunctionUnary::toString_name(s, TEXT("cos"));
+  if(s.type() == LATEX_TYPE)
+    FunctionUnary::toString_name(s, TEXT("\\cos"));
+  else
+    FunctionUnary::toString_name(s, TEXT("cos"));
 }
 void Tan::toString(StringRendering &s) {
-	FunctionUnary::toString_name(s, TEXT("tan"));
+	if(s.type() == LATEX_TYPE)
+    FunctionUnary::toString_name(s, TEXT("\\tan"));
+  else
+    FunctionUnary::toString_name(s, TEXT("tan"));
 }
 
 void Exp::toString(StringRendering &s) {
-  if(s.type() == OPENOFFICE3_TYPE) {
+  if(s.type() == OPENOFFICE3_TYPE || s.type() == LATEX_TYPE) {
     s << TEXT("e^{") << argument << TEXT("}");
   } else
     FunctionUnary::toString_name(s, TEXT("exp"));
 }
 
 void Cosh::toString(StringRendering &s) {
-  FunctionUnary::toString_name(s, TEXT("cosh"));
+  if(s.type() == LATEX_TYPE)
+    FunctionUnary::toString_name(s, TEXT("\\cosh"));
+  else
+    FunctionUnary::toString_name(s, TEXT("cosh"));
 }
 
 void Sinh::toString(StringRendering &s) {
-	FunctionUnary::toString_name(s, TEXT("sinh"));
+	if(s.type() == LATEX_TYPE)
+    FunctionUnary::toString_name(s, TEXT("\\sinh"));
+  else
+    FunctionUnary::toString_name(s, TEXT("sinh"));
 }
 
 void Tanh::toString(StringRendering &s) {
-  FunctionUnary::toString_name(s, TEXT("tanh"));
+  if(s.type() == LATEX_TYPE)
+    FunctionUnary::toString_name(s, TEXT("\\tanh"));
+  else
+    FunctionUnary::toString_name(s, TEXT("tanh"));
 }
 
 void Ln::toString(StringRendering &s) {
-  FunctionUnary::toString_name(s, TEXT("ln"));
+  if(s.type() == LATEX_TYPE)
+    FunctionUnary::toString_name(s, TEXT("\\ln"));
+  else
+    FunctionUnary::toString_name(s, TEXT("ln"));
 }
 
 void Sqrt::toString(StringRendering &s) {
-  if(s.type() == OPENOFFICE3_TYPE) {
+  if(s.type() == LATEX_TYPE)
+    s << TEXT("\\sqrt{") << argument << TEXT("}");
+  else if(s.type() == OPENOFFICE3_TYPE) {
     s << TEXT("sqrt{") << argument << TEXT("}");
   } else
     FunctionUnary::toString_name(s, TEXT("sqrt"));
 }
 
 void Argsh::toString(StringRendering &s) {
-	FunctionUnary::toString_name(s, TEXT("argsh"));
+  if(s.type() == LATEX_TYPE)
+    FunctionUnary::toString_name(s, TEXT("\\text{argsh}"));
+  else
+	  FunctionUnary::toString_name(s, TEXT("argsh"));
 }
 
 void Argch::toString(StringRendering &s) {
-  FunctionUnary::toString_name(s, TEXT("argch"));
+  if(s.type() == LATEX_TYPE)
+    FunctionUnary::toString_name(s, TEXT("\\text{argch}"));
+  else
+	  FunctionUnary::toString_name(s, TEXT("argch"));
 }
 
 void Argth::toString(StringRendering &s) {
-	FunctionUnary::toString_name(s, TEXT("argth"));
+	if(s.type() == LATEX_TYPE)
+    FunctionUnary::toString_name(s, TEXT("\\text{argth}"));
+  else
+	  FunctionUnary::toString_name(s, TEXT("argth"));
 }
 
 void Arcsin::toString(StringRendering &s) {
-	FunctionUnary::toString_name(s, TEXT("arcsin"));
+	if(s.type() == LATEX_TYPE)
+    FunctionUnary::toString_name(s, TEXT("\\arcsin"));
+  else
+	  FunctionUnary::toString_name(s, TEXT("arcsin"));
 }
 
 void Arccos::toString(StringRendering &s) {
-	FunctionUnary::toString_name(s, TEXT("arccos"));
+	if(s.type() == LATEX_TYPE)
+    FunctionUnary::toString_name(s, TEXT("\\arccos"));
+  else
+	  FunctionUnary::toString_name(s, TEXT("arccos"));
 }
 
 void Arctan::toString(StringRendering &s) {
-	FunctionUnary::toString_name(s, TEXT("arctan"));
+	if(s.type() == LATEX_TYPE)
+    FunctionUnary::toString_name(s, TEXT("\\arctan"));
+  else
+	  FunctionUnary::toString_name(s, TEXT("arctan"));
 }
 
 
 void Real::toString(StringRendering &s) {
-  if(s.type() == OPENOFFICE3_TYPE) {
+  if(s.type() == LATEX_TYPE) {
+    s << TEXT("\\Re(") << argument << TEXT(")");
+  } else if(s.type() == OPENOFFICE3_TYPE) {
     s << TEXT("Re(") << argument << TEXT(")");
   } else
 	  FunctionUnary::toString_name(s, TEXT("real"));
 }
 
 void Imag::toString(StringRendering &s) {
-	if(s.type() == OPENOFFICE3_TYPE) {
+	if(s.type() == LATEX_TYPE) {
+    s << TEXT("\\Im(") << argument << TEXT(")");
+  } else if(s.type() == OPENOFFICE3_TYPE) {
     s << TEXT("Im(") << argument << TEXT(")");
   } else
 	  FunctionUnary::toString_name(s, TEXT("imag"));
 }
 
 void Conj::toString(StringRendering &s) {
-	if(s.type() == OPENOFFICE3_TYPE) {
+	if(s.type() == LATEX_TYPE) {
+    s << TEXT("\\overline{") << argument << TEXT("}");
+  } else if(s.type() == OPENOFFICE3_TYPE) {
     s << TEXT("Bar{") << argument << TEXT("}");
   } else
 	  FunctionUnary::toString_name(s, TEXT("conj"));
 }
 
 void Circle::toString(StringRendering &s) {
-  if(s.type() == OPENOFFICE3_TYPE) {
+  if(s.type() == LATEX_TYPE) {
+    FunctionUnary::toString_name(s, TEXT("\\text{circle}"));
+  } else if(s.type() == OPENOFFICE3_TYPE) {
 	  FunctionUnary::toString_name(s, TEXT("\"circle\""));
   } else {
     FunctionUnary::toString_name(s, TEXT("circle"));
@@ -229,11 +302,24 @@ void Variable::toString(StringRendering &s) {
 }
 
 void FunctionMultiple::toString_multiple(StringRendering s, TCHAR* function_name) {
+  if(s.type() == LATEX_TYPE) {
+    s << function_name << TEXT("_{");
+    s << var << TEXT("=") << debut;
+    if(!(step->isConstant() && step->evalFast().real() == 1 && step->evalFast().imag() == 0)) {
+      s << "," << var << TEXT("+=") << step;
+    }
+    s << TEXT("}^{");
+    s << fin;
+    s << TEXT("}{");
+    s << argument;
+    s << TEXT("}");
+    return;
+  }
   if(s.type() == OPENOFFICE3_TYPE) {
     s << function_name << TEXT(" from {");
     s << var << TEXT("=") << debut;
     if(!(step->isConstant() && step->evalFast().real() == 1 && step->evalFast().imag() == 0)) {
-      s << var << TEXT("+=") << step;
+      s << ", " << var << TEXT("+=") << step;
     }
     s << TEXT("} to {");
     s << fin;
@@ -258,14 +344,18 @@ void FunctionMultiple::toString_multiple(StringRendering s, TCHAR* function_name
 
 void SommeMultiple::toString(StringRendering &s) {
   //sum from{i=1} to{3} {}
-  if(s.type() == OPENOFFICE3_TYPE)
+  if(s.type() == LATEX_TYPE)
+    toString_multiple(s, TEXT("\\sum"));
+  else if(s.type() == OPENOFFICE3_TYPE)
     toString_multiple(s, TEXT("sum"));
   else
     toString_multiple(s, TEXT("sum"));
 }
 
 void ProduitMultiple::toString(StringRendering &s) {
-  if(s.type() == OPENOFFICE3_TYPE)
+  if(s.type() == LATEX_TYPE)
+    toString_multiple(s, TEXT("\\prod"));
+  else if(s.type() == OPENOFFICE3_TYPE)
     toString_multiple(s, TEXT("prod"));
   else
     toString_multiple(s, TEXT("prod"));
@@ -273,7 +363,13 @@ void ProduitMultiple::toString(StringRendering &s) {
 
 //Open Office model?
 void CompositionMultiple::toString(StringRendering &s) {
-	s << TEXT("comp");
+  if(s.type() == LATEX_TYPE) {
+    s << TEXT("\\text{comp}");
+  } else if(s.type() == OPENOFFICE3_TYPE) {
+    s << TEXT("\"comp\"");
+  } else {
+	  s << TEXT("comp");
+  }
   s << TEXT('(');
     s << argument;
 	s << TEXT(',');
@@ -353,3 +449,28 @@ StringRendering& StringRenderingOpenOffice::operator<<(TCHAR tch) {
   return *this;
 }
 
+StringRenderingLaTeX::StringRenderingLaTeX(
+  TCHAR* const data, TCHAR* const max_data):
+    StringRendering(data, max_data) {
+}
+
+    
+StringRendering& StringRenderingLaTeX::operator<<(Function* const f) {
+  StringRendering::operator <<(f);
+  return *this;
+}
+
+StringRendering& StringRenderingLaTeX::operator<<(TCHAR tch) {
+  if(notReachedEnd()) {
+    if(tch == TEXT('(')) {
+      StringRendering::operator <<(TEXT("\\left"));
+      StringRendering::operator <<(TEXT('('));
+    } else if(tch == TEXT(')')) {
+      StringRendering::operator <<(TEXT("\\right"));
+      StringRendering::operator <<(TEXT(')'));
+    } else {
+      *(data++) = tch;
+    }
+  }
+  return *this;
+}

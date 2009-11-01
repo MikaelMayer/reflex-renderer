@@ -26,9 +26,9 @@ push($Global_Parameters, _ArrayCreate("color_NaN_complex",      $PARAM_STRING,  
 push($Global_Parameters, _ArrayCreate("animated_zoom",          $PARAM_BOOL,        True))
 push($Global_Parameters, _ArrayCreate("threshold_zoom_drag",    $PARAM_INT,         2))
 push($Global_Parameters, _ArrayCreate("history_formula_filename",$PARAM_STRING,     @ScriptDir&"\"&"history_formulas.txt"))
-push($Global_Parameters, _ArrayCreate("resolutions_quicksave",  $PARAM_STRING,     "|401x401|1280x800|1640x1024|3280x2048|16000x8000|16000x16000|Custom"))
-push($Global_Parameters, _ArrayCreate("lucky_func_default",     $PARAM_STRING,     "randf(8)+randf(8)"))
-push($Global_Parameters, _ArrayCreate("lucky_frac_default",     $PARAM_STRING,     "oo(randf(8)+randf(8), 5)"))
+push($Global_Parameters, _ArrayCreate("resolutions_quicksave",  $PARAM_STRING,     "|401x401|640x480|1280x960|1640x1024|3280x2460|Custom"))
+push($Global_Parameters, _ArrayCreate("lucky_func_default",     $PARAM_STRING,     "(randf(9)+randh(9))/2"))
+push($Global_Parameters, _ArrayCreate("lucky_frac_default",     $PARAM_STRING,     "oo((randf(9)+randh(9))/2, 5)"))
 
 
 GetParameters()

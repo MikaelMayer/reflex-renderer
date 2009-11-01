@@ -17,6 +17,7 @@
 #include "GlobalUtils.au3"
 #include "IniHandling.au3"
 #include "translations.au3"
+#include "SaveBox.au3"
 
 Opt("GUIOnEventMode", 1)
 
@@ -663,7 +664,7 @@ EndFunc
 
 Func _Tutorial_SaveQuick()
   If _Tutorial_cancel() Then Return
-  If $rendering_thread Then  Return setTimeout("_Tutorial_SaveAll", 500)
+  If $rendering_thread Then  Return setTimeout("_Tutorial_SaveQuick", 500)
   If $SAVE_BOX_EXISTS Then
     sb_saveboxClose()
   EndIf
@@ -677,11 +678,22 @@ EndFunc
 Func _Tutorial_SaveQuick2()
   If _Tutorial_cancel() Then Return
   If $rendering_thread Then  Return setTimeout("_Tutorial_SaveQuick2", 500)
-  _Tutorial_MouseMove($rri_quicksave)
-  setTimeout_external("WinWaitActive('"&$Quick_save&"');Sleep(500);Send('Vegetation');Sleep(500);Send('{ENTER}')", 0)
-  MouseClick("left")
+  _Tutorial_MouseMove($rri_quicksave, Default, 30)
+  Sleep(500)
+  ;setTimeout_external("WinWaitActive('"&$Quick_save&"');Sleep(500);Send('Vegetation');Sleep(500);Send('{ENTER}')", 0)
+  rri_quicksaveClick()
+  setTimeout("_Tutorial_SaveQuick3", 1000)
+EndFunc
+Func _Tutorial_SaveQuick3()
+  If _Tutorial_cancel() Then Return
+  If $rendering_thread Then  Return setTimeout("_Tutorial_SaveQuick3", 500)
+  _Tutorial_MouseMove($qs_ok, $qs_win, 30)
+  qs_okClick()
+  ;setTimeout_external("WinWaitActive('"&$Quick_save&"');Sleep(500);Send('Vegetation');Sleep(500);Send('{ENTER}')", 0)
   If $tutorial_play Then _Tutorial_continue()
 EndFunc
+
+
 
 Func _Tutorial_MouseOnReflexFolder()
   If _Tutorial_cancel() Then Return

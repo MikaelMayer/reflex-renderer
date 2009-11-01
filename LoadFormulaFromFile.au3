@@ -9,6 +9,7 @@
 #ce ----------------------------------------------------------------------------
 #include-once
 #include "GlobalUtils.au3"
+#include 'Translations.au3'
 #include "JpegHandling.au3"
 #include "PngHandling.au3"
 

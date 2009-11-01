@@ -18,6 +18,7 @@
 #include <Date.au3>
 #include <Misc.au3>
 #include <Math.au3>
+#include <WindowsConstants.au3>
 
 Global Const $VERSION_NUMER = "2.8.4 beta"
 Global Const $COPYRIGHT_DATE = "2009"
@@ -289,9 +290,6 @@ Func runReflexWithArguments($args)
   $cmd = StringFormat("%s %s", $RenderReflexExe, $args)
   logging("Running "&$cmd)
   Local $pid = Run($cmd, '', @SW_HIDE, 2+4)
-  ;If @error <> 0 Then
-    ;logging("Error while running reflexrenderer")
-  ;EndIf
   Return $pid
 EndFunc
 
@@ -372,6 +370,10 @@ Func StringSizeMin($str, $length, $add_char = " ")
     $str = $str & $add_char
   WEnd
   Return $str
+EndFunc
+
+Func UpdateMyDocuments($str)
+  Return StringReplace($str, "%MY_DOCUMENTS%", @MyDocumentsDir)
 EndFunc
 
 ; Remove comments from a string Comments are introduced by semicolon.

@@ -215,6 +215,13 @@ Global $__variable_already_opened__
 Global $__unknown_file_format_s__
   Global $__quick_save_that__
   Global $__ok__
+  Global $__percent_done__
+  Global $__time_remaining__
+  Global $__converting_to_jpeg__
+  Global $__writing_reflex_informations__
+  Global $__removing_temporary_files__
+  Global $__converting_to_png__
+  Global $__problems_while_computing_coordinates__
   ;ADD_DECLARATION
 
 LoadTranslations()
@@ -434,9 +441,16 @@ add($affectations, "__wait_while_generating__", $gui_section, 'Wait while genera
   add($affectations, "__display_folder_hint__", $gui_section, 'Display folder hint', 'Opens the folder where the Reflex are currently stored')
   add($affectations, "__if_error_formula__", $gui_section, 'if error formula', '[In a formula error, the second line stops at the error point]')
   add($affectations, "__variable_already_opened__", $gui_section, 'Variable already opened', 'Variable already opened')
-  add($affectations, "__unknown_file_format_s__", $gui_section, '__unknown_file_format_s__', 'Unknown file format %s')
-  add($affectations, "__quick_save_that__", $gui_section, '__quick_save_that__', 'quick save that')
-  add($affectations, "__ok__", $gui_section, '__ok__', 'OK')
+  add($affectations, "__unknown_file_format_s__", $gui_section, 'Unknown file format %s', 'Unknown file format %s')
+  add($affectations, "__quick_save_that__", $gui_section, 'quick save that', 'quick save that')
+  add($affectations, "__ok__", $gui_section, 'OK', 'OK')
+  add($affectations, "__percent_done__", $gui_section, 'percent done', '% done')
+  add($affectations, "__time_remaining__", $gui_section, 'time remaining', 'remaining')
+  add($affectations, "__converting_to_jpeg__", $gui_section, 'Converting to Jpeg...', 'Converting to Jpeg...')
+  add($affectations, "__writing_reflex_informations__", $gui_section, 'Writing Reflex informations...', 'Writing Reflex informations...')
+  add($affectations, "__removing_temporary_files__", $gui_section, 'Removing temporary files...', 'Removing temporary files...')
+  add($affectations, "__converting_to_png__", $gui_section, 'Converting to PNG...', 'Converting to PNG...')
+  add($affectations, "__problems_while_computing_coordinates__", $gui_section, 'Problems winminmax', 'Problems occured while computing winmin and winmax. Please send the content of the clipboard to mikael.mayer_reflexrenderer@polytechnique.org')
   ;ADD_AFFECTATION
 
   If $updates and Not @Compiled Then
