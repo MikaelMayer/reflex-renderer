@@ -81,6 +81,7 @@ const cplx facteurCos(0.5,0);
 //sin(x+iy)=sin(x)cosh(y)+i*cos(x)sinh(y)
 cplx sin(cplx & z)		{ return cplx(sin(z.r)*cosh(z.i), cos(z.r)*sinh(z.i)); }
 cplx cos(cplx & z)		{ return cplx(cos(z.r)*cosh(z.i), -sin(z.r)*sinh(z.i)); }
+
 cplx tan(cplx & z) {
 	double sr = sin(z.r), cr=cos(z.r), cr2= cr*cr;
 	double exp2i = exp(2*z.i);
