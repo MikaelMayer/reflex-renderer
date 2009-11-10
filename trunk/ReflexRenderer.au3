@@ -201,6 +201,8 @@ Opt('MouseCoordMode', 2)
 #include <Array.au3>
 #Include <GuiEdit.au3>
 #Include <File.au3>
+#Include <IE.au3>
+#Include <Inet.au3>
 
 ; ReflexRenderer.exe timeout [milliseconds] [Action]
 parseCommandLine()
@@ -1129,11 +1131,69 @@ Func rri_menu_export_formulaClick()
     Dim $szDrive, $szDir, $szFName, $szExt
     $TestPath = _PathSplit(UpdateMyDocuments(IniReadSavebox('reflexFile', '')), $szDrive, $szDir, $szFName, $szExt)
     Local $folder = $szDrive&$szDir
-    $file = FileSaveDialog("Save formula picture", $folder, "PNG formula (*.png)", 2+16, $rri_comment&".png")
-    ;MsgBox(0, $__formula_exported__, $__formula_correctly_exported_to_clipboard__&@CRLF&$f)
+    $file = FileSaveDialog("Save formula picture", $folder, "Image formula (*.png;*.jpg;*.gif)", 2+16, $rri_comment&" "&StringLower($__formula_postfix__)&".png")
+    FileChangeDir(@ScriptDir)
+    If $file <> "" Then
+      ToolTip($__exporting_formula__, 0, 0, $__reflex_renderer_interface__)
+      $file = exportFormula($f, $file)
+      If $file <> "" Then
+        ; Write the reflex informations if it is a png or a jpg
+        Local $extension_array = StringRegExp($file, "\.(\w+)\z", 1)
+        Local $extension = $extension_array[0]
+        $formula_and_options = defaultFormulaString()
+        If StringCompare($extension, "png") == 0 Then
+          Dim $informations = _ArrayCreate(3, _ArrayCreate("Title", "Reflex"), _ArrayCreate("Comment", $formula_and_options), _ArrayCreate("Software", "ReflexRenderer v."&$VERSION_NUMER))
+          WritePngTextChunks($file, $informations)
+        ElseIf StringCompare($extension, "jpg") == 0 Then
+          Dim $informations = _ArrayCreate(2, _ArrayCreate("title", "Reflex"), _ArrayCreate("comment", $formula_and_options))
+          WriteXPSections($file, $informations)
+        EndIf
+        MsgBox(0, "", $__formula_exported__&@CRLF&$f, 1)
+      Else
+        MsgBox(0, $Error_title, $__formula_not_exported__&@CRLF&$f)
+      EndIf
+      ToolTip("")
+    EndIf
   Else
     MsgBox(0, $Error_title, "I was not able to export the formula but I don't know why:"&@CRLF&$lines)
   EndIf
+EndFunc
+Func exportFormula($latex_formula, $file)
+  If $file == "" Then Return ""
+  Local $extension_array = StringRegExp($file, "\.(\w+)\z", 1)
+  If Not IsArray($extension_array) Then
+    Local $extension = "png"
+    $file = $file&".png"
+  Else
+    Local $extension = $extension_array[0]
+  EndIf
+
+  Local $jpg_checked = _Iif(StringCompare($extension, "jpg")==0, ' checked="checked"', '')
+  Local $gif_checked = _Iif(StringCompare($extension, "gif")==0, ' checked="checked"', '')
+  Local $png_checked = _Iif(StringCompare($extension, "png")==0 or Not ($jpg_checked Or $gif_checked) , ' checked="checked"', '')
+  Local $latex_resolution = "600"
+  Local $url = "http://hausheer.osola.com/latex2png"
+  Local $oIE = _IECreate("about:blank", 0, 0, 1, 0)
+  Local $t = ''
+  $t = $t & '<form id="latex2png" method="post" action="'&$url&'">'
+  $t = $t & '<p><textarea name="source" rows="10" cols="60">\begin{displaymath}'
+  $t = $t & $latex_formula
+  $t = $t & '\end{displaymath}</textarea></p><p><b>Type:</b>  <input type="radio" name="type" value="png" '&$png_checked&'/> PNG <input type="radio" name="type" value="gif" '&$gif_checked&'/> GIF <input type="radio" name="type" value="eps" /> EPS <input type="radio" name="type" value="jpg" '&$jpg_checked&'/> JPG</p><p><b>Options:</b> <input type="text" name="density" value="'&$latex_resolution&'" size="3"/> dpi (75-1200) <input type="checkbox" name="preview" value="yes"/> with TIFF preview (EPS only) <input type="checkbox" name="transparent" value="yes" /> transparent (PNG/GIF only) <input type="checkbox" name="inline" value="yes" /> show inline (PNG/GIF/JPG only)</p><p><input type="submit" value="submit"/> <input type="reset" value="reset"/></p></form>'
+  $oIE.document.body.innerHTML = $t
+  Local $oForm = _IEFormGetObjByName($oIE, "latex2png")
+  $oForm.submit
+  _IELoadWait($oIE)
+  $png_url = _IEPropertyGet($oIE, "locationurl")
+  _IEQuit($oIE)
+  If FileExists($file) Then FileMove($file, $file&"_todelete")
+  InetGet($png_url, $file)
+  If FileExists($file) Then
+    FileDelete($file&"_todelete")
+    Return $file
+  Else
+    FileMove($file&"_todelete", $file)
+  EndIf
+  Return ""
 EndFunc
 Func rri_menu_tutorialClick()
   Tutorial__Load()

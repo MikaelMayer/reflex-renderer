@@ -156,13 +156,21 @@ cplx Division::evalFast()		          {return argument->evalFast()/argument2->eva
 cplx Compose::eval(cplx & z)		      {return argument->eval(argument2->eval(z));}
 //TODO: Comparer cette méthode avec celle de remplacer l'objet courant et de le restaurer
 cplx Compose::evalFast()		          {return argument->eval(argument2->evalFast());}
-cplx ExposantComplexe::eval(cplx & z) {return exp(argument2->eval(z)*ln(argument->eval(z)));}
+cplx ExposantComplexe::eval(cplx & z) {
+  cplx w = argument2->eval(z);
+  if(w.real()!=w.real() && w.imag()!=w.imag()) return cplx(1);
+  return exp(w*ln(argument->eval(z)));
+}
 cplx ExposantComplexe::evalFast()     {return exp(argument2->evalFast()*ln(argument->evalFast()));}
 
 cplx CompositionRecursive::eval(cplx & z) {
 	cplx resultat=z;
+  cplx resultat_tmp=resultat;
 	int i=nbCompose;
-	while(i>0) {resultat=argument->eval(resultat); i--;}//si i<0, on laisse l'identité (l'inverse n'est pas défini)
+	while(i>0) {
+    resultat_tmp = argument->eval(resultat);
+    resultat = resultat_tmp;
+    i--;}//si i<0, on laisse l'identité (l'inverse n'est pas défini)
 	return resultat;
 }
 cplx CompositionRecursive::evalFast() {

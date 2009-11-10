@@ -222,6 +222,9 @@ Global $__unknown_file_format_s__
   Global $__removing_temporary_files__
   Global $__converting_to_png__
   Global $__problems_while_computing_coordinates__
+  Global $__formula_not_exported__
+  Global $__exporting_formula__
+  Global $__formula_postfix__
   ;ADD_DECLARATION
 
 LoadTranslations()
@@ -451,6 +454,9 @@ add($affectations, "__wait_while_generating__", $gui_section, 'Wait while genera
   add($affectations, "__removing_temporary_files__", $gui_section, 'Removing temporary files...', 'Removing temporary files...')
   add($affectations, "__converting_to_png__", $gui_section, 'Converting to PNG...', 'Converting to PNG...')
   add($affectations, "__problems_while_computing_coordinates__", $gui_section, 'Problems winminmax', 'Problems occured while computing winmin and winmax. Please send the content of the clipboard to mikael.mayer_reflexrenderer@polytechnique.org')
+  add($affectations, "__formula_not_exported__", $gui_section, 'formula not exported', 'I could not ask the website to convert the formula. Please check your internet connection.')
+  add($affectations, "__exporting_formula__", $gui_section, 'exporting formula', 'Exporting formula...')
+  add($affectations, "__formula_postfix__", $gui_section, 'formula postfix', 'formula')
   ;ADD_AFFECTATION
 
   If $updates and Not @Compiled Then
