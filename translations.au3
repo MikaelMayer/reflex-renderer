@@ -225,6 +225,13 @@ Global $__unknown_file_format_s__
   Global $__formula_not_exported__
   Global $__exporting_formula__
   Global $__formula_postfix__
+  Global $__rri_percent_hint__
+  Global $__details__
+  Global $__rri_ratio11_hint__
+  Global $__rri_ratio43_hint__
+  Global $__rri_ratioA4_hint__
+  Global $__rri_ratio85_hint__
+  Global $__rri_ratio21_hint__
   ;ADD_DECLARATION
 
 LoadTranslations()
@@ -457,6 +464,13 @@ add($affectations, "__wait_while_generating__", $gui_section, 'Wait while genera
   add($affectations, "__formula_not_exported__", $gui_section, 'formula not exported', 'I could not ask the website to convert the formula. Please check your internet connection.')
   add($affectations, "__exporting_formula__", $gui_section, 'exporting formula', 'Exporting formula...')
   add($affectations, "__formula_postfix__", $gui_section, 'formula postfix', 'formula')
+  add($affectations, "__rri_percent_hint__", $gui_section, 'rri percent hint', 'Detail level')
+  add($affectations, "__details__", $gui_section, 'Details:', 'Details:')
+  add($affectations, "__rri_ratio11_hint__", $gui_section, 'ratio11 hint', 'Squared picture')
+  add($affectations, "__rri_ratio43_hint__", $gui_section, 'ratio43 hint', '1024x768,1280x960,1600x1200')
+  add($affectations, "__rri_ratioA4_hint__", $gui_section, 'ratioA4 hint', 'A4 or A5 paper (2.1:2:97)')
+  add($affectations, "__rri_ratio85_hint__", $gui_section, 'ratio85 hint', '1024x640,1280x800,1600x1000,2048x1280')
+  add($affectations, "__rri_ratio21_hint__", $gui_section, 'ratio21 hint', '640x320,1024x512,2000x1000 ...')
   ;ADD_AFFECTATION
 
   If $updates and Not @Compiled Then

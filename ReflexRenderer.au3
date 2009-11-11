@@ -255,7 +255,7 @@ Global $k = 0
 Global $rri_comment = IniReadSavebox('formulaComment', 'My nice function')
 
 #Region ### Form Variables
-Global $rri_win=0, $rri_line_reset=0, $rri_zoom_box0=0, $rri_zoom_box1=0, $rri_zoom_box2=0, $rri_zoom_box3=0, $rri_zoom_box_gray0=0, $rri_zoom_box_gray1=0, $rri_zoom_box_gray2=0, $rri_zoom_box_gray3=0, $rri_out_rendu=0, $rri_group_reflex=0, $rri_group_options=0, $rri_Label1=0, $rri_in_formula=0, $rri_formula_editor=0, $rri_DimLabel=0, $rri_width=0, $rri_labelX=0, $rri_height=0, $rri_reset_resolution=0, $rri_preview=0, $rri_LabelWinMin=0, $rri_percent=0, $rri_winmin=0, $rri_LabelWinMax=0, $rri_winmax=0, $rri_reset_window=0, $rri_check_auto_render=0, $rri_render=0, $rri_output=0, $rri_PercentSign=0, $rri_progress=0, $rri_rendering_text=0, $rri_quicksave=0, $rri_save_noquick=0, $rri_seed=0, $rri_realmode=0, $rri_lucky_func=0, $rri_lucky_fract=0, $rri_switch_fract=0, $rri_display_folder=0, $rri_LabelTitre=0, $rri_navigation=0, $rri_visit_click=0, $rri_visit_rectangle=0, $rri_previous_window=0, $rri_next_window=0, $rri_zoom_factor=0, $rri_zoom_in_factor=0, $rri_zoom_out_factor=0, $rri_LabelZoomFactor=0, $rri_zoom_absolute=0, $rri_color_code_button=0, $rri_menu_tools=0, $rri_menu_save=0, $rri_menu_windows=0, $rri_window_1=0, $rri_window_2=0, $rri_window_4=0, $rri_window_8=0, $rri_window_pi=0, $rri_menu_resolutions=0, $rri_resolutions_201=0, $rri_resolutions_401=0, $rri_resolutions_801=0, $rri_resolutions_640=0, $rri_resolutions_1024=0, $rri_resolutions_1280=0, $rri_resolutions_1601=0, $rri_resolutions_16000=0, $rri_menu_export_formula=0, $rri_menu_tutorial=0, $rri_menu_quitnosave=0, $rri_menu_quit=0, $rri_menu_formula_editor=0, $rri_menu_formula_edito=0, $rri_menu_import_formula=0, $rri_menu_import_reflex=0, $rri_menu_formula_small_history=0, $rri_menu_formula_history=0, $rri_menu_language=0, $rri_menu_customize=0, $rri_all_parameters=0, $rri_reset_menu=0
+Global $rri_win=0, $rri_line_reset=0, $rri_zoom_box0=0, $rri_zoom_box1=0, $rri_zoom_box2=0, $rri_zoom_box3=0, $rri_zoom_box_gray0=0, $rri_zoom_box_gray1=0, $rri_zoom_box_gray2=0, $rri_zoom_box_gray3=0, $rri_out_rendu=0, $rri_group_reflex=0, $rri_group_options=0, $rri_Label1=0, $rri_lucky_func=0, $rri_lucky_fract=0, $rri_switch_fract=0, $rri_in_formula=0, $rri_formula_editor=0, $rri_DimLabel=0, $rri_ratio11=0, $rri_ratio43=0, $rri_ratioA4=0, $rri_ratio85=0, $rri_ratio21=0, $rri_percent=0, $rri_LabelWinMin=0, $rri_winmin=0, $rri_LabelWinMax=0, $rri_winmax=0, $rri_reset_window=0, $rri_check_auto_render=0, $rri_realmode=0, $rri_render=0, $rri_quicksave=0, $rri_save_noquick=0, $rri_display_folder=0, $rri_output=0, $rri_progress=0, $rri_rendering_text=0, $rri_seed=0, $rri_width=0, $rri_height=0, $rri_detail_label=0, $rri_LabelTitre=0, $rri_navigation=0, $rri_visit_click=0, $rri_visit_rectangle=0, $rri_previous_window=0, $rri_next_window=0, $rri_zoom_factor=0, $rri_zoom_in_factor=0, $rri_zoom_out_factor=0, $rri_LabelZoomFactor=0, $rri_zoom_absolute=0, $rri_color_code_button=0, $rri_menu_tools=0, $rri_menu_save=0, $rri_menu_windows=0, $rri_window_1=0, $rri_window_2=0, $rri_window_4=0, $rri_window_8=0, $rri_window_pi=0, $rri_menu_resolutions=0, $rri_resolutions_201=0, $rri_resolutions_401=0, $rri_resolutions_801=0, $rri_resolutions_640=0, $rri_resolutions_1024=0, $rri_resolutions_1280=0, $rri_resolutions_1601=0, $rri_resolutions_16000=0, $rri_menu_export_formula=0, $rri_menu_tutorial=0, $rri_menu_quitnosave=0, $rri_menu_quit=0, $rri_menu_formula_editor=0, $rri_menu_formula_edito=0, $rri_menu_import_formula=0, $rri_menu_import_reflex=0, $rri_menu_formula_small_history=0, $rri_menu_formula_history=0, $rri_menu_language=0, $rri_menu_customize=0, $rri_all_parameters=0, $rri_reset_menu=0
 #EndRegion ### Form Variables
 Global $rri_out_rendu2
 Global $zoomAbsolutePrevious
@@ -358,7 +358,7 @@ Func loadRRI($quiet = False)
   $rri_zoom_box_gray3 = GUICtrlCreatePic("", -100, 0, 100, 100, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
   GUICtrlSetOnEvent(-1, "rri_zoom_box_gray3Click")
   GUICtrlSetState(-1, $GUI_HIDE)
-  $rri_out_rendu = GUICtrlCreatePic("", 312, 28, 401, 401, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
+  $rri_out_rendu = GUICtrlCreatePic("", 312, 28, 400, 400, BitOR($SS_NOTIFY,$WS_GROUP,$WS_CLIPSIBLINGS))
   GUICtrlSetOnEvent(-1, "rri_out_renduClick")
   $rri_group_reflex = GUICtrlCreateGroup($__reflex__, 296, 8, 433, 433)
   GUICtrlSetResizing(-1, $GUI_DOCKRIGHT+$GUI_DOCKTOP+$GUI_DOCKBOTTOM)
@@ -367,61 +367,6 @@ Func loadRRI($quiet = False)
   GUICtrlSetResizing(-1, $GUI_DOCKLEFT+$GUI_DOCKTOP)
   $rri_Label1 = GUICtrlCreateLabel($__formula__, 11, 87, 54, 17, $SS_RIGHT)
   GUICtrlSetOnEvent(-1, "rri_Label1Click")
-  $rri_in_formula = GUICtrlCreateInput("", 65, 85, 193, 21)
-  GUICtrlSetOnEvent(-1, "rri_in_formulaChange")
-  $rri_formula_editor = GUICtrlCreateButton("...", 261, 86, 21, 21, 0)
-  GUICtrlSetOnEvent(-1, "rri_menu_formula_editorClick")
-  $rri_DimLabel = GUICtrlCreateLabel($__width_height__, 11, 116, 96, 17, $SS_RIGHT)
-  GUICtrlSetOnEvent(-1, "rri_DimLabelClick")
-  $rri_width = GUICtrlCreateInput("201", 110, 114, 41, 21)
-  GUICtrlSetOnEvent(-1, "rri_widthChange")
-  $rri_labelX = GUICtrlCreateLabel("x", 153, 116, 9, 17)
-  GUICtrlSetOnEvent(-1, "rri_labelXClick")
-  $rri_height = GUICtrlCreateInput("201", 163, 114, 41, 21)
-  GUICtrlSetOnEvent(-1, "rri_heightChange")
-  $rri_reset_resolution = GUICtrlCreateButton($__reset_resolution__, 241, 112, 41, 25, 0)
-  GUICtrlSetOnEvent(-1, "rri_reset_resolutionClick")
-  $rri_preview = GUICtrlCreateCheckbox($__preview__, 29, 140, 81, 17)
-  GUICtrlSetOnEvent(-1, "rri_previewClick")
-  $rri_LabelWinMin = GUICtrlCreateLabel($__winmin__, 11, 166, 97, 17, BitOR($SS_RIGHT,$SS_RIGHTJUST))
-  GUICtrlSetOnEvent(-1, "rri_LabelWinMinClick")
-  $rri_percent = GUICtrlCreateInput("10", 110, 139, 33, 21)
-  GUICtrlSetOnEvent(-1, "rri_percentChange")
-  GUICtrlSetState(-1, $GUI_HIDE)
-  $rri_winmin = GUICtrlCreateInput("-4-4i", 110, 164, 129, 21)
-  GUICtrlSetOnEvent(-1, "rri_winminChange")
-  $rri_LabelWinMax = GUICtrlCreateLabel($__winmax__, 11, 188, 97, 17, $SS_RIGHT)
-  GUICtrlSetOnEvent(-1, "rri_LabelWinMaxClick")
-  $rri_winmax = GUICtrlCreateInput("4+4i", 110, 186, 129, 21)
-  GUICtrlSetOnEvent(-1, "rri_winmaxChange")
-  $rri_reset_window = GUICtrlCreateButton($__reset_window__, 241, 173, 41, 25, 0)
-  GUICtrlSetOnEvent(-1, "rri_reset_windowClick")
-  $rri_check_auto_render = GUICtrlCreateCheckbox($__auto_render__, 17, 217, 118, 17)
-  GUICtrlSetOnEvent(-1, "rri_check_auto_renderClick")
-  GUICtrlSetTip(-1, $__auto_render_hint__)
-  $rri_render = GUICtrlCreateButton($__render_reflex__, 137, 215, 145, 22, $BS_DEFPUSHBUTTON)
-  GUICtrlSetFont(-1, 11, 400, 0, "MS Sans Serif")
-  GUICtrlSetOnEvent(-1, "rri_renderClick")
-  $rri_output = GUICtrlCreateInput("c:\My_nice_function.bmp", 261, 139, 17, 21)
-  GUICtrlSetOnEvent(-1, "rri_outputChange")
-  GUICtrlSetState(-1, $GUI_HIDE)
-  $rri_PercentSign = GUICtrlCreateLabel("%", 145, 142, 12, 17)
-  GUICtrlSetOnEvent(-1, "rri_PercentSignClick")
-  GUICtrlSetState(-1, $GUI_HIDE)
-  $rri_progress = GUICtrlCreateProgress(11, 288, 271, 16)
-  $rri_rendering_text = GUICtrlCreateLabel($__rendering__, 17, 270, 102, 17)
-  GUICtrlSetOnEvent(-1, "rri_rendering_textClick")
-  $rri_quicksave = GUICtrlCreateButton($__quick_save__, 137, 236, 89, 22, 0)
-  GUICtrlSetOnEvent(-1, "rri_quicksaveClick")
-  GUICtrlSetTip(-1, $__quicksave_hint__)
-  $rri_save_noquick = GUICtrlCreateButton($__noquick_save__, 225, 236, 57, 22, 0)
-  GUICtrlSetOnEvent(-1, "rri_menu_saveClick")
-  GUICtrlSetTip(-1, $__noquick_save_hint__)
-  $rri_seed = GUICtrlCreateInput("", 241, 139, 17, 21)
-  GUICtrlSetOnEvent(-1, "rri_seedChange")
-  GUICtrlSetState(-1, $GUI_HIDE)
-  $rri_realmode = GUICtrlCreateCheckbox($__real_mode__, 17, 235, 113, 17)
-  GUICtrlSetOnEvent(-1, "rri_realmodeClick")
   $rri_lucky_func = GUICtrlCreateButton($__lucky_func__, 14, 56, 90, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_lucky_funcClick")
   GUICtrlSetTip(-1, $__lucky_func_hint__)
@@ -431,9 +376,77 @@ Func loadRRI($quiet = False)
   $rri_switch_fract = GUICtrlCreateButton($__switch_fractal__, 192, 56, 90, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_switch_fractClick")
   GUICtrlSetTip(-1, $__switch_fractal_hint__)
+  $rri_in_formula = GUICtrlCreateInput("", 65, 85, 193, 21)
+  GUICtrlSetOnEvent(-1, "rri_in_formulaChange")
+  $rri_formula_editor = GUICtrlCreateButton("...", 261, 86, 21, 21, 0)
+  GUICtrlSetOnEvent(-1, "rri_menu_formula_editorClick")
+  $rri_DimLabel = GUICtrlCreateLabel($__width_height__, 11, 116, 96, 17, $SS_RIGHT)
+  GUICtrlSetOnEvent(-1, "rri_DimLabelClick")
+  $rri_ratio11 = GUICtrlCreateRadio("1:1", 112, 113, 25, 25, BitOR($BS_AUTORADIOBUTTON,$BS_PUSHLIKE,$BS_FLAT))
+  GUICtrlSetOnEvent(-1, "rri_ratio11Click")
+  GUICtrlSetTip(-1, $__rri_ratio11_hint__)
+  $rri_ratio43 = GUICtrlCreateRadio("4:3", 136, 115, 29, 22, BitOR($BS_AUTORADIOBUTTON,$BS_PUSHLIKE,$BS_FLAT))
+  GUICtrlSetOnEvent(-1, "rri_ratio43Click")
+  GUICtrlSetTip(-1, $__rri_ratio43_hint__)
+  $rri_ratioA4 = GUICtrlCreateRadio("A4", 164, 115, 30, 21, BitOR($BS_AUTORADIOBUTTON,$BS_PUSHLIKE,$BS_FLAT))
+  GUICtrlSetState(-1, $GUI_CHECKED)
+  GUICtrlSetOnEvent(-1, "rri_ratioA4Click")
+  GUICtrlSetTip(-1, $__rri_ratioA4_hint__)
+  $rri_ratio85 = GUICtrlCreateRadio("8:5", 193, 116, 32, 20, BitOR($BS_AUTORADIOBUTTON,$BS_PUSHLIKE))
+  GUICtrlSetOnEvent(-1, "rri_ratio85Click")
+  GUICtrlSetTip(-1, $__rri_ratio85_hint__)
+  $rri_ratio21 = GUICtrlCreateRadio("2:1", 224, 118, 36, 18, BitOR($BS_AUTORADIOBUTTON,$BS_PUSHLIKE))
+  GUICtrlSetOnEvent(-1, "rri_ratio21Click")
+  GUICtrlSetTip(-1, $__rri_ratio21_hint__)
+  $rri_percent = GUICtrlCreateSlider(106, 142, 150, 20)
+  GUICtrlSetLimit(-1, 100, 1)
+  GUICtrlSetData(-1, 100)
+  GUICtrlSetOnEvent(-1, "rri_percentChange")
+  GUICtrlSetTip(-1, $__rri_percent_hint__)
+  $rri_LabelWinMin = GUICtrlCreateLabel($__winmin__, 11, 166, 97, 17, BitOR($SS_RIGHT,$SS_RIGHTJUST))
+  GUICtrlSetOnEvent(-1, "rri_LabelWinMinClick")
+  $rri_winmin = GUICtrlCreateInput("-4-4i", 110, 164, 73, 21)
+  GUICtrlSetOnEvent(-1, "rri_winminChange")
+  $rri_LabelWinMax = GUICtrlCreateLabel($__winmax__, 11, 188, 97, 17, $SS_RIGHT)
+  GUICtrlSetOnEvent(-1, "rri_LabelWinMaxClick")
+  $rri_winmax = GUICtrlCreateInput("4+4i", 110, 186, 73, 21)
+  GUICtrlSetOnEvent(-1, "rri_winmaxChange")
+  $rri_reset_window = GUICtrlCreateButton($__reset_window__, 185, 173, 41, 25, 0)
+  GUICtrlSetOnEvent(-1, "rri_reset_windowClick")
+  $rri_check_auto_render = GUICtrlCreateCheckbox($__auto_render__, 17, 217, 118, 17)
+  GUICtrlSetOnEvent(-1, "rri_check_auto_renderClick")
+  GUICtrlSetTip(-1, $__auto_render_hint__)
+  $rri_realmode = GUICtrlCreateCheckbox($__real_mode__, 17, 235, 113, 17)
+  GUICtrlSetOnEvent(-1, "rri_realmodeClick")
+  $rri_render = GUICtrlCreateButton($__render_reflex__, 137, 215, 145, 22, $BS_DEFPUSHBUTTON)
+  GUICtrlSetFont(-1, 11, 400, 0, "MS Sans Serif")
+  GUICtrlSetOnEvent(-1, "rri_renderClick")
+  $rri_quicksave = GUICtrlCreateButton($__quick_save__, 137, 236, 89, 22, 0)
+  GUICtrlSetOnEvent(-1, "rri_quicksaveClick")
+  GUICtrlSetTip(-1, $__quicksave_hint__)
+  $rri_save_noquick = GUICtrlCreateButton($__noquick_save__, 225, 236, 57, 22, 0)
+  GUICtrlSetOnEvent(-1, "rri_menu_saveClick")
+  GUICtrlSetTip(-1, $__noquick_save_hint__)
   $rri_display_folder = GUICtrlCreateButton($__display_folder__, 136, 258, 145, 22, 0)
   GUICtrlSetOnEvent(-1, "rri_display_folderClick")
   GUICtrlSetTip(-1, $__display_folder_hint__)
+  $rri_output = GUICtrlCreateInput("c:\My_nice_function.bmp", 261, 187, 17, 21)
+  GUICtrlSetOnEvent(-1, "rri_outputChange")
+  GUICtrlSetState(-1, $GUI_HIDE)
+  $rri_progress = GUICtrlCreateProgress(11, 288, 271, 16)
+  $rri_rendering_text = GUICtrlCreateLabel($__rendering__, 17, 270, 102, 17)
+  GUICtrlSetOnEvent(-1, "rri_rendering_textClick")
+  $rri_seed = GUICtrlCreateInput("", 241, 187, 17, 21)
+  GUICtrlSetOnEvent(-1, "rri_seedChange")
+  GUICtrlSetState(-1, $GUI_HIDE)
+  $rri_width = GUICtrlCreateInput("rri_width", 261, 164, 17, 21)
+  GUICtrlSetOnEvent(-1, "rri_widthChange")
+  GUICtrlSetState(-1, $GUI_HIDE)
+  $rri_height = GUICtrlCreateInput("rri_height", 241, 164, 17, 21)
+  GUICtrlSetOnEvent(-1, "rri_heightChange")
+  GUICtrlSetState(-1, $GUI_HIDE)
+  $rri_detail_label = GUICtrlCreateLabel($__details__, 11, 144, 96, 17, $SS_RIGHT)
+  GUICtrlSetOnEvent(-1, "rri_detail_labelClick")
   GUICtrlCreateGroup("", -99, -99, 1, 1)
   $rri_LabelTitre = GUICtrlCreateLabel($__reflex_renderer_interface__, 9, 8, 244, 28, $SS_CENTER)
   GUICtrlSetFont(-1, 14, 400, 0, "MS Sans Serif")
@@ -566,7 +579,6 @@ Func loadRRI($quiet = False)
   )
 
   $sessionCheckBoxMap = _ArrayCreate( _
-   _ArrayCreate('preview', $rri_preview, 'FALSE'), _
    _ArrayCreate('AutoRender', $rri_check_auto_render, 'TRUE'), _
    _ArrayCreate('RealMode', $rri_realmode, 'FALSE') _
   )
@@ -692,6 +704,27 @@ Func rri_in_formulaChange()
   renderIfAutoRenderDefault()
 EndFunc   ;==>rri_in_formulaChange
 
+Func rri_ratio11Click()
+  updateResolution($output_max_size&" x "&$output_max_size)
+  renderIfAutoRenderDefault()
+EndFunc ;==>rri_ratio11Click
+Func rri_ratio21Click()
+  updateResolution($output_max_size&" x "&Int($output_max_size/2))
+  renderIfAutoRenderDefault()
+EndFunc ;==>rri_ratio21Click
+Func rri_ratio43Click()
+  updateResolution($output_max_size&" x "&Int(($output_max_size*3)/4))
+  renderIfAutoRenderDefault()
+EndFunc ;==>rri_ratio43Click
+Func rri_ratio85Click()
+  updateResolution($output_max_size&" x "&Int(($output_max_size*5)/8))
+  renderIfAutoRenderDefault()
+EndFunc ;==>rri_ratio85Click
+Func rri_ratioA4Click()
+  updateResolution($output_max_size&" x "&Int(($output_max_size*210)/297))
+  renderIfAutoRenderDefault()
+EndFunc ;==>rri_ratioA4Click
+
 ; If height changes, set up window size to keep
 ; the product $percent*$percent*$width*$height constant.
 Func rri_heightChange()
@@ -720,10 +753,8 @@ EndFunc   ;==>rri_widthChange
 ;   $ratioPredNew : A float containing the ratio
 Func recalculatePreviewPercent($ratioPredNew)
   $percent = Number(GUICtrlRead($rri_percent))
-  If Not isChecked($rri_preview) Then $percent = 100
   $percent *= Sqrt($ratioPredNew)
   setPreviewPercent(Round($percent*4)/4)
-
 EndFunc   ;==>recalculatePreviewPercent
 
 ; Action to perform is the resolution is manually changed
@@ -739,21 +770,8 @@ EndFunc   ;==>resolutionChanged
 
 ; Action to perform if the user changes the "preview" check box
 Func rri_previewClick()
-  changePreviewState()
   renderIfAutoRenderDefault()
 EndFunc   ;==>rri_previewClick
-
-;
-Func changePreviewState()
-  if BitAnd(GUICtrlRead($rri_preview), $GUI_CHECKED) Then
-    GUICtrlSetState($rri_percent, $GUI_SHOW)
-    GUICtrlSetState($rri_PercentSign, $GUI_SHOW)
-  Else
-    GUICtrlSetState($rri_percent, $GUI_HIDE)
-    GUICtrlSetState($rri_PercentSign, $GUI_HIDE)
-  EndIf
-  calculateWidthHeight()
-EndFunc   ;==>changePreviewState
 Func updateWinmax()
   $winmax = GUICtrlRead($rri_winmax)
 EndFunc
@@ -854,7 +872,21 @@ Func SaveBoxCallback($savingParameters)
 EndFunc   ;==>SaveBoxCallback
 
 Func rri_quicksaveClick()
-  generateQuickSaveBox($rri_win, $width_highres, $height_highres)
+  Local $type = ""
+  If isChecked($rri_ratio11) Then
+    $type = "1:1"
+  ElseIf isChecked($rri_ratio21) Then
+    $type = "2:1"
+  ElseIf isChecked($rri_ratio43) Then
+    $type = "4:3"
+  ElseIf isChecked($rri_ratio85) Then
+    $type = "8:5"
+  ElseIf isChecked($rri_ratioA4) Then
+    $type = "210:297"
+  Else
+    $type = $width_highres&":"&$height_highres
+  EndIf
+  generateQuickSaveBox($rri_win, $type)
 EndFunc   ;==>rri_quicksaveClick
 Func rri_display_folderClick()
   Run("C:\WINDOWS\EXPLORER.EXE /n,/select," & UpdateMyDocuments(IniReadSavebox('reflexFile', '')))
@@ -1056,23 +1088,17 @@ EndFunc   ;==>rri_PercentSignClick
 Func checkAutoRender($state)
   GUICtrlSetState($rri_check_auto_render, _Iif($state, $GUI_CHECKED, $GUI_UNCHECKED))
 EndFunc   ;==>checkAutoRender
-;   $state :
-Func checkPreview($state)
-  GUICtrlSetState($rri_preview, _Iif($state, $GUI_CHECKED, $GUI_UNCHECKED))
-EndFunc   ;==>checkPreview
 ;   $percent :
 Func setPreviewPercent($percent)
   if $percent >= 100 or $percent <=0 Then
-    checkPreview(False)
   Else
-    checkPreview(True)
     GUICtrlSetData($rri_percent, $percent)
   EndIf
-  changePreviewState()
 EndFunc   ;==>setPreviewPercent
 
 ;   $resolution_string :
 Func updateResolution($resolution_string)
+  logging("updateResolution("&$resolution_string&")")
   if StringInStr($resolution_string, ' x ') <> 0 Then
     $elements = StringSplit($resolution_string, ' x ', 1)
     GUICtrlSetData($rri_width, $elements[1])
@@ -1081,6 +1107,7 @@ Func updateResolution($resolution_string)
     $h = Int($elements[2])
     $percent = Int(400 * _Min($output_max_size/$w, $output_max_size/$h))/4
     setPreviewPercent($percent)
+    calculateWidthHeight()
   EndIf
 EndFunc   ;==>updateResolution
 
@@ -1474,7 +1501,7 @@ Func startRendering($flags)
     ;Kill the previous process first
     ProcessClose($pid_rendering)
   EndIf
-  $REFLEX_RENDERING = _Iif(isChecked($rri_preview), $REFLEX_RENDERED_IN_LR, $REFLEX_RENDERED_IN_HR)
+  $REFLEX_RENDERING = $REFLEX_RENDERED_IN_HR
   $REFLEX_RENDERED_FINISHED = False
   $pid_rendering = runReflexWithArguments('--render'&$flags)
   startTimers()
@@ -1786,14 +1813,9 @@ EndFunc   ;==>defaultFormulaString
 Func calculateWidthHeight()
   $width_highres  = Int(GUICtrlRead($rri_width))
   $height_highres = Int(GUICtrlRead($rri_height))
-  if isChecked($rri_preview) Then
-    $percent = Int(GUICtrlRead($rri_percent))
-    $width_percent = Int(($width_highres * $percent)/100)
-    $height_percent = Int(($height_highres * $percent)/100)
-  Else
-    $width_percent = $width_highres
-    $height_percent = $height_highres
-  EndIf
+  $percent = Int(GUICtrlRead($rri_percent))
+  $width_percent = Int(($width_highres * $percent)/100)
+  $height_percent = Int(($height_highres * $percent)/100)
   $maxwh = _Max($width_percent, $height_percent)
 EndFunc   ;==>calculateWidthHeight
 
@@ -2210,6 +2232,7 @@ Func rri_zoom_box_gray3Click()
   rri_out_renduClick()
 EndFunc   ;==>rri_zoom_box_gray3Click
 
+
 Func rri_reset_resolutionClick()
   LoadDefaultResolution()
   calculateWidthHeight()
@@ -2381,7 +2404,8 @@ Func rri_seedChange()
 EndFunc   ;==>rri_seedChange
 
 ;============================= SILLY FUNCS ==================================;
-
+Func rri_detail_labelClick()
+EndFunc
 Func rri_Label1Click()
 EndFunc   ;==>rri_Label1Click
 Func rri_LabelTitreClick()
@@ -2430,7 +2454,6 @@ Func ResetSession()
   For $singlemap in $sessionCheckBoxMap
     GUICtrlSetState($singlemap[1], _Iif($singlemap[2]=='TRUE', $GUI_CHECKED, $GUI_UNCHECKED))
   Next
-  changePreviewState()
   updateWinmin()
   updateWinmax()
   resolutionChanged()
@@ -2444,7 +2467,6 @@ Func LoadSession()
   For $singlemap in $sessionCheckBoxMap
     LoadSessionCheckBox($singlemap[0], $singlemap[1], $singlemap[2])
   Next
-  changePreviewState()
 EndFunc   ;==>LoadSession
 
 Func SaveSession()

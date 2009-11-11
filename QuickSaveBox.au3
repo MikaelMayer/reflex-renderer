@@ -27,6 +27,7 @@
 Global $QUICKSAVE_BOX_EXISTS = False
 Global $QUICKSAVE_BOX_CALLBACK="", $QUICKSAVE_BOX_PARENT_WINDOW = 0
 Global $qs_width_value = -1, $qs_height_value = -1
+Global $current_ratio = ""
 
 Func QuickSaveBox__setParentWindow($win)
   $SAVE_BOX_PARENT_WINDOW = $win
@@ -36,7 +37,7 @@ EndFunc
 Global $qs_win=0, $qs_comment=0, $qs_resolution_list=0, $qs_width=0, $qs_height=0, $qs_label=0, $qs_ok=0
 #EndRegion ### Form Variables
 
-Func generateQuickSaveBox($parent, $width_highres, $height_highres)
+Func generateQuickSaveBox($parent, $ratio)
   If $QUICKSAVE_BOX_EXISTS Then
     If Not ($parent == 0) Then
       QuickSaveBox__MoveCenter(WinGetPos($parent))
@@ -66,18 +67,36 @@ Func generateQuickSaveBox($parent, $width_highres, $height_highres)
   $qs_ok = GUICtrlCreateButton($__ok__, 48, 137, 81, 25, $BS_DEFPUSHBUTTON)
   GUICtrlSetOnEvent(-1, "qs_okClick")
   #EndRegion ### END Koda GUI section ###
-  If $qs_width_value == -1 Or $qs_height_value == -1 Then
-    $qs_width_value = $width_highres
-    $qs_height_value = $height_highres
-  EndIf
-  GUICtrlSetData($qs_width, $qs_width_value)
-  GUICtrlSetData($qs_height, $qs_height_value)
 
   GUICtrlSetData($qs_label, $Give_a_comment_for_this_reflex_&@CRLF& _
       StringFormat($To_change_the_saving_directory__go_to, _
       StringReplace($__tools__, "&", ""), _
       StringReplace($__menu_save__, "&", "")))
-  GUICtrlSetData($qs_resolution_list, $resolutions_quicksave)
+  Local $resolution_list = $resolutions_43
+  If $ratio = "1:1" Then
+    $resolution_list = $resolutions_11
+  ElseIf $ratio = "2:1" Then
+    $resolution_list = $resolutions_21
+  ElseIf $ratio = "4:3" Then
+    $resolution_list = $resolutions_43
+  ElseIf $ratio = "8:5" Then
+    $resolution_list = $resolutions_85
+  ElseIf $ratio = "210:297" Then
+    $resolution_list = $resolutions_A4
+  Else
+    $resolution_list = $resolutions_43
+  EndIf
+  GUICtrlSetData($qs_resolution_list, $resolution_list)
+
+  If $current_ratio <> $ratio Or $qs_width_value == -1 Or $qs_height_value == -1 Then
+    $current = StringSplit($resolution_list, "|")
+    If $current[0] > 2 Then
+      GUICtrlSetData($qs_resolution_list, $current[$current[0]-1])
+      GUICtrlSetData($qs_resolution_list, $current[$current[0]-2])
+      qs_resolution_listClick()
+    EndIf
+  EndIf
+  $current_ratio = $ratio
 
   $defaultComment = IniReadSavebox('formulaComment', $My_nice_function)
   $defaultComment = getFirstAvailableComment($defaultComment)
