@@ -10,11 +10,10 @@
 
 #include <Array.au3>
 #include "GlobalUtils.au3"
-
 $zip_file = "Versions\ReflexRenderer"&$VERSION_NUMER&".zip"
 
 $folderout = "Versions\ReflexRenderer"&$VERSION_NUMER
-
+increase_version_number()
 $filescript1 = "ReflexRenderer.au3"
 $filescript2 = "LoadFormulaFromFile.au3"
 $filescript3 = "AboutBox.au3"
@@ -169,4 +168,15 @@ Func updateDropBox($path_zip_file)
   FileClose($search)
   ; Move all versions to the "old" folder
   FileChangeDir($save_working_dir)
+EndFunc
+
+Func increase_version_number()
+  Local $globalutils = "GlobalUtils.au3"
+  $content = FileRead($globalutils)
+  StringRegExp('Global Const $VERSION_NUMER = "2.8.14 beta"', 'VERSION_NUMER = "(\d)\.(\d)\.(\d+)', 2)
+  $versions = StringRegExp($content, 'VERSION_NUMER = "(\d)\.(\d)\.(\d+)', 2)
+  $versions[3] = Int($versions[3]) + 1
+  $content = StringReplace($content, $versions[0], 'VERSION_NUMER = "'&$versions[1]&'.'&$versions[2]&'.'&$versions[3])
+  FileDelete($globalutils)
+  FileWrite($globalutils, $content)
 EndFunc

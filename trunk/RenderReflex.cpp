@@ -147,20 +147,22 @@ void getMinXYMaxXY(cplx winmin, cplx winmax,
                    int x, int y,
                    double &min_x, double &min_y,
                    double &max_x, double &max_y) {
-  double dx = winmax.real()-winmin.real();
-  double dy = winmax.imag()-winmin.imag();
-
+  
   min_x = winmin.real();
   min_y = winmin.imag();
   max_x = winmax.real();
   max_y = winmax.imag();
+  double dx = max_x - min_x;
+  double dy = max_y - min_y;
+
   double cen_x = (min_x + max_x)/2.;
   double cen_y = (min_y + max_y)/2.;
 
   //  Cut the observing tree if needed.
+  // max_y should not change if the ratio is close to zero (that is, dx/dy = x/y)
   double diffRatio = dx * y - dy * x;
   if (diffRatio != 0) {
-    if (diffRatio < 0) {  // rendering is larger than the pre-display one.
+    if (diffRatio < 0) {  // dx/dy < width/height // rendering is larger than the pre-display one.
       max_y = cen_y + (y * (max_x - cen_x)) / x;
       min_y = cen_y + (y * (min_x - cen_x)) / x;
     } else { // rendering is higher than the pre-display one.
