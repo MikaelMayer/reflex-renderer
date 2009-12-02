@@ -20,7 +20,7 @@
 #include <Math.au3>
 #include <WindowsConstants.au3>
 
-Global Const $VERSION_NUMER = "2.8.7 beta"
+Global Const $VERSION_NUMER = "2.8.8 beta"
 Global Const $COPYRIGHT_DATE = "2009"
 
 Global $ERROR_DECODE_HANDLING = ""
@@ -286,6 +286,7 @@ Func simplifyParenthesis($complex_number)
 EndFunc
 
 ;$RenderReflexExe should be declared outside in global (like in Parameters.au3)
+Global $RenderReflexExe
 Func runReflexWithArguments($args)
   $cmd = StringFormat("%s %s", $RenderReflexExe, $args)
   logging("Running "&$cmd)
