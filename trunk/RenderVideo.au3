@@ -27,6 +27,8 @@ Wish list:
 #include "PngHandling.au3"
 #include "RenderVideoIniConfig.au3"
 #include <Math.au3>
+#Include <File.au3>
+Global $lines
 
 $RenderReflexExe = "RenderReflex.exe";@TempDir&"\RenderReflex.exe"
 
@@ -128,9 +130,16 @@ Func RenderVideo()
           $percent = Int(100 * $done / $total_of_frames)
           ProgressSet($percent, $subtext, $maintext&$percent&"%")
           Local $formula = getFormulaFromPid($thread_pid[$i])
-          If $formula == "" Then $formula = $thread_formula[$i]
           $output  = $thread_output[$i]
-
+          If $formula == "" Then
+            $formula = $thread_formula[$i]
+            If StringInStr($formula, "randf") <> 0 Or StringInStr($formula, "randh") <> 0 Then
+              FileWrite("Error_log.txt", "Unable to read formula from :"&@CRLF&$lines&@CRLF)
+              FileWrite("Error_log.txt", "Remaining output :"&@CRLF&StdoutRead($thread_pid[$i]))
+              postTreatment($output, $formula)
+              Exit
+            EndIf
+          EndIf
           postTreatment($output, $formula)
 
           deleteAt($thread_pid, $i)
@@ -148,6 +157,9 @@ Func RenderVideo()
 
       $formula = getFormulaForFrame($frame)
       $output = getOutputForFrame($frame)
+      If Not FileExists(FileGetDir($output)) Then
+        DirCreate(FileGetDir($output))
+      EndIf
       ;$custom_output = getCustomOutputForFrame($frame) ; Contains the true extension
       ;logging("computing formula "&$formula&" at frame "&$frame)
 
@@ -290,6 +302,12 @@ Func failWith($msg)
   Return False
 EndFunc
 
+Func FileGetDir($file)
+  Dim $szDrive, $szDir, $szFName, $szExt
+  $TestPath = _PathSplit($file, $szDrive, $szDir, $szFName, $szExt)
+  Return $szDrive&$szDir
+EndFunc
+
 Func getFormulaForFrame($frame)
   Local $varvalue
   If $video_lastframe == $video_startframe Then
@@ -327,7 +345,12 @@ EndFunc
 
 Func getFormulaFromPid($pid)
   Local $formula = ""
-  $lines = StdoutRead($pid)
+  Global $lines = ""
+
+  Do
+    $lines = $lines & StdoutRead($pid)
+  Until @error and Not ($lines == "") ; End of File reached.
+
   $lines_array = StringSplit($lines, @LF)
   For $i = 1 To $lines_array[0]
     If StringStartsWith($lines_array[$i], 'formula:') Then

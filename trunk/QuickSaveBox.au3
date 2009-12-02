@@ -95,6 +95,9 @@ Func generateQuickSaveBox($parent, $ratio)
       GUICtrlSetData($qs_resolution_list, $current[$current[0]-2])
       qs_resolution_listClick()
     EndIf
+  Else
+    GUICtrlSetData($qs_width, $qs_width_value)
+    GUICtrlSetData($qs_height, $qs_height_value)
   EndIf
   $current_ratio = $ratio
 
