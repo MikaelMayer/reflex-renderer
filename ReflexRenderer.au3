@@ -1720,7 +1720,8 @@ Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Or $width_local <> Default Then
       $out_raw_file = StringRegExpReplace($reflex_file, "\.jpe?g\z", ".bmp")
     EndIf
     If $isPng Then
-      $out_raw_file = StringRegExpReplace($reflex_file, "\.png\z", ".bmp")
+      ;$out_raw_file = StringRegExpReplace($reflex_file, "\.png\z", ".bmp")
+      $out_raw_file = $reflex_file
     EndIf
     ;Renders the reflex depending on the resolution (low or high)
     If $width_local == Default Or $height_local == Default Then
@@ -1740,6 +1741,10 @@ Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Or $width_local <> Default Then
     addFlag($flags, "winmax",  IniRead($ini_file, $ini_file_session, 'winmax', ''))
     addFlag($flags, "output", $out_raw_file)
 	addFlag($flags, "seed",     GUICtrlRead($rri_seed))
+    If $isPng Then
+      addFlag($flags, "png")
+      addFlag($flags, "comment", IniReadSavebox('formulaComment', ''))
+    EndIf
     If isChecked($rri_realmode) Then addFlag($flags, "realmode")
     addFlag($flags, "colornan", $color_NaN_complex)
     If $pid_rendering <> 0 or $rendering_thread Then
@@ -1786,21 +1791,21 @@ Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Or $width_local <> Default Then
       FileDelete($out_raw_file)
     EndIf
     WinSetTitle($rri_win, "", $__reflex_renderer_interface__)
-  ElseIf $isPng Then
-    WinSetTitle($rri_win, "", $__converting_to_png__)
-    ImageConvert($out_raw_file, $reflex_file)
-    If Not FileExists($reflex_file) Then
-      ;FileMove($out_raw_file, StringRegExpReplace($reflex_file, "\.png\z", ".bmp"))
-      MsgBox(0, $Error_title, StringFormat($Could_not_convert_from___s__to___s_, $out_raw_file, $reflex_file))
-    Else
-      $formula_and_options = defaultFormulaString()
-      Dim $informations = _ArrayCreate(3, _ArrayCreate("Title", "Reflex"), _ArrayCreate("Comment", $formula_and_options), _ArrayCreate("Software", "ReflexRenderer v."&$VERSION_NUMER))
-      WinSetTitle($rri_win, "", $__writing_reflex_informations__)
-      WritePngTextChunks($reflex_file, $informations)
-      WinSetTitle($rri_win, "", $__removing_temporary_files__)
-      FileDelete($out_raw_file)
-    EndIf
-    WinSetTitle($rri_win, "", $__reflex_renderer_interface__)
+  ElseIf $isPng Then ; All the processing is done in the renderer.
+    ;WinSetTitle($rri_win, "", $__converting_to_png__)
+    ;ImageConvert($out_raw_file, $reflex_file)
+    ;If Not FileExists($reflex_file) Then
+    ;  ;FileMove($out_raw_file, StringRegExpReplace($reflex_file, "\.png\z", ".bmp"))
+    ;  MsgBox(0, $Error_title, StringFormat($Could_not_convert_from___s__to___s_, $out_raw_file, $reflex_file))
+    ;Else
+    ;  $formula_and_options = defaultFormulaString()
+    ;  Dim $informations = _ArrayCreate(3, _ArrayCreate("Title", "Reflex"), _ArrayCreate("Comment", $formula_and_options), _ArrayCreate("Software", "ReflexRenderer v."&$VERSION_NUMER))
+    ;  WinSetTitle($rri_win, "", $__writing_reflex_informations__)
+    ;  WritePngTextChunks($reflex_file, $informations)
+    ;  WinSetTitle($rri_win, "", $__removing_temporary_files__)
+    ;  FileDelete($out_raw_file)
+    ;EndIf
+    ;WinSetTitle($rri_win, "", $__reflex_renderer_interface__)
   EndIf
 EndFunc   ;==>saveReflex
 

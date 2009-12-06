@@ -29,7 +29,7 @@ push($Global_Parameters, _ArrayCreate("threshold_zoom_drag",    $PARAM_INT,     
 push($Global_Parameters, _ArrayCreate("history_formula_filename",$PARAM_STRING,     @ScriptDir&"\"&"history_formulas.txt"))
 push($Global_Parameters, _ArrayCreate("resolutions_11",  $PARAM_STRING,     "|400x400|800x800|1024x10241280x1280|1640x1640|3280x3280|Custom"))
 push($Global_Parameters, _ArrayCreate("resolutions_43",  $PARAM_STRING,     "|640x480|800x600|1024x768|1280x960|1680x1260|3280x2460|Custom"))
-push($Global_Parameters, _ArrayCreate("resolutions_A4",  $PARAM_STRING,     "|420x594|800x566|1024x724|1280x905|1640x1160|3280x2319|6560x4638|Custom"))
+push($Global_Parameters, _ArrayCreate("resolutions_A4",  $PARAM_STRING,     "|594x420|800x566|1024x724|1280x905|1640x1160|3280x2319|6560x4638|Custom"))
 push($Global_Parameters, _ArrayCreate("resolutions_85",  $PARAM_STRING,     "|640x400|800x500|1024x640|1280x800|1640x1025|3280x2050|Custom"))
 push($Global_Parameters, _ArrayCreate("resolutions_21",  $PARAM_STRING,     "|640x320|800x400|1024x512|1280x640|1640x820|3280x1640|Custom"))
 push($Global_Parameters, _ArrayCreate("lucky_func_default",     $PARAM_STRING,     "(randf(9)+randh(9))/2"))
