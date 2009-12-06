@@ -16,9 +16,11 @@ output=c:\the\path\where\to\store\the\file.bmp
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <algorithm>
 #include <argstream.h>
+#include "libpng/png.h"
 //#include "tbb/task_scheduler_init.h"
 //#include "tbb/parallel_for.h"
 #//include "tbb/blocked_range.h"
@@ -31,6 +33,7 @@ output=c:\the\path\where\to\store\the\file.bmp
 //using namespace tbb;
 using namespace std;
 static const size_t N = 6;
+const char options_line_string[] = TEXT("@Options:");
 
 /*class SubStringFinder {
   const string str;
@@ -68,7 +71,10 @@ void putInvertedNumber(ofstream &file, int size, int number) {
   }
 }
 
-Function* getFunction(const char* string, const char* name) {
+// Takes a string in input, the name is for debug purpose only.
+// final_string is an array of size MAX_FUNC_LENGTH where the formula will be stored,
+// if there was any randomness.
+Function* getFunction(const char* string, char* final_string, const char* name, bool force_output=false) {
   Parseur *parseur = new Parseur(string);
   Function *function = parseur->valeurFonction();
   if(!function) {
@@ -81,11 +87,16 @@ Function* getFunction(const char* string, const char* name) {
     }
     cerr << "^" << endl;
   } else {
-    if(parseur->hasBeenMacro()) {//On recopie la fonction...
-      TCHAR funcString[MAX_FUNC_LENGTH];
-			*(function->toStringConst(funcString, funcString+MAX_FUNC_LENGTH))=L'\0';
-      cout << "formula:" << funcString << endl;
-		}
+    if(parseur->hasBeenMacro() || force_output) {//On recopie la fonction...
+      TCHAR funcstring[MAX_FUNC_LENGTH];
+			*(function->toStringConst(funcstring, funcstring+MAX_FUNC_LENGTH))=L'\0';
+      cout << "formula:" << funcstring << endl;
+      if(final_string != NULL)
+        _tcscpy(final_string, funcstring);
+    } else {
+      if(final_string != NULL)
+        _tcscpy(final_string, string);
+    }
   }
   delete parseur;
   return function;
@@ -95,7 +106,7 @@ Function* getFunction(const char* string, const char* name) {
 //Puts the integer from the string into value.
 //Displays a pretty error message containing the name of the variable.
 bool getInt(const char* string, const char* name, int& value) {
-  Function *function = getFunction(string, name);
+  Function *function = getFunction(string, NULL, name);
   if(function==NULL)
     return false;
   bool return_value = true;
@@ -129,7 +140,7 @@ bool getHex(const char* string, const char* name, unsigned int& value) {
 }
 
 bool getCplx(const char* string, const char* name, cplx& value) {
-  Function *function = getFunction(string, name);
+  Function *function = getFunction(string, NULL, name);
   if(function==NULL)
     return false;
   bool return_value = true;
@@ -181,7 +192,9 @@ int renderBmp(const char* formula_string, int width, int height,
   cplx winmin, winmax;
 
   srand(seed_init);
-  Function *f_formula = getFunction(formula_string, "Formula");
+  TCHAR final_funcstring[MAX_FUNC_LENGTH];
+
+  Function *f_formula = getFunction(formula_string, final_funcstring, "Formula");
 
   fine = fine && f_formula;
   fine = fine && getCplx(winmin_string, "Winmin", winmin);
@@ -311,6 +324,225 @@ int renderBmp(const char* formula_string, int width, int height,
   return 0;
 }
 
+void write_row_callback(png_structp png_ptr, png_uint_32 row_number, int pass);
+void write_row_callback(png_structp png_ptr, png_uint_32 row_number, int pass)
+{
+    //if(png_ptr == NULL || row_number > PNG_UINT_31_MAX || pass > 7) return;
+    //fprintf(stdout, "w");
+}
+
+
+int renderPng(const char* formula_string, int width, int height,
+              const char* winmin_string, const char* winmax_string, const char* output_string,
+              int seed_init, unsigned int colornan, bool realmode, string comment_string
+              ) {
+  bool fine = true;
+  int errpos = 0;
+  cplx winmin, winmax;
+
+  TCHAR final_funcstring[MAX_FUNC_LENGTH];
+
+  srand(seed_init);
+  Function *f_formula = getFunction(formula_string, final_funcstring, "Formula");
+
+  fine = fine && f_formula;
+  fine = fine && getCplx(winmin_string, "Winmin", winmin);
+  fine = fine && getCplx(winmax_string, "Winmax", winmax);
+  if(!fine) {
+    if(f_formula)	f_formula = f_formula->kill();
+    return -1;
+  }
+  cplx::color_NaN = colornan;
+
+  FILE *output_file = fopen(output_string, "wb");
+
+  if(!output_file) {
+    if(f_formula)	f_formula = f_formula->kill();
+    cerr << "Output file invalid : " << output_string << endl;
+    return -1;
+  }
+
+  png_structp write_ptr;
+  png_infop write_info_ptr;
+  png_infop write_end_info_ptr;
+
+  write_ptr = png_create_write_struct
+  (PNG_LIBPNG_VER_STRING, png_voidp_NULL,
+      png_error_ptr_NULL, png_error_ptr_NULL);
+  if(!write_ptr)
+     return -1;
+  png_init_io(write_ptr, output_file);
+
+  png_debug(0, "Allocating read_info, write_info and end_info structures\n");
+  write_info_ptr = png_create_info_struct(write_ptr);
+  //write_end_info_ptr = png_create_info_struct(write_ptr);
+
+  if (!write_info_ptr)
+  {
+     png_destroy_write_struct(&write_ptr,
+       (png_infopp)NULL);
+     return (-1);
+  }
+
+  png_set_write_status_fn(write_ptr, write_row_callback);
+
+  png_set_IHDR(write_ptr, write_info_ptr, width, height,
+    8, PNG_COLOR_TYPE_RGB,
+    PNG_INTERLACE_NONE,
+    PNG_COMPRESSION_TYPE_DEFAULT,
+    PNG_FILTER_TYPE_DEFAULT);
+
+  
+  png_write_info(write_ptr, write_info_ptr);
+  //png_bytep row_pointer = row;
+  //png_write_row(write_ptr, row_pointer);
+
+  int x = width, y = height;
+  
+  double min_x, min_y, max_x, max_y;
+  getMinXYMaxXY(winmin, winmax, x, y,
+                min_x, min_y, max_x, max_y);
+
+  double iMult = (max_x - min_x) / (x - 1);
+  double iBase = min_x;
+  double jMult = (max_y - min_y) / (y - 1);
+  double jBase = min_y;
+
+  unsigned char* row_pointer = new unsigned char[3*x];
+  
+  if(realmode == 0) {
+    for (int j = 0; j < y; j++) {
+      cout << j << "/" << y << endl;
+      for (int i = 0; i < x; i++) {
+        COLORREF color = f_formula->eval(cplx(i*iMult+iBase, j*jMult+jBase)).couleur24();
+        row_pointer[i*3+0] = (color>>0)  & 0xFF;
+        row_pointer[i*3+1] = (color>>8)  & 0xFF;
+        row_pointer[i*3+2] = (color>>16) & 0xFF;
+      }
+      png_write_row(write_ptr, row_pointer);
+    }
+  } else {
+    double d0 = 0;
+    double d1 = 0;
+    unsigned int color_base = 0, color = 0;
+    double *valeurs = new double[x];
+    double *valeursj = new double[x];
+    double *coefdirs = new double[x - 1];
+    for (int i = 0; i < x; i++) {
+      valeurs[i] = f_formula->eval(cplx(i*iMult+iBase, 0)).real();
+      valeursj[i] = (valeurs[i] - jBase)/jMult;
+    }
+    for (int i = 0; i < x-1; i++) {
+      double tmp = (valeursj[i+1]-valeursj[i]);
+      coefdirs[i] = 1.0/sqrt(1.0+tmp*tmp);
+      coefdirs[i] *= tmp > 0 ? 1 : -1;
+    }
+    for (int j = 0; j < y; j++) {
+      cout << j << "/" << y << endl;
+      color_base = cplx(j * jMult + jBase, 0).couleur24();
+      for (int i = 0; i < x; i++) {
+        //Calcul de la distance du point à la courbe
+        double dmin = 2.0;
+        if((j > valeursj[i]+0.5 && (i == 0 || j > valeursj[i - 1] + 0.5)
+                                && (i == x - 1 || j > valeursj[i + 1] + 0.5))
+           || (j < valeursj[i]-0.5 && (i == 0 || j < valeursj[i - 1] - 0.5)
+                                   && (i == x - 1 || j < valeursj[i + 1] - 0.5)))
+        {
+        } else {
+          if (i > 0) {
+            d0 = (valeursj[i] - j) * coefdirs[i-1];
+          }
+          if (i < x - 1) {
+            d1 = (j - valeursj[i]) * coefdirs[i];
+          } else {
+            d1 = d0;
+          }
+          if (i == 0) d0 = d1;
+          if(d0 <= 0 && d1 <= 0) {
+            dmin = j > valeursj[i] ? j - valeursj[i] : valeursj[i] - j;
+          } else if(d0 >= 0 && d1 >= 0) {
+            if(d0 > d1) {
+              dmin = d1;
+            } else {
+              dmin = d0;
+            }
+          } else {
+            if(d0 > 0)
+              dmin = d0;
+            if(d1 > 0)
+              dmin = d1;
+          }
+        }
+        const double limup = 1.014;
+        if(dmin <= 0.5) {          // Pile sur la ligne
+          color = color_base;
+        } else if(dmin >= limup) { // En dehors de la ligne
+          color = 0xFFFFFF;
+        } else {                   // Sur la limite de la ligne: dégradé
+          double coef = (dmin - 0.5)/(limup - 0.5);
+          unsigned int blu = ((color_base & 0xFF0000) >> 16);
+          unsigned int gre = ((color_base & 0x00FF00) >> 8);
+          unsigned int red =  (color_base & 0x0000FF);
+          red = (int)(255.0 * coef + (1.0 - coef) * red);
+          gre = (int)(255.0 * coef + (1.0 - coef) * gre);
+          blu = (int)(255.0 * coef + (1.0 - coef) * blu);
+          color = RGB(red, gre, blu);
+        }
+        row_pointer[i*3+0] = (color>>0)  & 0xFF;
+        row_pointer[i*3+1] = (color>>8)  & 0xFF;
+        row_pointer[i*3+2] = (color>>16) & 0xFF;
+      }
+      png_write_row(write_ptr, row_pointer);
+    }
+    delete []valeurs;
+    delete []valeursj;
+    delete []coefdirs;
+  }
+  delete []row_pointer;
+  f_formula = f_formula->kill();
+  //TODO: Write comments as usual.
+  //Formula
+  //@Options, etc.
+  png_text text_title, text_comment, text_software;
+  text_title.compression    = -1; // "tEXt" No compression
+  text_comment.compression  = -1;
+  text_software.compression = -1;
+
+  text_title.key    = TEXT("Title");
+  text_comment.key  = TEXT("Comment");
+  text_software.key = TEXT("Software");
+
+  text_title.text    = TEXT("Reflex");
+  text_software.text = TEXT("Reflex Renderer");
+  bool first_item_entered = false;
+  string ss_string;
+  ostringstream ss(stringstream::in | stringstream::out);
+  ss << comment_string << endl;
+  ss << final_funcstring << endl;
+  ss << options_line_string <<" ";
+  ss << "winmin=" << winmin_string<<"; ";
+  ss << "winmax=" << winmax_string<<"; ";
+  ss << "width=" << width << "; ";
+  ss << "height=" << height;
+  ss_string = ss.str();
+  text_comment.text = const_cast<char*>(ss_string.c_str());
+  //cout << "String got : " << ss.str() << endl;
+  //cout << "Written in png : " << text_comment.text << endl;
+  
+  text_title.text_length    = strlen(text_title.text);
+  text_comment.text_length  = strlen(text_comment.text);
+  text_software.text_length = strlen(text_software.text);
+
+  png_set_text(write_ptr, write_info_ptr, &text_title, 1);
+  png_set_text(write_ptr, write_info_ptr, &text_comment, 1);
+  png_set_text(write_ptr, write_info_ptr, &text_software, 1);
+
+  png_write_end(write_ptr, write_info_ptr);
+  png_destroy_write_struct(&write_ptr, &write_info_ptr);
+  cout << "Done." << endl;
+  return 0;
+}
+
 int calculateNewWindow(int width, int height, const char* winmin_string,
                    const char* winmax_string, int deltax, int deltay) {
   bool fine = true;
@@ -343,13 +575,20 @@ int simplify_formula(const char* formula_string, int seed_init, STRING_TYPE form
   bool fine = true;
   int errpos = 0;
 
+  TCHAR final_funcstring[MAX_FUNC_LENGTH];
+
   srand(seed_init);
-  Function *f_formula = getFunction(formula_string, "Formula");
+  // We force the simplification of the formula
+  Function *f_formula = getFunction(formula_string, final_funcstring, "Formula", true);
   fine = fine && f_formula;
+  if(f_formula)	f_formula = f_formula->kill();
   if(!fine) {
-    if(f_formula)	f_formula = f_formula->kill();
     return -1;
   }
+  //cout << "formula:" << final_funcstring << endl;
+  return 0;
+
+    //TODO : Delete everything
   int size_func = MAX_FUNC_LENGTH;
   TCHAR* funcStringEnd = 0;
   TCHAR* funcString = 0;
@@ -432,12 +671,14 @@ int main(int argc, char** argv) {
   string output_string = "c:\\tmp.bmp";
   string deltax_string = "0";  int delta_x=0;
   string deltay_string = "0";  int delta_y=0;
+  string comment_string = "";
   int seed   = 1;
   string colornan_string = "0xFFFFFF";
   unsigned int colornan = 0xFFFFFF;
   bool realmode;
   bool openoffice_formula;
   bool latex_formula;
+  bool is_png;
   STRING_TYPE formula_style = DEFAULT_TYPE;
 
   as >> parameter('f', "formula", formula_string, "A formula like (1+2-x)/sin(z)", false)
@@ -453,6 +694,8 @@ int main(int argc, char** argv) {
      >> option('l', "latex", latex_formula, "If it outputs the formule using LaTeX style")
      >> parameter('d', "delta_x", deltax_string, "The horizontal shift", false)
      >> parameter('e', "delta_y", deltay_string, "The vertical shift", false)
+     >> option('g', "png", is_png, "If output in png format")
+     >> parameter('x', "comment", comment_string, "The comment for the formula", false)
      >> help();
 
   sscanf_s(deltax_string.c_str(), "%d", &delta_x);
@@ -472,10 +715,15 @@ int main(int argc, char** argv) {
   if(latex_formula)      formula_style = LATEX_TYPE;
 
   if(render_mode) {
-    return renderBmp(formula_string.c_str(), width, height,
-                     winmin_string.c_str(), winmax_string.c_str(), output_string.c_str(),
-                     seed, colornan, realmode
-                     );
+    if(is_png) {
+      return renderPng(formula_string.c_str(), width, height,
+          winmin_string.c_str(), winmax_string.c_str(), output_string.c_str(),
+          seed, colornan, realmode, comment_string);
+    } else {
+      return renderBmp(formula_string.c_str(), width, height,
+          winmin_string.c_str(), winmax_string.c_str(), output_string.c_str(),
+          seed, colornan, realmode);
+    }
   }
   if(simplify_mode) {
     return simplify_formula(formula_string.c_str(), seed, formula_style);

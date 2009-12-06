@@ -15,7 +15,7 @@ Global $ini_file = @ScriptDir&'\ReflexRenderer.ini'
 Global $ini_file_session = 'Session'
 Global $ini_file_default = 'Default'
 Global $ini_file_windows = 'Windows'
-Global Const $options_line_string = '@Options:'
+Global Const $options_line_string = '@Options:' ; Do not modify. Synchronized with the C++ version.
 
 Func LoadParameter($type, $name, $control, $default='')
   $w = IniRead($ini_file, $type, $name, $default)
