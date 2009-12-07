@@ -394,8 +394,6 @@ int renderPng(const char* formula_string, int width, int height,
 
   
   png_write_info(write_ptr, write_info_ptr);
-  //png_bytep row_pointer = row;
-  //png_write_row(write_ptr, row_pointer);
 
   int x = width, y = height;
   
@@ -411,13 +409,13 @@ int renderPng(const char* formula_string, int width, int height,
   unsigned char* row_pointer = new unsigned char[3*x];
   
   if(realmode == 0) {
-    for (int j = 0; j < y; j++) {
-      cout << j << "/" << y << endl;
+    for (int j = y-1; j >= 0; j--) {
+      cout << (y-1-j) << "/" << y << endl;
       for (int i = 0; i < x; i++) {
         COLORREF color = f_formula->eval(cplx(i*iMult+iBase, j*jMult+jBase)).couleur24();
-        row_pointer[i*3+0] = (color>>0)  & 0xFF;
+        row_pointer[i*3+2] = (color>>0)  & 0xFF;
         row_pointer[i*3+1] = (color>>8)  & 0xFF;
-        row_pointer[i*3+2] = (color>>16) & 0xFF;
+        row_pointer[i*3+0] = (color>>16) & 0xFF;
       }
       png_write_row(write_ptr, row_pointer);
     }
@@ -437,8 +435,8 @@ int renderPng(const char* formula_string, int width, int height,
       coefdirs[i] = 1.0/sqrt(1.0+tmp*tmp);
       coefdirs[i] *= tmp > 0 ? 1 : -1;
     }
-    for (int j = 0; j < y; j++) {
-      cout << j << "/" << y << endl;
+    for (int j = y-1; j >= 0; j--) {
+      cout << (y-1-j) << "/" << y << endl;
       color_base = cplx(j * jMult + jBase, 0).couleur24();
       for (int i = 0; i < x; i++) {
         //Calcul de la distance du point à la courbe
