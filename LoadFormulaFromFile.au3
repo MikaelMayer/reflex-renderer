@@ -74,7 +74,7 @@ Dim $ALL_FORMULAS
 Dim $formula_entry_map = emptySizedArray()
 Global Enum $BLANK_LINE = 401, $COMMENT_OR_FORMULA, $OPTIONS_LINE
 Global Enum $FORMULA_ENTRY_TREEVIEWITEMS = 0, $FORMULA_ENTRY_IFOPTIONS, $FORMULA_ENTRY_OPTIONS, $FORMULA_ENTRY_SIZE
-Global Enum $HAS_FORMULA, $HAS_COMMENT, $HAS_WINDOW, $HAS_RESOLUTION
+Global Enum $HAS_FORMULA, $HAS_COMMENT, $HAS_WINDOW, $HAS_RESOLUTION, $HAS_COLORNAN
 Global Enum $FORMULA_ITEM_TYPE = 0, $FORMULA_ITEM_CONTENT0 = 1
 Global Enum $FORMULA_ITEM_CONTENT0_KEY = 0, $FORMULA_ITEM_CONTENT0_VALUE = 1
 Global $LOAD_FORMULA_PARENT_WINDOW = 0
@@ -514,8 +514,8 @@ EndFunc
 
 Func getEverythingAvailableFromFormula($formula_items)
   Dim $first = True
-  Dim $isComment = 0, $isWindow = 0, $isResolution = 0
-  Dim $window_min = "", $window_max = "", $resolution_width = "", $resolution_height = ""
+  Dim $isComment = 0, $isWindow = 0, $isResolution = 0, $isColornan = 0
+  Dim $window_min = "", $window_max = "", $resolution_width = "", $resolution_height = "", $reflex_colornan = ""
   Dim $formula = "", $comment = "", $window = "; ", $resolution = " x "
 
   For $i = 1 To size($formula_items)
@@ -543,6 +543,9 @@ Func getEverythingAvailableFromFormula($formula_items)
         ElseIf StringCompare($tab[$FORMULA_ITEM_CONTENT0_KEY], "width")==0 Then
           $isResolution = BitOR($isResolution, 2)
           $resolution_width = $tab[$FORMULA_ITEM_CONTENT0_VALUE]
+        ElseIf StringCompare($tab[$FORMULA_ITEM_CONTENT0_KEY], "colornan")==0 Then
+          $isColornan = BitOR($isColornan, 1)
+          $reflex_colornan = $tab[$FORMULA_ITEM_CONTENT0_VALUE]
         EndIf
       Else
         $formula = $formula_item[$FORMULA_ITEM_CONTENT0]
@@ -552,16 +555,17 @@ Func getEverythingAvailableFromFormula($formula_items)
   Next
   $window = StringFormat("%s, %s", $window_min, $window_max)
   $resolution = StringFormat("%s x %s", $resolution_width, $resolution_height)
-  $formula_entry = _ArrayCreate(0)
-  _ArrayAdd($formula_entry, _ArrayCreate(True, $isComment, $isWindow==3, $isResolution==3))
-  _ArrayAdd($formula_entry, _ArrayCreate($formula, $comment, $window, $resolution))
-	$has_array = $formula_entry[$FORMULA_ENTRY_IFOPTIONS]
-	$res_array = $formula_entry[$FORMULA_ENTRY_OPTIONS]
-	$return_value = emptySizedArray()
-	if $has_array[$HAS_FORMULA]    Then push($return_value, _ArrayCreate("formula",    $res_array[$HAS_FORMULA]))
-	if $has_array[$HAS_COMMENT]    Then push($return_value, _ArrayCreate("comment",    $res_array[$HAS_COMMENT]))
-	if $has_array[$HAS_WINDOW]     Then push($return_value, _ArrayCreate("window",     $res_array[$HAS_WINDOW]))
-	if $has_array[$HAS_RESOLUTION] Then push($return_value, _ArrayCreate("resolution", $res_array[$HAS_RESOLUTION]))
+  Local $formula_entry[$FORMULA_ENTRY_SIZE]
+  $formula_entry[$FORMULA_ENTRY_IFOPTIONS] = _ArrayCreate(True,     $isComment, $isWindow==3, $isResolution==3, $isColornan)
+  $formula_entry[$FORMULA_ENTRY_OPTIONS]   = _ArrayCreate($formula, $comment,   $window,      $resolution,      $reflex_colornan)
+  $has_array = $formula_entry[$FORMULA_ENTRY_IFOPTIONS]
+  $res_array = $formula_entry[$FORMULA_ENTRY_OPTIONS]
+  $return_value = emptySizedArray()
+  if $has_array[$HAS_FORMULA]    Then push($return_value, _ArrayCreate("formula",    $res_array[$HAS_FORMULA]))
+  if $has_array[$HAS_COMMENT]    Then push($return_value, _ArrayCreate("comment",    $res_array[$HAS_COMMENT]))
+  if $has_array[$HAS_WINDOW]     Then push($return_value, _ArrayCreate("window",     $res_array[$HAS_WINDOW]))
+  if $has_array[$HAS_RESOLUTION] Then push($return_value, _ArrayCreate("resolution", $res_array[$HAS_RESOLUTION]))
+  if $has_array[$HAS_COLORNAN]   Then push($return_value, _ArrayCreate("colornan",   $res_array[$HAS_COLORNAN]))
   Return $return_value
 EndFunc
 
@@ -609,6 +613,7 @@ Func lf_OkClick()
       if $has_array[$HAS_COMMENT]    and isChecked($lf_import_comment)    Then push($return_value, _ArrayCreate("comment",    $res_array[$HAS_COMMENT]))
       if $has_array[$HAS_WINDOW]     and isChecked($lf_import_window)     Then push($return_value, _ArrayCreate("window",     $res_array[$HAS_WINDOW]))
       if $has_array[$HAS_RESOLUTION] and isChecked($lf_import_resolution) Then push($return_value, _ArrayCreate("resolution", $res_array[$HAS_RESOLUTION]))
+      if $has_array[$HAS_COLORNAN]                                        Then push($return_value, _ArrayCreate("colornan",   $res_array[$HAS_COLORNAN]))
       ExitLoop
     EndIf
   Next
