@@ -51,3 +51,10 @@ Func AssignParameters()
     Assign($tab[$N_PARAM_VANAME], $tab[$N_PARAM_DEFAULTVALUE], 2)
   Next
 EndFunc
+
+Func ResetParameter($name)
+  For $i=1 To $Global_Parameters[0]
+    $tab = $Global_Parameters[$i]
+    If $name == $tab[$N_PARAM_VANAME] Then Assign($name, $tab[$N_PARAM_DEFAULTVALUE], 2)
+  Next
+EndFunc

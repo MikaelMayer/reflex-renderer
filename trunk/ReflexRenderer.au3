@@ -255,7 +255,7 @@ Global $k = 0
 Global $rri_comment = IniReadSavebox('formulaComment', 'My nice function')
 
 #Region ### Form Variables
-Global $rri_win=0, $rri_line_reset=0, $rri_zoom_box0=0, $rri_zoom_box1=0, $rri_zoom_box2=0, $rri_zoom_box3=0, $rri_zoom_box_gray0=0, $rri_zoom_box_gray1=0, $rri_zoom_box_gray2=0, $rri_zoom_box_gray3=0, $rri_out_rendu=0, $rri_group_reflex=0, $rri_group_options=0, $rri_Label1=0, $rri_lucky_func=0, $rri_lucky_fract=0, $rri_switch_fract=0, $rri_in_formula=0, $rri_formula_editor=0, $rri_DimLabel=0, $rri_ratio11=0, $rri_ratio43=0, $rri_ratioA4=0, $rri_ratio85=0, $rri_ratio21=0, $rri_percent=0, $rri_LabelWinMin=0, $rri_winmin=0, $rri_LabelWinMax=0, $rri_winmax=0, $rri_reset_window=0, $rri_check_auto_render=0, $rri_realmode=0, $rri_render=0, $rri_quicksave=0, $rri_save_noquick=0, $rri_display_folder=0, $rri_output=0, $rri_progress=0, $rri_rendering_text=0, $rri_seed=0, $rri_width=0, $rri_height=0, $rri_detail_label=0, $rri_LabelTitre=0, $rri_navigation=0, $rri_visit_click=0, $rri_visit_rectangle=0, $rri_previous_window=0, $rri_next_window=0, $rri_zoom_factor=0, $rri_zoom_in_factor=0, $rri_zoom_out_factor=0, $rri_LabelZoomFactor=0, $rri_zoom_absolute=0, $rri_color_code_button=0, $rri_menu_tools=0, $rri_menu_save=0, $rri_menu_windows=0, $rri_window_1=0, $rri_window_2=0, $rri_window_4=0, $rri_window_8=0, $rri_window_pi=0, $rri_menu_resolutions=0, $rri_resolutions_201=0, $rri_resolutions_401=0, $rri_resolutions_801=0, $rri_resolutions_640=0, $rri_resolutions_1024=0, $rri_resolutions_1280=0, $rri_resolutions_1601=0, $rri_resolutions_16000=0, $rri_menu_export_formula=0, $rri_menu_tutorial=0, $rri_menu_quitnosave=0, $rri_menu_quit=0, $rri_menu_formula_editor=0, $rri_menu_formula_edito=0, $rri_menu_import_formula=0, $rri_menu_import_reflex=0, $rri_menu_formula_small_history=0, $rri_menu_formula_history=0, $rri_menu_language=0, $rri_menu_customize=0, $rri_all_parameters=0, $rri_reset_menu=0
+Global $rri_win=0, $rri_line_reset=0, $rri_zoom_box0=0, $rri_zoom_box1=0, $rri_zoom_box2=0, $rri_zoom_box3=0, $rri_zoom_box_gray0=0, $rri_zoom_box_gray1=0, $rri_zoom_box_gray2=0, $rri_zoom_box_gray3=0, $rri_out_rendu=0, $rri_group_reflex=0, $rri_group_options=0, $rri_Label1=0, $rri_lucky_func=0, $rri_lucky_fract=0, $rri_switch_fract=0, $rri_in_formula=0, $rri_formula_editor=0, $rri_DimLabel=0, $rri_ratio11=0, $rri_ratio43=0, $rri_ratioA4=0, $rri_ratio85=0, $rri_ratio21=0, $rri_percent=0, $rri_LabelWinMin=0, $rri_winmin=0, $rri_LabelWinMax=0, $rri_winmax=0, $rri_reset_window=0, $rri_colornan=0, $rri_check_auto_render=0, $rri_realmode=0, $rri_render=0, $rri_quicksave=0, $rri_save_noquick=0, $rri_display_folder=0, $rri_output=0, $rri_progress=0, $rri_rendering_text=0, $rri_seed=0, $rri_width=0, $rri_height=0, $rri_detail_label=0, $rri_LabelTitre=0, $rri_navigation=0, $rri_visit_click=0, $rri_visit_rectangle=0, $rri_previous_window=0, $rri_next_window=0, $rri_zoom_factor=0, $rri_zoom_in_factor=0, $rri_zoom_out_factor=0, $rri_LabelZoomFactor=0, $rri_zoom_absolute=0, $rri_color_code_button=0, $rri_menu_tools=0, $rri_menu_save=0, $rri_menu_windows=0, $rri_window_1=0, $rri_window_2=0, $rri_window_4=0, $rri_window_8=0, $rri_window_pi=0, $rri_menu_resolutions=0, $rri_resolutions_201=0, $rri_resolutions_401=0, $rri_resolutions_801=0, $rri_resolutions_640=0, $rri_resolutions_1024=0, $rri_resolutions_1280=0, $rri_resolutions_1601=0, $rri_resolutions_16000=0, $rri_menu_export_formula=0, $rri_menu_tutorial=0, $rri_menu_quitnosave=0, $rri_menu_quit=0, $rri_menu_formula_editor=0, $rri_menu_formula_edito=0, $rri_menu_import_formula=0, $rri_menu_import_reflex=0, $rri_menu_formula_small_history=0, $rri_menu_formula_history=0, $rri_menu_language=0, $rri_menu_customize=0, $rri_all_parameters=0, $rri_reset_menu=0
 #EndRegion ### Form Variables
 Global $rri_out_rendu2
 Global $zoomAbsolutePrevious
@@ -413,6 +413,9 @@ Func loadRRI($quiet = False)
   GUICtrlSetOnEvent(-1, "rri_winmaxChange")
   $rri_reset_window = GUICtrlCreateButton($__reset_window__, 185, 173, 41, 25, 0)
   GUICtrlSetOnEvent(-1, "rri_reset_windowClick")
+  $rri_colornan = GUICtrlCreateButton($__colornan__, 226, 165, 60, 22, 0)
+  GUICtrlSetOnEvent(-1, "rri_colornanClick")
+  GUICtrlSetTip(-1, $__colornan_hint__)
   $rri_check_auto_render = GUICtrlCreateCheckbox($__auto_render__, 17, 217, 118, 17)
   GUICtrlSetOnEvent(-1, "rri_check_auto_renderClick")
   GUICtrlSetTip(-1, $__auto_render_hint__)
@@ -430,19 +433,19 @@ Func loadRRI($quiet = False)
   $rri_display_folder = GUICtrlCreateButton($__display_folder__, 136, 258, 145, 22, 0)
   GUICtrlSetOnEvent(-1, "rri_display_folderClick")
   GUICtrlSetTip(-1, $__display_folder_hint__)
-  $rri_output = GUICtrlCreateInput("c:\My_nice_function.bmp", 261, 187, 17, 21)
+  $rri_output = GUICtrlCreateInput("c:\My_nice_function.bmp", 197, 203, 17, 21)
   GUICtrlSetOnEvent(-1, "rri_outputChange")
   GUICtrlSetState(-1, $GUI_HIDE)
   $rri_progress = GUICtrlCreateProgress(11, 288, 271, 16)
   $rri_rendering_text = GUICtrlCreateLabel($__rendering__, 17, 270, 102, 17)
   GUICtrlSetOnEvent(-1, "rri_rendering_textClick")
-  $rri_seed = GUICtrlCreateInput("", 241, 187, 17, 21)
+  $rri_seed = GUICtrlCreateInput("", 185, 203, 17, 21)
   GUICtrlSetOnEvent(-1, "rri_seedChange")
   GUICtrlSetState(-1, $GUI_HIDE)
-  $rri_width = GUICtrlCreateInput("rri_width", 261, 164, 17, 21)
+  $rri_width = GUICtrlCreateInput("rri_width", 221, 204, 17, 21)
   GUICtrlSetOnEvent(-1, "rri_widthChange")
   GUICtrlSetState(-1, $GUI_HIDE)
-  $rri_height = GUICtrlCreateInput("rri_height", 241, 164, 17, 21)
+  $rri_height = GUICtrlCreateInput("rri_height", 209, 204, 17, 21)
   GUICtrlSetOnEvent(-1, "rri_heightChange")
   GUICtrlSetState(-1, $GUI_HIDE)
   $rri_detail_label = GUICtrlCreateLabel($__details__, 11, 144, 96, 17, $SS_RIGHT)
@@ -554,6 +557,8 @@ Func loadRRI($quiet = False)
   GUICtrlSetOnEvent(-1, "menu_aboutClick")
   GUICtrlSetStyle($rri_color_code_button, $BS_ICON)
   GUICtrlSetImage($rri_color_code_button, $bin_dir&"RenderCodeColor.ico")
+
+  GUICtrlSetBkColor($rri_colornan, $color_NaN_complex)
 
   If $languages <> False Then
     ;_ArrayDisplay($languages)
@@ -839,6 +844,7 @@ EndFunc   ;==>rri_menu_import_reflexClick
 ;   $formula :
 Func loadFormulaCallback($formula)
   $render_again = False
+  $found_color_nan = False
   For $i = 1 To $formula[0]
     $item = $formula[$i]
     ;Logging("Loading "&$item[0])
@@ -854,10 +860,18 @@ Func loadFormulaCallback($formula)
     Case "resolution"
       updateResolution($item[1])
       $render_again = True
+    Case "colornan"
+      updateColorNAN($item[1])
+      $render_again = True
+      $found_color_nan = True
     Case Else
       logging("Unknown tag : "&$item[0])
     EndSwitch
   Next
+  If Not $found_color_nan Then ; Default NAN color resetted.
+    ResetParameter("color_NaN_complex")
+    updateColorNAN($color_NaN_complex)
+  EndIf
   if $render_again Then renderIfAutoRenderDefault()
 EndFunc   ;==>loadFormulaCallback
 Func rri_menu_resolutionsClick()
@@ -2394,6 +2408,18 @@ Func rri_switch_fractClick()
   EditFormula__UpdateFormulaFromApplication(GUICtrlRead($rri_in_formula))
   renderIfAutoRenderDefault()
 EndFunc ;==>rri_switch_fractClick
+
+Func rri_colornanClick()
+  Local $res = _ChooseColor(2, $color_NaN_complex, 2, $rri_win)
+  If $res == -1 Then Return
+  updateColorNAN($res)
+  renderIfAutoRenderDefault()
+EndFunc
+
+Func updateColorNAN($color)
+  Assign("color_NaN_complex",  $color, 2+4)
+  GUICtrlSetBkColor($rri_colornan, $color_NaN_complex)
+EndFunc
 
 ;============================= UNUSED FUNCS ==================================;
 

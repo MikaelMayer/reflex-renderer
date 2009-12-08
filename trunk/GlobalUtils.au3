@@ -20,7 +20,7 @@
 #include <Math.au3>
 #include <WindowsConstants.au3>
 
-Global Const $VERSION_NUMER = "2.8.9 beta"
+Global Const $VERSION_NUMER = "2.8.10 beta"
 Global Const $COPYRIGHT_DATE = "2009"
 
 Global $ERROR_DECODE_HANDLING = ""

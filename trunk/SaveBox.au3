@@ -396,7 +396,7 @@ Func saveFormulaString($formula, $comment, $save_comment, $save_resolution, $sav
   If $save_window Or $save_resolution  Then
     $result = _ArrayCreate(0)
     ;$options_line_string
-    if $save_window Then
+    If $save_window Then
       $wmi = IniReadSession('winmin', '')
       $wma = IniReadSession('winmax', '')
       If $wmi <> "" and $wma <> "" Then
@@ -404,7 +404,7 @@ Func saveFormulaString($formula, $comment, $save_comment, $save_resolution, $sav
         push($result, 'winmax='&$wma)
       EndIf
     EndIf
-    if $save_resolution Then
+    If $save_resolution Then
       $wx = IniReadSession('width', '')
       $wy = IniReadSession('height', '')
       If $wx <> "" and $wy <> "" Then
@@ -412,6 +412,7 @@ Func saveFormulaString($formula, $comment, $save_comment, $save_resolution, $sav
         push($result, 'height='&$wy)
       EndIf
     EndIf
+    push($result, 'colornan='&Eval("color_NaN_complex"))
     If $result[0] <> 0 Then
       toBasicArray($result)
       $optline = $options_line_string&" "&_ArrayToString($result, "; ")

@@ -521,7 +521,8 @@ int renderPng(const char* formula_string, int width, int height,
   ss << "winmin=" << winmin_string<<"; ";
   ss << "winmax=" << winmax_string<<"; ";
   ss << "width=" << width << "; ";
-  ss << "height=" << height;
+  ss << "height=" << height << "; ";
+  ss << "colornan=" << showbase << hex << colornan;
   ss_string = ss.str();
   text_comment.text = const_cast<char*>(ss_string.c_str());
   //cout << "String got : " << ss.str() << endl;
@@ -622,28 +623,6 @@ inline void set_if_null(const char* &value, const char* DEFAULT) {
 }
 
 
-/*void displayUsage() {
-  cerr << "Usage:" << endl;
-  cerr << "RenderReflex.exe render formula={formula} [options]" << endl;
-  cerr << "  Renders the reflex to a BMP file." << endl;
-  cerr << "  The options are:" << endl;
-  cerr << "    width=[int]  The rendering with in pixels. Default : " << DEFAULT_WIDTH << endl;
-  cerr << "    height=[int] The rendering height in pixels. Default : " << DEFAULT_HEIGHT << endl;
-  cerr << "    winmin=[cplx]   The lower left complex. Default : " << DEFAULT_WINMIN << endl;
-  cerr << "    winmax=[cplx]   The upper right complex. Default :" << DEFAULT_WINMAX << endl;
-  cerr << "    output=[path]   The file where to render. Default : " << DEFAULT_OUTPUT << endl;
-  cerr << "    colornan=[integer] The default NaN color. Default : " << DEFAULT_COLORNAN << endl;
-  cerr << "    realmode=[bool] If it only renders the real part. Default : " << DEFAULT_REALMODE << endl;
-  cerr << "RenderReflex.exe new_window [options]" << endl;
-  cerr << "  Returns new window coordinates if the original window is shifted." << endl;
-  cerr << "  The options are width, height, winmin, winmax, and : "<< endl;
-  cerr << "    delta_x=[int] The horizontal shift. Default : 0"<< endl;
-  cerr << "    delta_y=[int] The vertical shift. Default : 0"<< endl;
-  cerr << "RenderReflex.exe simplify formula={formula} [seed={integer}]" << endl;
-  cerr << "  Simplifies an expression/function. Like a calculator." << endl;
-}*/
-
-
 int main(int argc, char** argv) {
   
   argstream as(argc, argv);
@@ -686,7 +665,7 @@ int main(int argc, char** argv) {
      >> parameter('n', "winmax", winmax_string, "The upper right complex of the reflex", false)
      >> parameter('o', "output", output_string, "The file where to render", false)
      >> parameter('s', "seed", seed, "The seed used by the functions randh and randf", false)
-     >> parameter('c', "colornan", colornan, "The default NaN color in hex", false)
+     >> parameter('c', "colornan", colornan_string, "The default NaN color in hex", false)
      >> option('r', "realmode", realmode, "If it only renders the real part")
      >> option('p', "openoffice", openoffice_formula, "If it outputs the formule using OpenOffice style")
      >> option('l', "latex", latex_formula, "If it outputs the formule using LaTeX style")
