@@ -287,8 +287,8 @@ Func createFormulaEntry(ByRef $formula_items, $tree_control)
   ;The last non-option is the formula
   Dim $tree_view_items_controls = emptySizedArray()
   Dim $first = True, $firsthead
-  Dim $isComment = 0, $isWindow = 0, $isResolution = 0
-  Dim $window_min = "", $window_max = "", $resolution_width = "", $resolution_height = ""
+  Dim $isComment = 0, $isWindow = 0, $isResolution = 0, $isColornan = 0
+  Dim $window_min = "", $window_max = "", $resolution_width = "", $resolution_height = "", $reflex_colornan = ""
   Dim $formula = "", $comment = "", $window = "; ", $resolution = " x "
 
   For $i = 1 To size($formula_items)
@@ -329,6 +329,9 @@ Func createFormulaEntry(ByRef $formula_items, $tree_control)
           $isResolution = BitOR($isResolution, 2)
           $resolution_width = $tab[$FORMULA_ITEM_CONTENT0_VALUE]
           GUICtrlSetColor(-1, 0x00A0A0)
+        ElseIf StringCompare($tab[$FORMULA_ITEM_CONTENT0_KEY], "colornan")==0 Then
+          $isColornan = BitOR($isColornan, 1)
+          $reflex_colornan = $tab[$FORMULA_ITEM_CONTENT0_VALUE]
         EndIf
       Else
         $formula = $formula_item[$FORMULA_ITEM_CONTENT0]
@@ -343,8 +346,8 @@ Func createFormulaEntry(ByRef $formula_items, $tree_control)
   $resolution = StringFormat("%s x %s", $resolution_width, $resolution_height)
   Dim $formula_entry[$FORMULA_ENTRY_SIZE]
   $formula_entry[$FORMULA_ENTRY_TREEVIEWITEMS] = $tree_view_items_controls
-  $formula_entry[$FORMULA_ENTRY_IFOPTIONS]     = _ArrayCreate(True, $isComment, $isWindow==3, $isResolution==3)
-  $formula_entry[$FORMULA_ENTRY_OPTIONS]       = _ArrayCreate($formula, $comment, $window, $resolution)
+  $formula_entry[$FORMULA_ENTRY_IFOPTIONS]     = _ArrayCreate(True, $isComment, $isWindow==3, $isResolution==3, $isColornan)
+  $formula_entry[$FORMULA_ENTRY_OPTIONS]       = _ArrayCreate($formula, $comment, $window, $resolution, $reflex_colornan)
   Return $formula_entry
 EndFunc
 

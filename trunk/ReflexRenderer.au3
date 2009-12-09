@@ -1507,19 +1507,23 @@ Func render($id_rendu)
 EndFunc   ;==>render
 
 ;   $flags :
-Func startRendering($flags)
-  GUICtrlSetState($rri_rendering_text, $GUI_SHOW)
-  GUICtrlSetState($rri_progress, $GUI_SHOW)
-  GUICtrlSetData($rri_progress, 0)
-  If $pid_rendering <> 0 or $rendering_thread Then
-    ;Kill the previous process first
-    ProcessClose($pid_rendering)
+Func startRendering($flags, $background = False)
+  If Not $background Then
+    GUICtrlSetState($rri_rendering_text, $GUI_SHOW)
+    GUICtrlSetState($rri_progress, $GUI_SHOW)
+    GUICtrlSetData($rri_progress, 0)
+    If $pid_rendering <> 0 or $rendering_thread Then
+      ;Kill the previous process first
+      ProcessClose($pid_rendering)
+    EndIf
+    $REFLEX_RENDERING = $REFLEX_RENDERED_IN_HR
+    $REFLEX_RENDERED_FINISHED = False
+    $pid_rendering = runReflexWithArguments('--render'&$flags)
+    startTimers()
+    $rendering_thread = True
+  Else
+    runReflexWithArguments('--render'&$flags)
   EndIf
-  $REFLEX_RENDERING = $REFLEX_RENDERED_IN_HR
-  $REFLEX_RENDERED_FINISHED = False
-  $pid_rendering = runReflexWithArguments('--render'&$flags)
-  startTimers()
-  $rendering_thread = True
 EndFunc   ;==>startRendering
 
 Func startTimers()
@@ -1685,8 +1689,12 @@ EndFunc   ;==>handlePostFinishedRendering
 
 ;   $flags        :
 ;   $bool_highres :
-Func renderWithFlags($flags, $bool_highres)
-  startRendering($flags)
+Func renderWithFlags($flags, $bool_highres, $background=False)
+  startRendering($flags, $background)
+  If $background Then
+    autosaveFormula()
+    Return
+  EndIf
   $rendering_thread = False
   ;Override what the render engine thinks
   If $bool_highres Then
@@ -1709,7 +1717,7 @@ Func getFirstAvailableFileName($filename)
   Return $filename
 EndFunc   ;==>getFirstAvailableFileName
 
-Func saveReflex($width_local=Default, $height_local=Default)
+Func saveReflex($width_local=Default, $height_local=Default, $render_background=False)
   logging("Save Reflex with parameters : "&$width_local&", "&$height_local)
   Local $reflex_file = UpdateMyDocuments(IniReadSavebox('reflexFile', ''))
   $reflex_file = getFirstAvailableFileName($reflex_file)
@@ -1761,23 +1769,27 @@ Or $REFLEX_RENDERED = $REFLEX_NOT_UP_TO_DATE Or $width_local <> Default Then
     EndIf
     If isChecked($rri_realmode) Then addFlag($flags, "realmode")
     addFlag($flags, "colornan", $color_NaN_complex)
-    If $pid_rendering <> 0 or $rendering_thread Then
-      ;Kill the previous process first
-      ProcessClose($pid_rendering)
-      $rendering_thread = False
-      ; TODO: Make everything greyed (not active)
-    EndIf
-    Local $success
-    Do
-      $success = renderWithFlags($flags, $highres)
-      If Not $success Or Not FileExists($out_raw_file) Then
-        If 1 == MsgBox(1, "Error", "Could not render with flags. Try again ?") then ContinueLoop
-        ExitLoop
+    If $render_background and $isPng Then ; Only PNG supports background rendering
+      renderWithFlags($flags, $highres, $render_background)
+    Else
+      If $pid_rendering <> 0 or $rendering_thread Then
+        ;Kill the previous process first
+        ProcessClose($pid_rendering)
+        $rendering_thread = False
+        ; TODO: Make everything greyed (not active)
       EndIf
-    Until $success
-    If $success Then
-      repositionneRendu($rri_out_rendu, 0, 0)
-      GUICtrlSetImage($rri_out_rendu, $out_raw_file)
+      Local $success
+      Do
+        $success = renderWithFlags($flags, $highres)
+        If Not $success Or Not FileExists($out_raw_file) Then
+          If 1 == MsgBox(1, "Error", "Could not render with flags. Try again ?") then ContinueLoop
+          ExitLoop
+        EndIf
+      Until $success
+      If $success Then
+        repositionneRendu($rri_out_rendu, 0, 0)
+        GUICtrlSetImage($rri_out_rendu, $out_raw_file)
+      EndIf
     EndIf
     ;FocusRenderButton()
   EndIf

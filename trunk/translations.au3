@@ -234,6 +234,8 @@ Global $__unknown_file_format_s__
   Global $__rri_ratio21_hint__
   Global $__colornan__
   Global $__colornan_hint__
+  Global $__render_background__
+  Global $__render_background_hint__
   ;ADD_DECLARATION
 
 LoadTranslations()
@@ -475,6 +477,8 @@ add($affectations, "__wait_while_generating__", $gui_section, 'Wait while genera
   add($affectations, "__rri_ratio21_hint__", $gui_section, 'ratio21 hint', '640x320,1024x512,2000x1000 ...')
   add($affectations, "__colornan__", $gui_section, 'colorNaN', 'ColorNaN')
   add($affectations, "__colornan_hint__", $gui_section, 'colornan hint', 'The color to use when the computation fails')
+  add($affectations, "__render_background__", $gui_section, 'Background', 'Background')
+  add($affectations, "__render_background_hint__", $gui_section, 'render background hint', 'Renders the Reflex in a separate independent process')
   ;ADD_AFFECTATION
 
   If $updates and Not @Compiled Then
