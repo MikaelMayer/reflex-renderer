@@ -27,6 +27,7 @@
 Global $QUICKSAVE_BOX_EXISTS = False
 Global $QUICKSAVE_BOX_CALLBACK="", $QUICKSAVE_BOX_PARENT_WINDOW = 0
 Global $qs_width_value = -1, $qs_height_value = -1
+Global $qs_background_value = False
 Global $current_ratio = ""
 
 Func QuickSaveBox__setParentWindow($win)
@@ -34,7 +35,7 @@ Func QuickSaveBox__setParentWindow($win)
 EndFunc
 
 #Region ### Form Variables
-Global $qs_win=0, $qs_comment=0, $qs_resolution_list=0, $qs_width=0, $qs_height=0, $qs_label=0, $qs_ok=0
+Global $qs_win=0, $qs_comment=0, $qs_resolution_list=0, $qs_width=0, $qs_height=0, $qs_label=0, $qs_ok=0, $qs_background=0
 #EndRegion ### Form Variables
 
 Func generateQuickSaveBox($parent, $ratio)
@@ -64,8 +65,11 @@ Func generateQuickSaveBox($parent, $ratio)
   GUICtrlSetOnEvent(-1, "qs_heightChange")
   $qs_label = GUICtrlCreateLabel($__quick_save_that__, 8, 12, 164, 49)
   GUICtrlSetOnEvent(-1, "qs_labelClick")
-  $qs_ok = GUICtrlCreateButton($__ok__, 48, 137, 81, 25, $BS_DEFPUSHBUTTON)
+  $qs_ok = GUICtrlCreateButton($__ok__, 8, 137, 81, 25, $BS_DEFPUSHBUTTON)
   GUICtrlSetOnEvent(-1, "qs_okClick")
+  $qs_background = GUICtrlCreateCheckbox($__render_background__, 93, 141, 73, 17)
+  GUICtrlSetOnEvent(-1, "qs_backgroundClick")
+  GUICtrlSetTip(-1, $__render_background_hint__)
   #EndRegion ### END Koda GUI section ###
 
   GUICtrlSetData($qs_label, $Give_a_comment_for_this_reflex_&@CRLF& _
@@ -99,6 +103,7 @@ Func generateQuickSaveBox($parent, $ratio)
     GUICtrlSetData($qs_width, $qs_width_value)
     GUICtrlSetData($qs_height, $qs_height_value)
   EndIf
+  check($qs_background, $qs_background_value)
   $current_ratio = $ratio
 
   $defaultComment = IniReadSavebox('formulaComment', $My_nice_function)
@@ -111,6 +116,10 @@ Func generateQuickSaveBox($parent, $ratio)
 
   GUISetState(@SW_SHOW, $qs_win)
   WinSetOnTop($qs_win, "", 1)
+EndFunc
+
+Func qs_backgroundClick()
+  $qs_background_value = IsChecked($qs_background)
 EndFunc
 
 Func QuickSaveBox__MoveCenter($c)
@@ -184,7 +193,7 @@ Func qs_okClick()
   Local $width_local = GUICtrlRead($qs_width)
   Local $height_local = GUICtrlRead($qs_height)
   qs_winClose()
-  saveboxSave($width_local, $height_local)
+  saveboxSave($width_local, $height_local, $qs_background_value)
 EndFunc
 
 Func qs_winClose()

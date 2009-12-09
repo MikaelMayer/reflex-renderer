@@ -366,7 +366,7 @@ Func maybeUpdateReflexFilename($sb_formula_comment, $sb_formula_filename, _
   EndIf
 EndFunc
 
-Func saveboxSave($width_local=Default, $height_local=Default)
+Func saveboxSave($width_local=Default, $height_local=Default, $render_background=False)
   $save_fr = isSavebox('saveBoth')
   $save_f  = isSavebox('saveFormula') or $save_fr
   $save_r  = isSavebox('saveReflex') or $save_fr
@@ -378,7 +378,7 @@ Func saveboxSave($width_local=Default, $height_local=Default)
     If Not $continue Then Return
   EndIf
   If $save_r Then
-    saveReflex($width_local, $height_local)
+    saveReflex($width_local, $height_local, $render_background)
   EndIf
 EndFunc
 ;saveReflex() is defined in ReflexRender.au3

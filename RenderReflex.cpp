@@ -74,7 +74,7 @@ void putInvertedNumber(ofstream &file, int size, int number) {
 // Takes a string in input, the name is for debug purpose only.
 // final_string is an array of size MAX_FUNC_LENGTH where the formula will be stored,
 // if there was any randomness.
-Function* getFunction(const char* string, char* final_string, const char* name, bool force_output=false) {
+Function* getFunction(const char* string, char* final_string, const char* name, bool force_output=false, STRING_TYPE formula_style=DEFAULT_TYPE) {
   Parseur *parseur = new Parseur(string);
   Function *function = parseur->valeurFonction();
   if(!function) {
@@ -89,7 +89,7 @@ Function* getFunction(const char* string, char* final_string, const char* name, 
   } else {
     if(parseur->hasBeenMacro() || force_output) {//On recopie la fonction...
       TCHAR funcstring[MAX_FUNC_LENGTH];
-			*(function->toStringConst(funcstring, funcstring+MAX_FUNC_LENGTH))=L'\0';
+			*(function->toStringConst(funcstring, funcstring+MAX_FUNC_LENGTH, formula_style))=L'\0';
       cout << "formula:" << funcstring << endl;
       if(final_string != NULL)
         _tcscpy(final_string, funcstring);
@@ -498,7 +498,7 @@ int renderPng(const char* formula_string, int width, int height,
   }
   delete []row_pointer;
   f_formula = f_formula->kill();
-  //TODO: Write comments as usual.
+  //Writes comments
   //Formula
   //@Options, etc.
   png_text text_title, text_comment, text_software;
@@ -574,11 +574,11 @@ int simplify_formula(const char* formula_string, int seed_init, STRING_TYPE form
   bool fine = true;
   int errpos = 0;
 
-  TCHAR final_funcstring[MAX_FUNC_LENGTH];
+  //TCHAR final_funcstring[MAX_FUNC_LENGTH];
 
   srand(seed_init);
   // We force the simplification of the formula
-  Function *f_formula = getFunction(formula_string, final_funcstring, "Formula", true);
+  Function *f_formula = getFunction(formula_string, NULL, "Formula", true, formula_style);
   fine = fine && f_formula;
   if(f_formula)	f_formula = f_formula->kill();
   if(!fine) {
