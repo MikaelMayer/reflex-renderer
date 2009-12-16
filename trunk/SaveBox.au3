@@ -308,6 +308,8 @@ EndFunc
 
 Func sb_save_settingsClick()
   SaveSavebox($saveboxParametersMap, $saveboxCheckBoxMap)
+  ; TODO: export that:
+  $rri_comment = GUICtrlRead($sb_formula_comment)
 EndFunc
 
 Func sb_save_typeClick()

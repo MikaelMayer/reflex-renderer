@@ -857,6 +857,7 @@ Func loadFormulaCallback($formula)
       $render_again = True
     Case "comment"
       $rri_comment = $item[1]
+      logging("Imported comment "&$rri_comment)
     Case "resolution"
       updateResolution($item[1])
       $render_again = True
@@ -877,7 +878,11 @@ EndFunc   ;==>loadFormulaCallback
 Func rri_menu_resolutionsClick()
 EndFunc   ;==>rri_menu_resolutionsClick
 Func rri_menu_saveClick()
+  $was_opened = $SAVE_BOX_EXISTS
   $savingParameters = SaveBox__createInstance()
+  If Not $was_opened Then
+    sb_formula_commentSet($rri_comment)
+  EndIf
 EndFunc   ;==>rri_menu_saveClick
 ;   $savingParameters :
 Func SaveBoxCallback($savingParameters)
@@ -900,7 +905,7 @@ Func rri_quicksaveClick()
   Else
     $type = $width_highres&":"&$height_highres
   EndIf
-  generateQuickSaveBox($rri_win, $type)
+  generateQuickSaveBox($rri_win, $type, $rri_comment)
 EndFunc   ;==>rri_quicksaveClick
 Func rri_display_folderClick()
   Run("C:\WINDOWS\EXPLORER.EXE /n,/select," & UpdateMyDocuments(IniReadSavebox('reflexFile', '')))
@@ -1115,12 +1120,22 @@ Func updateResolution($resolution_string)
   logging("updateResolution("&$resolution_string&")")
   if StringInStr($resolution_string, ' x ') <> 0 Then
     $elements = StringSplit($resolution_string, ' x ', 1)
-    GUICtrlSetData($rri_width, $elements[1])
-    GUICtrlSetData($rri_height, $elements[2])
+    Local $w = Int($elements[1]), $h = Int($elements[2])
+    If ($w > $output_max_size Or $h > $output_max_size) Then
+      If $w >= $h Then
+        $h = Int(($output_max_size*$h)/$w)
+        $w = $output_max_size
+      Else
+        $w = Int(($output_max_size*$w)/$h)
+        $h = $output_max_size
+      EndIf
+    EndIf
+    GUICtrlSetData($rri_width, $w)
+    GUICtrlSetData($rri_height, $h)
     $w = Int($elements[1])
     $h = Int($elements[2])
-    $percent = Int(400 * _Min($output_max_size/$w, $output_max_size/$h))/4
-    setPreviewPercent($percent)
+    ;$percent = Int(400 * _Min($output_max_size/$w, $output_max_size/$h))/4
+    ;setPreviewPercent($percent)
     calculateWidthHeight()
   EndIf
 EndFunc   ;==>updateResolution

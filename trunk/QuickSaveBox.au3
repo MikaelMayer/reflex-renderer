@@ -38,7 +38,7 @@ EndFunc
 Global $qs_win=0, $qs_comment=0, $qs_resolution_list=0, $qs_width=0, $qs_height=0, $qs_label=0, $qs_ok=0, $qs_background=0
 #EndRegion ### Form Variables
 
-Func generateQuickSaveBox($parent, $ratio)
+Func generateQuickSaveBox($parent, $ratio, $comment)
   If $QUICKSAVE_BOX_EXISTS Then
     If Not ($parent == 0) Then
       QuickSaveBox__MoveCenter(WinGetPos($parent))
@@ -106,7 +106,7 @@ Func generateQuickSaveBox($parent, $ratio)
   check($qs_background, $qs_background_value)
   $current_ratio = $ratio
 
-  $defaultComment = IniReadSavebox('formulaComment', $My_nice_function)
+  $defaultComment = $comment
   $defaultComment = getFirstAvailableComment($defaultComment)
   GUICtrlSetData($qs_comment, $defaultComment)
   ;GUICtrlSetData($sq_resolution_list, "Custom")
@@ -176,6 +176,7 @@ Func qs_okClick()
   If $result == "" Then Return
 
   SaveBox__updateComment($result)
+  $rri_comment = $result
   SaveSession()
   If isSavebox('useComment') Then
     $rfn = reflexFileNameFromComment( _
