@@ -1,6 +1,6 @@
 /*******************************
  * Name:	lexeur.cpp
- * Author:	Mikaël Mayer
+ * Author:	Mikaï¿½l Mayer
  * Purpose:	Implements lexeur and Parser class
  * History: Work started 20070901
  *********************************/
@@ -152,7 +152,7 @@ Lexeme* Lexeur::readChain() {
 		count++;
 		avancerCar();
 	}
-	if(count==1) {//Variables prédéfinies
+	if(count==1) {//Variables prï¿½dï¿½finies
 		if(*debut == L'z')
 			return new LexIdentity();
 		if(*debut == L'x')
@@ -166,7 +166,7 @@ Lexeme* Lexeur::readChain() {
 	}
 	if(count==2 && (*debut == L'p' || *(debut+1) == L'i'))
 		return new LexComplex(cplx(PI, 0));
-	return new LexFunction(debut, count);//Une chaîne de caractères est une fonction, pour l'instant.
+	return new LexFunction(debut, count);//Une chaï¿½ne de caractï¿½res est une fonction, pour l'instant.
 	//return new LexChain(nom);
 }
 
@@ -177,7 +177,7 @@ Lexeme* Lexeur::readVariable() {
 		count++;
 		avancerCar();
 	}
-	//Variables prédéfinies à mettre ici.
+	//Variables prï¿½dï¿½finies ï¿½ mettre ici.
 	return new LexVariable(debut, count);
 }
 
@@ -214,7 +214,7 @@ Lexeme* Lexeur::readNumber() {
 			  avancerCar();
 		  }
       if(puissanceDix==0.1 && count == 0) {
-        return new LexOperator(TEXT('*'));
+        return new LexOperator(TEXTC('*'));
       }
     }
     // TODO: Lire l'exposant.
@@ -235,13 +235,13 @@ Lexeme* Lexeur::readNumber() {
         }
       }
       if(!isDigit()) {
-        //cela peut être 10.3exp(z), on revient à 10.3
+        //cela peut ï¿½tre 10.3exp(z), on revient ï¿½ 10.3
         //ou bien 10.3e+exp qui ne veut rien dire.
         reculerCar();
         if(isOperator()) {
           //ou bien 10.3e+exp qui ne veut rien dire.
           throw PARSE_ERROR_UNKNOWN;
-        } // else le prochain caractère non traité est 'e'
+        } // else le prochain caractï¿½re non traitï¿½ est 'e'
       } else {
         int count=0;
         int exponent = _readInteger(count);
@@ -252,8 +252,8 @@ Lexeme* Lexeur::readNumber() {
           puissanceDix = 10.0;
         }
         double reste = 1.0;
-        // A chaque itération, Cste = puissanceDix^exponent*reste
-        // Au début, puissanceDix = 10 donc Cste = 10^exponent
+        // A chaque itï¿½ration, Cste = puissanceDix^exponent*reste
+        // Au dï¿½but, puissanceDix = 10 donc Cste = 10^exponent
         // A la fin, exponent = 1 donc puissanceDix*reste = Cste
         if(exponent == 0) {
           puissanceDix = 1.0;
@@ -311,7 +311,7 @@ Parseur::Parseur(const TCHAR *chaine) {
 }
 
 Parseur::~Parseur() {
-	//On détruit les lexèmes utilisés. Chaque lexème détruit les données allouées.
+	//On dï¿½truit les lexï¿½mes utilisï¿½s. Chaque lexï¿½me dï¿½truit les donnï¿½es allouï¿½es.
 	Lexeme *lexTemp=NULL;
 	while(lexDestruction!=NULL) {
 		lexTemp = lexDestruction->lexPrec;
@@ -348,7 +348,7 @@ void Parseur::setPosition(int c) {
 void Parseur::avancerLex() {
 	Lexeme *lexTemp = lexCourant;
 	lexCourant = entree->readLexeme();
-	//Stockage du dernier lexème non nul pour la destruction de tous.
+	//Stockage du dernier lexï¿½me non nul pour la destruction de tous.
 	if(lexCourant) {
 		lexCourant->lexPrec = lexTemp;
 		lexDestruction = lexCourant;
@@ -375,17 +375,17 @@ void Parseur::lireVirgule() {
 	avancerLex();
 }
 
-/* Grammaire utilisée: Alphabet E,P,F,X, +les fonctions de base + les nombres.
+/* Grammaire utilisï¿½e: Alphabet E,P,F,X, +les fonctions de base + les nombres.
  * Axiome: E.
  * Actions: E->E+P	E->E-P	E->P
- *			P->F*P	P->F/P	P->F	P->F P (au moins un séparateur)
- *			F->F^I	F->X	F^X si le lexème après ^ n'est pas un entier.
+ *			P->F*P	P->F/P	P->F	P->F P (au moins un sï¿½parateur)
+ *			F->F^I	F->X	F^X si le lexï¿½me aprï¿½s ^ n'est pas un entier.
  *			X->z	X->constante complexe|i|$variable
  *			X->fonction_unaire(E)	X->(E)	X->-X
  *			X->fonction_binaire(E, E)	pour la composition
  *			X->oo(E, I)	pour la composition multiple
  *			I->entier
- * Comme cela, on récupère facilement les z+(2+i)
+ * Comme cela, on rï¿½cupï¿½re facilement les z+(2+i)
  * Pour traiter les (z+1)z
  */
 
@@ -407,7 +407,7 @@ Function *Parseur::lireE() {
 			} else break;
 		}
 		return Total;
-	} catch(PARSE_ERROR e) {//On supprime ce qu'on a déjà fabriqué, et on renvoie une erreur.
+	} catch(PARSE_ERROR e) {//On supprime ce qu'on a dï¿½jï¿½ fabriquï¿½, et on renvoie une erreur.
 		if(Total)
 			Total->kill();
 		f=e;
@@ -430,13 +430,13 @@ Function *Parseur::lireP() {
 					F2=lireF();
 					Total=E1->getOperator(Total, F2);
 				} else break;
-			} else {//Ce n'est pas un opérateur, c'est donc une multiplication cachée.
+			} else {//Ce n'est pas un opï¿½rateur, c'est donc une multiplication cachï¿½e.
 				F2=lireP();
 				Total=new Multiplication(Total, F2);
 			}
 		}
 		return Total;
-	} catch(PARSE_ERROR e) {//On supprime ce qu'on a déjà fabriqué, et on renvoie une erreur.
+	} catch(PARSE_ERROR e) {//On supprime ce qu'on a dï¿½jï¿½ fabriquï¿½, et on renvoie une erreur.
 		if(Total)
 			Total->kill();
 		f=e;
@@ -464,7 +464,7 @@ Function *Parseur::lireF() {
 			} else break;
 		}
 		return Total;
-	} catch(PARSE_ERROR e) {//On supprime ce qu'on a déjà fabriqué, et on renvoie une erreur.
+	} catch(PARSE_ERROR e) {//On supprime ce qu'on a dï¿½jï¿½ fabriquï¿½, et on renvoie une erreur.
 		if(Total)
 			Total->kill();
 		f=e;

@@ -1,6 +1,6 @@
 /*******************************
  * Name:	lexeur.h
- * Author:	Mikaël Mayer
+ * Author:	Mikaï¿½l Mayer
  * Purpose:	The Lexeur Class can interpret a chain into Lexemes,
  *		which are more easy to interpret after.
  *			The Parser Class uses a Lexeur and a grammar

@@ -1,12 +1,13 @@
 /*******************************
  * Name:	complex.cpp
- * Author:	Mikaël Mayer
+ * Author:	Mikaï¿½l Mayer
  * Purpose:	Implements the complex number class cplx
  * History: Work started 20070901
  *********************************/
 
 #include "stdafx.h"
 #include "complex.h"
+
 /*
  *Fonctions de base, gestion bas niveau des complexes
  */
@@ -22,7 +23,7 @@ cplx cplx::realcplx()				{ return cplx(r,0); }
 cplx cplx::imagcplx()				{ return cplx(i,0); }
 
 /*
- *Opérateurs de base et propriétés des complexes.
+ *Opï¿½rateurs de base et propriï¿½tï¿½s des complexes.
  */
 
 cplx& cplx::operator+= (const cplx &z){ r+=z.r; i+=z.i; return *this;}
@@ -42,7 +43,7 @@ double cplx::argument() const {
 }
 
 /*
- *Opérateurs permettant l'utilisation facile des complexes.
+ *Opï¿½rateurs permettant l'utilisation facile des complexes.
  */
 
 cplx operator +(const cplx & z, const cplx & w)	{cplx res=z; res+=w; return res;}
@@ -70,7 +71,7 @@ cplx operator ^(const cplx & z, int w){
 
 
 /*
- *Fonctions trigonométriques et hyperboliques.
+ *Fonctions trigonomï¿½triques et hyperboliques.
  */
 
 cplx exp(cplx & z)		{ return cplx(exp(z.r)*cos(z.i),exp(z.r)*sin(z.i)); }
@@ -89,22 +90,22 @@ cplx tan(cplx & z) {
 	return cplx(4*exp2i*sr*cr/denom, (exp2i*exp2i-1.0)/denom);
 }
 
-cplx sinh(cplx & z)		{ return 0.5*(exp(z)-exp(0-z)); }
-cplx cosh(cplx & z)		{ return 0.5*(exp(z)+exp(0-z)); }
-cplx tanh(cplx & z)		{ return 1+((-2)/(exp(2*z)+1));}
+cplx sinh(cplx & z)		{ cplx mz = 0-z; return 0.5*(exp(z)-exp(mz)); }
+cplx cosh(cplx & z)		{ cplx mz = 0-z; return 0.5*(exp(z)+exp(mz)); }
+cplx tanh(cplx & z)		{ cplx dz = 2*z; return 1+((-2)/(exp(dz)+1));}
 
 /*
- *Fonctions réciproques
+ *Fonctions rï¿½ciproques
  */
 
-cplx ln(cplx & z)		{ return cplx(log(z.module()),z.argument()); }
-cplx sqrt(cplx & z)		{ return sqrt(z.module())*exp(cplx(0,0.5)*z.argument()); }
+cplx ln(cplx z)		{ return cplx(log(z.module()),z.argument()); }
+cplx sqrt(cplx z)		{ cplx tmp = cplx(0,0.5)*z.argument(); return sqrt(z.module())*exp(tmp); }
 
-cplx argsh(cplx & z)	{ return ln(z+sqrt((z^2)+1)); }
-cplx argch(cplx & z)	{ return ln(z+sqrt((z^2)-1)); }
-cplx argth(cplx & z)	{ return 0.5*ln((z+1)/(1-z)); }
+cplx argsh(cplx & z)	{ cplx tmp1 = (z^2)+1; cplx tmp2 = z+sqrt(tmp1); return ln(tmp2); }
+cplx argch(cplx & z)	{ cplx tmp1 = (z^2)-1; cplx tmp2 = z+sqrt(tmp1); return ln(tmp2); }
+cplx argth(cplx & z)	{ cplx tmp = (z+1)/(1-z); return 0.5*ln(tmp); }
 
-cplx arcsin(cplx & z)	{ return mI*ln(I*z+sqrt(1-(z^2))); }
+cplx arcsin(cplx & z)	{ cplx tmp = I*z+sqrt(1-(z^2)); return mI*ln(tmp); }
 cplx arccos(cplx & z)	{ return z.real()*z.imag()<0?mI*ln(z-sqrt((z^2)-1)):mI*ln(z+sqrt((z^2)-1)); }
 cplx arctan(cplx & z)	{ return cplx(0,-0.5)*ln((2/(z.r*z.r+(z.i+1)*(z.i+1)))*cplx(z.i+1,z.r)-1); }
 
@@ -195,19 +196,19 @@ unsigned short cplx::couleur16(){
 void cplx::toStringLeft(TCHAR *ibuff, int size) {
   int n =  _sntprintf(ibuff, size, TEXT("%.4g%+.4gi"), r, i), nmax = size - 1;
   while (n < nmax)
-    ibuff[n++] = TEXT(' ');
-  ibuff[nmax] = TEXT('\0');
+    ibuff[n++] = TEXTC(' ');
+  ibuff[nmax] = TEXTC('\0');
 }
 void cplx::toStringRight(TCHAR *ibuff, int size) {
   int n = _sntprintf(ibuff, size, TEXT("%.4g%+.4gi"), r, i);
   int i = size - 2, imin = size - 2 - n + 1;
-  ibuff[size - 1] = TEXT('\0');
+  ibuff[size - 1] = TEXTC('\0');
   while (i >= imin) {
     ibuff[i] = ibuff[i - imin];
     i--;
   }
   while (i >= 0) {
-    ibuff[i] = TEXT(' ');
+    ibuff[i] = TEXTC(' ');
     i--;
   }
 }

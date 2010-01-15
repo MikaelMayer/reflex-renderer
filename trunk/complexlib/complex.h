@@ -1,6 +1,6 @@
 /*******************************
  * Name:	complex.h
- * Author:	Mikaël Mayer
+ * Author:	Mikaï¿½l Mayer
  * Purpose:	The complex class,
  *   with operators and 16bits color converting.
  * History: Work started 20070901
@@ -10,6 +10,7 @@
 #define COMPLEX_H
 
 #include <limits>
+#include <math.h>
 
 #define PI 3.14159265359
 #define SQ3 1.73205080757
@@ -34,7 +35,7 @@ public:
 	cplx imagcplx();
 
 /*
- *Opérateurs de base et propriétés des complexes.
+ *Opï¿½rateurs de base et propriï¿½tï¿½s des complexes.
  */
 
 	cplx& operator+= (const cplx &);
@@ -52,12 +53,12 @@ public:
 	friend cplx arctan(cplx & z);
 	friend cplx operator -(const cplx & z);
 
-	//Fonctions trigonométriques associées (calcul accéléré);
+	//Fonctions trigonomï¿½triques associï¿½es (calcul accï¿½lï¿½rï¿½);
 	friend cplx sin(cplx & z);
 	friend cplx cos(cplx & z);
 	friend cplx tan(cplx & z);
 	/*
-	 *Fonctions trigonométriques et hyperboliques.
+	 *Fonctions trigonomï¿½triques et hyperboliques.
 	 */
 
 	friend cplx sinh(cplx & z);
@@ -69,7 +70,7 @@ public:
 	COLORREF couleur24();
 	unsigned short couleur16();
   static COLORREF color_NaN;
-//Fonction pour en faire une chaîne lisible.
+//Fonction pour en faire une chaï¿½ne lisible.
 	void toStringLeft(TCHAR*, int sizeBuffer);
 	void toStringRight(TCHAR*, int sizeBuffer);
 	void toString(TCHAR*);
@@ -84,7 +85,7 @@ const cplx mUn(-1,0);
 const cplx J(-0.5,SQ3*0.5);
 
 /*
- *Opérateurs permettant l'utilisation facile des complexes.
+ *Opï¿½rateurs permettant l'utilisation facile des complexes.
  */
 
 cplx operator +(const cplx & z, const cplx & w);
@@ -95,11 +96,11 @@ cplx operator ^(const cplx & z, int w);
 
 
 /*
- *Fonctions réciproques
+ *Fonctions rï¿½ciproques
  */
 
-cplx ln(cplx & z);
-cplx sqrt(cplx & z);
+cplx ln(cplx z);
+cplx sqrt(cplx z);
 
 cplx argsh(cplx & z);
 cplx argch(cplx & z);

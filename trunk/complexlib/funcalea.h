@@ -1,6 +1,6 @@
 /*******************************
  * Name:	funcalea.h
- * Author:	Mikaël Mayer
+ * Author:	Mikaï¿½l Mayer
  * Purpose:	This file enable to c
  reate random functions thanks to a random-tree.
  * History: Work started 20071028

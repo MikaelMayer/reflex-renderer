@@ -1,6 +1,6 @@
 /*******************************
  * Name:	functionFactory.h
- * Author:	Mikaël Mayer
+ * Author:	Mikaï¿½l Mayer
  * Purpose:	Creates functions factories for several functions.
  * History: Work started 20080910
  *********************************/

@@ -1,6 +1,6 @@
 /*******************************
  * Name:	functions.cpp
- * Author:	Mikaël Mayer
+ * Author:	Mikaï¿½l Mayer
  * Purpose:	Implements the Function class
  * History: Work started 20070901
  *********************************/
@@ -41,9 +41,9 @@ Function *FunctionUnary::simplifie() {
 	//Si la fonction est constante, on la simplifie.
 	if(!simplifieArgFunctionUnary()) return this;
 	//Ici, cela veut dire que l'argument est constant.
-	//On fait donc simple... on garde la constante de l'argument, modifiée, et on se supprime.
+	//On fait donc simple... on garde la constante de l'argument, modifiï¿½e, et on se supprime.
 	cplx res = eval((dynamic_cast<Constante*>(argument))->valeur);
-	kill();//On tue récursivement le noeud et son fils.
+	kill();//On tue rï¿½cursivement le noeud et son fils.
 	return new Constante(res);//Et on retourne une nouvelle constante.
 }
 
@@ -72,8 +72,8 @@ bool FunctionBinary::simplifieArgFunctionBinary() {
 Function *FunctionBinary::simplifie() {
 	if(!simplifieArgFunctionBinary()) return this;
 	cplx res = eval((dynamic_cast<Constante*>(argument))->valeur);
-	kill();						//On tue récurivement le noeud et son fils.
-	return new Constante(res);	//On récupère une nouvelle constante.
+	kill();						//On tue rï¿½curivement le noeud et son fils.
+	return new Constante(res);	//On rï¿½cupï¿½re une nouvelle constante.
 }
 
 //Cas particulier de la fonction compose.
@@ -84,16 +84,17 @@ Function *Compose::simplifie() {
 		kill();
 		return new Constante(res);
 	} else if(argument2->isConstant()) {
-		cplx res = eval(cplx(0));//Peu importe l'endroit où on l'évalue.
+    cplx tmp(0);
+		cplx res = eval(tmp);//Peu importe l'endroit oï¿½ on l'ï¿½value.
 		kill();
 		return new Constante(res);
 	} else if(argument == Identity::get()) {
-		//une composition avec l'identité => c'est la deuxième fonction
+		//une composition avec l'identitï¿½ => c'est la deuxiï¿½me fonction
 		Function *f = argument2;
 		delete this;
 		return f;
 	} else if(argument2 == Identity::get()) {
-		//une composition avec l'identité => c'est la deuxième fonction
+		//une composition avec l'identitï¿½ => c'est la deuxiï¿½me fonction
 		Function *f = argument;
 		delete this;
 		return f;
@@ -153,15 +154,17 @@ cplx Soustraction::eval(cplx & z)	    {return argument->eval(z)-argument2->eval(
 cplx Soustraction::evalFast()	        {return argument->evalFast()-argument2->evalFast();}
 cplx Division::eval(cplx & z)		      {return argument->eval(z)/argument2->eval(z);}
 cplx Division::evalFast()		          {return argument->evalFast()/argument2->evalFast();}
-cplx Compose::eval(cplx & z)		      {return argument->eval(argument2->eval(z));}
-//TODO: Comparer cette méthode avec celle de remplacer l'objet courant et de le restaurer
-cplx Compose::evalFast()		          {return argument->eval(argument2->evalFast());}
+cplx Compose::eval(cplx & z)		      {cplx tmp = argument2->eval(z); return argument->eval(tmp);}
+//TODO: Comparer cette mï¿½thode avec celle de remplacer l'objet courant et de le restaurer
+cplx Compose::evalFast()		          {cplx tmp = argument2->evalFast(); return argument->eval(tmp);}
 cplx ExposantComplexe::eval(cplx & z) {
   cplx w = argument2->eval(z);
   if(w.real()!=w.real() && w.imag()!=w.imag()) return cplx(1);
-  return exp(w*ln(argument->eval(z)));
+  cplx tmp = argument->eval(z);
+  cplx exparg = w*ln(tmp);
+  return exp(exparg);
 }
-cplx ExposantComplexe::evalFast()     {return exp(argument2->evalFast()*ln(argument->evalFast()));}
+cplx ExposantComplexe::evalFast()     {cplx lntmp = argument->evalFast(); cplx exparg = argument2->evalFast()*ln(lntmp); return exp(exparg);}
 
 cplx CompositionRecursive::eval(cplx & z) {
 	cplx resultat=z;
@@ -170,7 +173,7 @@ cplx CompositionRecursive::eval(cplx & z) {
 	while(i>0) {
     resultat_tmp = argument->eval(resultat);
     resultat = resultat_tmp;
-    i--;}//si i<0, on laisse l'identité (l'inverse n'est pas défini)
+    i--;}//si i<0, on laisse l'identitï¿½ (l'inverse n'est pas dï¿½fini)
 	return resultat;
 }
 cplx CompositionRecursive::evalFast() {
@@ -181,7 +184,7 @@ cplx CompositionRecursive::evalFast() {
     Identity::setCurrentComplex(resultat);
     resultat = argument->evalFast();
     i--;
-  }//si i<0, on laisse l'identité (l'inverse n'est pas défini)
+  }//si i<0, on laisse l'identitï¿½ (l'inverse n'est pas dï¿½fini)
   Identity::setCurrentComplex(current_sauv);
 	return resultat;
 }
@@ -202,37 +205,37 @@ cplx Exposant::eval(cplx & z) {	return argument->eval(z)^exposant;}
 cplx Exposant::evalFast()   {	return argument->evalFast()^exposant;}
 cplx Oppose::eval(cplx & z) { return -argument->eval(z); }
 cplx Oppose::evalFast()   { return -argument->evalFast(); }
-cplx Sin::eval(cplx & z)	{ return sin(argument->eval(z)); }
-cplx Sin::evalFast()	    { return sin(argument->evalFast()); }
-cplx Cos::eval(cplx & z)	{ return cos(argument->eval(z)); }
-cplx Cos::evalFast()	    { return cos(argument->evalFast()); }
-cplx Tan::eval(cplx & z)	{ return tan(argument->eval(z)); }
-cplx Tan::evalFast()	      { return tan(argument->evalFast()); }
-cplx Exp::eval(cplx & z)	{ return exp(argument->eval(z)); }
-cplx Exp::evalFast()	    { return exp(argument->evalFast()); }
-cplx Sinh::eval(cplx & z)	{ return sinh(argument->eval(z)); }
-cplx Sinh::evalFast()	    { return sinh(argument->evalFast()); }
-cplx Cosh::eval(cplx & z)	{ return cosh(argument->eval(z)); }
-cplx Cosh::evalFast()	    { return cosh(argument->evalFast()); }
-cplx Tanh::eval(cplx & z)	{ return tanh(argument->eval(z)); }
-cplx Tanh::evalFast()	    { return tanh(argument->evalFast()); }
-cplx Ln::eval(cplx & z)		{ return ln(argument->eval(z)); }
-cplx Ln::evalFast()	    	{ return ln(argument->evalFast()); }
-cplx Sqrt::eval(cplx & z)	{ return sqrt(argument->eval(z)); }
-cplx Sqrt::evalFast()	    { return sqrt(argument->evalFast()); }
-cplx Argsh::eval(cplx & z)	{ return argsh(argument->eval(z)); }
-cplx Argsh::evalFast()	    { return argsh(argument->evalFast()); }
-cplx Argch::eval(cplx & z)	{ return argch(argument->eval(z)); }
-cplx Argch::evalFast()	    { return argch(argument->evalFast()); }
-cplx Argth::eval(cplx & z)	{ return argth(argument->eval(z)); }
-cplx Argth::evalFast()	    { return argth(argument->evalFast()); }
+cplx Sin::eval(cplx & z)	{ cplx tmp = argument->eval(z); return sin(tmp); }
+cplx Sin::evalFast()	    { cplx tmp = argument->evalFast(); return sin(tmp); }
+cplx Cos::eval(cplx & z)	{ cplx tmp = argument->eval(z); return cos(tmp); }
+cplx Cos::evalFast()	    { cplx tmp = argument->evalFast(); return cos(tmp); }
+cplx Tan::eval(cplx & z)	{ cplx tmp = argument->eval(z); return tan(tmp); }
+cplx Tan::evalFast()	      { cplx tmp = argument->evalFast(); return tan(tmp); }
+cplx Exp::eval(cplx & z)	{ cplx tmp = argument->eval(z); return exp(tmp); }
+cplx Exp::evalFast()	    { cplx tmp = argument->evalFast(); return exp(tmp); }
+cplx Sinh::eval(cplx & z)	{ cplx tmp = argument->eval(z); return sinh(tmp); }
+cplx Sinh::evalFast()	    { cplx tmp = argument->evalFast(); return sinh(tmp); }
+cplx Cosh::eval(cplx & z)	{ cplx tmp = argument->eval(z); return cosh(tmp); }
+cplx Cosh::evalFast()	    { cplx tmp = argument->evalFast(); return cosh(tmp); }
+cplx Tanh::eval(cplx & z)	{ cplx tmp = argument->eval(z); return tanh(tmp); }
+cplx Tanh::evalFast()	    { cplx tmp = argument->evalFast(); return tanh(tmp); }
+cplx Ln::eval(cplx & z)		{ cplx tmp = argument->eval(z); return ln(tmp); }
+cplx Ln::evalFast()	    	{ cplx tmp = argument->evalFast(); return ln(tmp); }
+cplx Sqrt::eval(cplx & z)	{ cplx tmp = argument->eval(z); return sqrt(tmp); }
+cplx Sqrt::evalFast()	    { cplx tmp = argument->evalFast(); return sqrt(tmp); }
+cplx Argsh::eval(cplx & z)	{ cplx tmp = argument->eval(z); return argsh(tmp); }
+cplx Argsh::evalFast()	    { cplx tmp = argument->evalFast(); return argsh(tmp); }
+cplx Argch::eval(cplx & z)	{ cplx tmp = argument->eval(z); return argch(tmp); }
+cplx Argch::evalFast()	    { cplx tmp = argument->evalFast(); return argch(tmp); }
+cplx Argth::eval(cplx & z)	{ cplx tmp = argument->eval(z); return argth(tmp); }
+cplx Argth::evalFast()	    { cplx tmp = argument->evalFast(); return argth(tmp); }
 
-cplx Arcsin::eval(cplx & z)	{ return arcsin(argument->eval(z)); }
-cplx Arcsin::evalFast()	    { return arcsin(argument->evalFast()); }
-cplx Arccos::eval(cplx & z)	{ return arccos(argument->eval(z)); }
-cplx Arccos::evalFast()	    { return arccos(argument->evalFast()); }
-cplx Arctan::eval(cplx & z)	{ return arctan(argument->eval(z)); }
-cplx Arctan::evalFast()	    { return arctan(argument->evalFast()); }
+cplx Arcsin::eval(cplx & z)	{ cplx tmp = argument->eval(z); return arcsin(tmp); }
+cplx Arcsin::evalFast()	    { cplx tmp = argument->evalFast(); return arcsin(tmp); }
+cplx Arccos::eval(cplx & z)	{ cplx tmp = argument->eval(z); return arccos(tmp); }
+cplx Arccos::evalFast()	    { cplx tmp = argument->evalFast(); return arccos(tmp); }
+cplx Arctan::eval(cplx & z)	{ cplx tmp = argument->eval(z); return arctan(tmp); }
+cplx Arctan::evalFast()	    { cplx tmp = argument->evalFast(); return arctan(tmp); }
 
 cplx Real::eval(cplx & z)   { return argument->eval(z).realcplx(); }
 cplx Real::evalFast()       { return argument->evalFast().realcplx(); }
@@ -279,9 +282,9 @@ bool FunctionMultiple::simplifieArgFunctionMultiple() {
 Function* FunctionMultiple::simplifie() {
   if(!simplifieArgFunctionMultiple()) return this;
 	//Ici, cela veut dire que l'argument est constant.
-	//On fait donc simple... on garde la constante de l'argument, modifiée, et on se supprime.
+	//On fait donc simple... on garde la constante de l'argument, modifiï¿½e, et on se supprime.
 	cplx res = eval((dynamic_cast<Constante*>(argument))->valeur);
-	kill();//On tue récursivement le noeud et son fils.
+	kill();//On tue rï¿½cursivement le noeud et son fils.
 	return new Constante(res);//Et on retourne une nouvelle constante.
 }
 
@@ -299,7 +302,8 @@ cplx SommeMultiple::eval(cplx & z) {
   if( d*s > f*s || s == 0)
     return resultat;
 	for(double k=d; k<=f; k+=s) {
-		var->set(cplx(k,0));//Effet de bord, les sous-fonctions vont voir la variable changer.
+    cplx tmp(k, 0); 
+		var->set(tmp);//Effet de bord, les sous-fonctions vont voir la variable changer.
 		resultat += argument->eval(z);
 	}
 	return resultat;
@@ -312,7 +316,8 @@ cplx SommeMultiple::evalFast() {
   if( d*s > f*s || s == 0)
     return resultat;
 	for(double k=d; k<=f; k+=s) {
-		var->set(cplx(k,0));//Effet de bord, les sous-fonctions vont voir la variable changer.
+		cplx tmp(k, 0); 
+    var->set(tmp);//Effet de bord, les sous-fonctions vont voir la variable changer.
 		resultat += argument->evalFast();
 	}
 	return resultat;
@@ -332,7 +337,8 @@ cplx ProduitMultiple::eval(cplx & z) {
   if( d*s > f*s || s == 0)
     return resultat;
 	for(double k=d; k<=f; k+=s) {
-		var->set(cplx(k,0)); //Effet de bord, les sous-fonctions vont voir la variable changer.
+		cplx tmp(k, 0); 
+    var->set(tmp);//Effet de bord, les sous-fonctions vont voir la variable changer.
 		resultat*= argument->eval(z);
 	}
 	return resultat;
@@ -345,7 +351,8 @@ cplx ProduitMultiple::evalFast() {
   if( d*s > f*s || s == 0)
     return resultat;
 	for(double k=d; k<=f; k+=s) {
-		var->set(cplx(k,0)); //Effet de bord, les sous-fonctions vont voir la variable changer.
+		cplx tmp(k, 0); 
+    var->set(tmp);//Effet de bord, les sous-fonctions vont voir la variable changer.
 		resultat*= argument->evalFast();
 	}
 	return resultat;
@@ -355,19 +362,23 @@ CompositionMultiple::CompositionMultiple(Function* argument, Variable *theVar, F
 	:FunctionMultiple(argument, theVar, theDebut, theFin, NULL) {
 }
 cplx CompositionMultiple::eval(cplx & z) {
-  var->set(debut->eval(z));
+  cplx tmp = debut->eval(z);
+  var->set(tmp);
   double count = fin->eval(z).real();
   while (count > 0) {
-    var->set(argument->eval(z));
+    cplx tmp=argument->eval(z);
+    var->set(tmp);
     count--;
   }
 	return var->evalFast();
 }
 cplx CompositionMultiple::evalFast() {
-  var->set(debut->evalFast());
+  cplx tmp = debut->evalFast();
+  var->set(tmp);
   double count = fin->evalFast().real();
   while (count > 0) {
-    var->set(argument->evalFast());
+    cplx tmp=argument->evalFast();
+    var->set(tmp);
     count--;
   }
 	return var->evalFast();
@@ -398,7 +409,7 @@ void VariableListe::killf() {
 	Variable* temp=varList->tete;
 	while(temp) {
 		Variable *suivante=temp->prev();
-		delete temp;	//il n'y a qu'ici qu'on a le droit de détruire les variables
+		delete temp;	//il n'y a qu'ici qu'on a le droit de dï¿½truire les variables
 		temp=suivante;
 	}
 	delete varList;
