@@ -29,18 +29,18 @@ TCHAR *Function::toStringConst(TCHAR* const data_const, TCHAR *max_data, STRING_
 void FunctionUnary::toString_name(StringRendering &s,
                                   TCHAR* function_name, bool parenthesis) {
   if(parenthesis)
-    s << function_name << TEXT('(') << argument << TEXT(')');
+    s << function_name << TEXTC('(') << argument << TEXTC(')');
   else if(s.type() == OPENOFFICE3_TYPE || s.type() == LATEX_TYPE)
-    s << function_name << TEXT('{') << argument << TEXT('}');
+    s << function_name << TEXTC('{') << argument << TEXTC('}');
   else
     s << function_name << argument;
 }
 
 void FunctionBinary::toString_symbol(StringRendering &s, TCHAR* symbol, bool parentheses_possibles) {
   if(argument->priorite() < priorite() && parentheses_possibles) {
-    s << TEXT('(') << argument << TEXT(')');
+    s << TEXTC('(') << argument << TEXTC(')');
   } else if(s.type() == OPENOFFICE3_TYPE || s.type() == LATEX_TYPE) {
-    s << TEXT('{') << argument << TEXT('}');
+    s << TEXTC('{') << argument << TEXTC('}');
   } else {
     s << argument;
   }
@@ -48,20 +48,20 @@ void FunctionBinary::toString_symbol(StringRendering &s, TCHAR* symbol, bool par
   s << symbol;
 
 	if(argument2->priorite() <= priorite())
-    s << TEXT('(') << argument2 << TEXT(')');
+    s << TEXTC('(') << argument2 << TEXTC(')');
   else if(s.type() == OPENOFFICE3_TYPE || s.type() == LATEX_TYPE)
-    s << TEXT('{') << argument2 << TEXT('}');
+    s << TEXTC('{') << argument2 << TEXTC('}');
   else
     s << argument2;
 }
 void Identity::toString(StringRendering &s) {
-	s << TEXT('z');
+	s << TEXTC('z');
 }
 void Identity_x::toString(StringRendering &s) {
-	s << TEXT('x');
+	s << TEXTC('x');
 }
 void Identity_y::toString(StringRendering &s) {
-	s << TEXT('y');
+	s << TEXTC('y');
 }
 
 
@@ -89,25 +89,25 @@ void Division::toString(StringRendering &s) {
   	toString_symbol(s, TEXT(" over "), false);
   else if(s.type() == LATEX_TYPE) {
     s << TEXT("\\frac");
-    s << TEXT('{') << argument << TEXT('}');
-    s << TEXT('{') << argument2 << TEXT('}');
+    s << TEXTC('{') << argument << TEXTC('}');
+    s << TEXTC('{') << argument2 << TEXTC('}');
   } else
   	toString_symbol(s, TEXT("/"));
 }
 
 void ExposantComplexe::toString(StringRendering &s) {
   if(argument->priorite() <= priorite()) {
-    s << TEXT('(') << argument << TEXT(')');
+    s << TEXTC('(') << argument << TEXTC(')');
   } else if(s.type() == OPENOFFICE3_TYPE || s.type() == LATEX_TYPE) {
-    s << TEXT('{') << argument << TEXT('}');
+    s << TEXTC('{') << argument << TEXTC('}');
   } else {
     s << argument;
   }
-  s << TEXT('^');
+  s << TEXTC('^');
   if(s.type() == OPENOFFICE3_TYPE || s.type() == LATEX_TYPE)
-    s << TEXT('{') << argument2 << TEXT('}');
+    s << TEXTC('{') << argument2 << TEXTC('}');
   else
-	  s << TEXT('(') << argument2 << TEXT(')');
+	  s << TEXTC('(') << argument2 << TEXTC(')');
 }
 
 void Compose::toString(StringRendering &s) {
@@ -115,7 +115,7 @@ void Compose::toString(StringRendering &s) {
     s << TEXT("\\text{o}");
   } else
     s << TEXT("o");
-  s << TEXT('(') << argument << TEXT(',') << argument2 << TEXT(')');
+  s << TEXTC('(') << argument << TEXTC(',') << argument2 << TEXTC(')');
 }
 
 void CompositionRecursive::toString(StringRendering &s) {
@@ -123,21 +123,21 @@ void CompositionRecursive::toString(StringRendering &s) {
     s << TEXT("\\text{oo}");
   } else
     s << TEXT("oo");
-  s << TEXT('(') << argument << TEXT(',') << nbCompose << TEXT(')');
+  s << TEXTC('(') << argument << TEXTC(',') << nbCompose << TEXTC(')');
 }
 
 
 void Exposant::toString(StringRendering &s) {
   if(argument->priorite() <= priorite()) {
-    s << TEXT('(');
+    s << TEXTC('(');
 	    s << argument;
-    s << TEXT(')');
+    s << TEXTC(')');
   } else if(s.type() == OPENOFFICE3_TYPE || s.type() == LATEX_TYPE) {
-    s << TEXT('{') << argument << TEXT('}');
+    s << TEXTC('{') << argument << TEXTC('}');
   } else {
 	  s << argument;
   }
-  s << TEXT('^') << exposant;
+  s << TEXTC('^') << exposant;
 }
 
 void Constante::toString(StringRendering &s) {
@@ -329,17 +329,17 @@ void FunctionMultiple::toString_multiple(StringRendering s, TCHAR* function_name
     return;
   }
 	s << function_name;
-  s << TEXT('(');
+  s << TEXTC('(');
     s << argument;
-  s << TEXT(',');
+  s << TEXTC(',');
 	  s << var;
-	s << TEXT(',');
+	s << TEXTC(',');
     s << debut;
-	s << TEXT(',');
+	s << TEXTC(',');
     s << fin;
-	s << TEXT(',');
+	s << TEXTC(',');
     s << step;
-	s << TEXT(')');
+	s << TEXTC(')');
 }
 
 void SommeMultiple::toString(StringRendering &s) {
@@ -370,15 +370,15 @@ void CompositionMultiple::toString(StringRendering &s) {
   } else {
 	  s << TEXT("comp");
   }
-  s << TEXT('(');
+  s << TEXTC('(');
     s << argument;
-	s << TEXT(',');
+	s << TEXTC(',');
 	  s << var;
-	s << TEXT(',');
+	s << TEXTC(',');
     s << debut;
-	s << TEXT(',');
+	s << TEXTC(',');
     s << fin;
-	s << TEXT(')');
+	s << TEXTC(')');
 }
 
 StringRendering::StringRendering(TCHAR* const data_, TCHAR* const max_data_):

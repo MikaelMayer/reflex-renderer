@@ -15,8 +15,6 @@
 cplx::cplx():r(0),i(0)							{}
 cplx::cplx(double rr):r(rr),i(0)				{}
 cplx::cplx(double rr, double ii):r(rr),i(ii)	{}
-inline double cplx::real()					{ return r; }
-inline double cplx::imag()					{ return i; }
 cplx& cplx::setreal(double rr)		{ r=rr; return *this;}
 cplx& cplx::setimag(double ii)		{ i=ii; return *this;}
 cplx cplx::realcplx()				{ return cplx(r,0); }
@@ -214,22 +212,22 @@ void cplx::toStringRight(TCHAR *ibuff, int size) {
 }
 void cplx::toString(TCHAR *ibuff) {
 	if(i==0)
-		_stprintf(ibuff, TEXT("%Lg"), r);
+		_stprintf(ibuff, TEXT("%g"), r);
   else if(r==0) {
     if(i==1) {
 		  _stprintf(ibuff, TEXT("i"));
     } else if(i==-1) {
       _stprintf(ibuff, TEXT("-i"));
     } else {
-      _stprintf(ibuff, TEXT("%Lgi"), i);
+      _stprintf(ibuff, TEXT("%gi"), i);
     }
   } else {
     if(i==1) {
-		  _stprintf(ibuff, TEXT("%Lg+i"), r, i);
+		  _stprintf(ibuff, TEXT("%g+i"), r);
     } else if(i==-1) {
-      _stprintf(ibuff, TEXT("%Lg-i"), r, i);
+      _stprintf(ibuff, TEXT("%g-i"), r);
     } else {
-      _stprintf(ibuff, TEXT("%Lg%+Lgi"), r, i);
+      _stprintf(ibuff, TEXT("%g%+gi"), r, i);
     }
 		
   }

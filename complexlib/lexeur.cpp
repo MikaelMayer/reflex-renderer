@@ -394,7 +394,7 @@ Function *Parseur::lireE() {
 	PARSE_ERROR f;
 	try {
 		Total = lireP();
-		Lexeme *E1=NULL, *E2=NULL;
+		Lexeme *E1=NULL;
 		while(!termine()) {
 			if(lexCourant->isOperator()) {
 				TCHAR op = lexCourant->valueOperator();
@@ -420,7 +420,7 @@ Function *Parseur::lireP() {
 	PARSE_ERROR f;
 	try {
 		Total = lireF();
-		Lexeme *E1=NULL, *E2=NULL;
+		Lexeme *E1=NULL;
 		while(!termine() && lexCourant) {
 			if(lexCourant->isOperator()) {
 				TCHAR op = lexCourant->valueOperator();
@@ -444,11 +444,10 @@ Function *Parseur::lireP() {
 	throw f;
 }
 Function *Parseur::lireF() {
-	Function *Total = NULL, *F2 = NULL;
+	Function *Total = NULL;
 	PARSE_ERROR f;
 	try {
 		Total = lireX();
-		Lexeme *E1=NULL, *E2=NULL;
 		while(!termine()) {
 			if(lexCourant->isOperator()) {
 				if(lexCourant->valueOperator()==L'^') {
@@ -473,7 +472,7 @@ Function *Parseur::lireF() {
 }
 Function *Parseur::lireX() {
 	PARSE_ERROR f;
-	Lexeme *E1 = lexCourant, *E2 = NULL;
+	Lexeme *E1 = lexCourant;
   if (!E1)
     throw PARSE_ERROR_EMPTY;
 	if(E1->isOpeningParenthesis()) {
@@ -509,7 +508,8 @@ Function *Parseur::lireX() {
     if(E1->isComa() || E1->isClosingParenthesis())
       parseBackwardsAndThrowError(PARSE_ERROR_EMPTY);
     else
-  		parseBackwardsAndThrowError(PARSE_ERROR_UNKNOWN);
+  	  parseBackwardsAndThrowError(PARSE_ERROR_UNKNOWN);
+    return NULL;
   }
 }
 
@@ -616,7 +616,7 @@ int Parseur::lireEntier() {
 }
 
 double Parseur::lireFloat() {
-	double k;
+  double k = 0;
   if(!lexCourant)
     parseBackwardsAndThrowError(PARSE_ERROR_FLOAT);
 	if(lexCourant->isFloat())
