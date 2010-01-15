@@ -27,8 +27,8 @@ public:
 	cplx();
 	cplx(double rr);
 	cplx(double rr, double ii);
-	double real();
-	double imag();
+	inline double real() { return r; }
+	inline double imag() { return i; }
 	cplx& setreal(double rr);
 	cplx& setimag(double ii);
 	cplx realcplx();
