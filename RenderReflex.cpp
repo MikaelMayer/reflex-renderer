@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Name: RenderReflex.cpp
- * Author: Mikaël Mayer
+ * Author: Mikaï¿½l Mayer
  * Work started: 20080614
  * Purpose:  Render a reflex given some arguments.
  * Format: Ini file.
@@ -18,8 +18,11 @@ output=c:\the\path\where\to\store\the\file.bmp
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <string.h>
 #include <algorithm>
-#include <argstream.h>
+#include <math.h>
+#include <stdio.h>
+#include "argstream.h"
 #include "libpng/png.h"
 //#include "tbb/task_scheduler_init.h"
 //#include "tbb/parallel_for.h"
@@ -29,11 +32,23 @@ output=c:\the\path\where\to\store\the\file.bmp
 #include "complexlib/functions.h"
 #include "complexlib/lexeur.h"
 
+#ifdef _MSC_VER
+#define SSCANF(inputstr,formatstr,...) \
+    sscanf_s(inputstr,formatstr, __VA_ARGS__)
+#else
+#define SSCANF(inputstr,formatstr,...) \
+    sscanf(inputstr,formatstr, __VA_ARGS__)
+#define _strnicmp strncasecmp
+#endif
+
+
+
+
 #define MAX_FUNC_LENGTH 0xFFFF
 //using namespace tbb;
 using namespace std;
 static const size_t N = 6;
-const char options_line_string[] = TEXT("@Options:");
+const TCHAR* options_line_string = TEXT("@Options:");
 
 /*class SubStringFinder {
   const string str;
@@ -238,7 +253,8 @@ int renderBmp(const char* formula_string, int width, int height,
     for (int j = 0; j < y; j++) {
       cout << j << "/" << y << endl;
       for (int i = 0; i < x; i++) {
-        COLORREF color = f_formula->eval(cplx(i*iMult+iBase, j*jMult+jBase)).couleur24();
+        cplx z(i*iMult+iBase, j*jMult+jBase);
+        COLORREF color = f_formula->eval(z).couleur24();
         putInvertedNumber(output_file, 3, color);
       }
       putInvertedNumber(output_file, offset, 0);
@@ -251,19 +267,21 @@ int renderBmp(const char* formula_string, int width, int height,
     double *valeursj = new double[x];
     double *coefdirs = new double[x - 1];
     for (int i = 0; i < x; i++) {
-      valeurs[i] = f_formula->eval(cplx(i*iMult+iBase, 0)).real();
+      cplx z(i*iMult+iBase, 0);
+      valeurs[i] = f_formula->eval(z).real();
       valeursj[i] = (valeurs[i] - jBase)/jMult;
     }
     for (int i = 0; i < x-1; i++) {
       double tmp = (valeursj[i+1]-valeursj[i]);
-      coefdirs[i] = 1.0/sqrt(1.0+tmp*tmp);
+      double tmp2 = 1.0+(tmp*tmp);
+      coefdirs[i] = 1.0/sqrt(tmp2);
       coefdirs[i] *= tmp > 0 ? 1 : -1;
     }
     for (int j = 0; j < y; j++) {
       cout << j << "/" << y << endl;
       color_base = cplx(j * jMult + jBase, 0).couleur24();
       for (int i = 0; i < x; i++) {
-        //Calcul de la distance du point à la courbe
+        //Calcul de la distance du point ï¿½ la courbe
         double dmin = 2.0;
         if((j > valeursj[i]+0.5 && (i == 0 || j > valeursj[i - 1] + 0.5)
                                 && (i == x - 1 || j > valeursj[i + 1] + 0.5))
@@ -300,7 +318,7 @@ int renderBmp(const char* formula_string, int width, int height,
           color = color_base;
         } else if(dmin >= limup) { // En dehors de la ligne
           color = 0xFFFFFF;
-        } else {                   // Sur la limite de la ligne: dégradé
+        } else {                   // Sur la limite de la ligne: dï¿½gradï¿½
           double coef = (dmin - 0.5)/(limup - 0.5);
           unsigned int blu = ((color_base & 0xFF0000) >> 16);
           unsigned int gre = ((color_base & 0x00FF00) >> 8);
@@ -412,7 +430,8 @@ int renderPng(const char* formula_string, int width, int height,
     for (int j = y-1; j >= 0; j--) {
       cout << (y-1-j) << "/" << y << endl;
       for (int i = 0; i < x; i++) {
-        COLORREF color = f_formula->eval(cplx(i*iMult+iBase, j*jMult+jBase)).couleur24();
+        cplx z(i*iMult+iBase, j*jMult+jBase);
+        COLORREF color = f_formula->eval(z).couleur24();
         row_pointer[i*3+2] = (color>>0)  & 0xFF;
         row_pointer[i*3+1] = (color>>8)  & 0xFF;
         row_pointer[i*3+0] = (color>>16) & 0xFF;
@@ -427,7 +446,8 @@ int renderPng(const char* formula_string, int width, int height,
     double *valeursj = new double[x];
     double *coefdirs = new double[x - 1];
     for (int i = 0; i < x; i++) {
-      valeurs[i] = f_formula->eval(cplx(i*iMult+iBase, 0)).real();
+      cplx z(i*iMult+iBase, 0);
+      valeurs[i] = f_formula->eval(z).real();
       valeursj[i] = (valeurs[i] - jBase)/jMult;
     }
     for (int i = 0; i < x-1; i++) {
@@ -439,7 +459,7 @@ int renderPng(const char* formula_string, int width, int height,
       cout << (y-1-j) << "/" << y << endl;
       color_base = cplx(j * jMult + jBase, 0).couleur24();
       for (int i = 0; i < x; i++) {
-        //Calcul de la distance du point à la courbe
+        //Calcul de la distance du point ï¿½ la courbe
         double dmin = 2.0;
         if((j > valeursj[i]+0.5 && (i == 0 || j > valeursj[i - 1] + 0.5)
                                 && (i == x - 1 || j > valeursj[i + 1] + 0.5))
@@ -476,7 +496,7 @@ int renderPng(const char* formula_string, int width, int height,
           color = color_base;
         } else if(dmin >= limup) { // En dehors de la ligne
           color = 0xFFFFFF;
-        } else {                   // Sur la limite de la ligne: dégradé
+        } else {                   // Sur la limite de la ligne: dï¿½gradï¿½
           double coef = (dmin - 0.5)/(limup - 0.5);
           unsigned int blu = ((color_base & 0xFF0000) >> 16);
           unsigned int gre = ((color_base & 0x00FF00) >> 8);
@@ -675,9 +695,9 @@ int main(int argc, char** argv) {
      >> parameter('x', "comment", comment_string, "The comment for the formula", false)
      >> help();
 
-  sscanf_s(deltax_string.c_str(), "%d", &delta_x);
-  sscanf_s(deltay_string.c_str(), "%d", &delta_y);
-  sscanf_s(colornan_string.c_str(), "%x", &colornan);
+  SSCANF(deltax_string.c_str(), "%d", &delta_x);
+  SSCANF(deltay_string.c_str(), "%d", &delta_y);
+  SSCANF(colornan_string.c_str(), "%x", &colornan);
  // cout << "colornan = " << colornan << endl;
   if (as.helpRequested()) {
     cout<<as.usage()<<endl;

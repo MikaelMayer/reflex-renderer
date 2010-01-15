@@ -1,6 +1,6 @@
 /*******************************
  * Name:	funcalea.cpp
- * Author:	Mikaël Mayer
+ * Author:	Mikaï¿½l Mayer
  * Purpose:	This file enable to create random functions thanks to a random-tree.
  * History: Work started 20071029
  *********************************/
@@ -49,7 +49,7 @@ void Tree::addRandomNodes(int n) {
 }
 
 cplx randcplx() {
-	//Nombre décimal aléatoire entre -4 et 4
+	//Nombre dï¿½cimal alï¿½atoire entre -4 et 4
 	return cplx((double)(rand()%400)/50.0-4.0,
 				(double)(rand()%400)/50.0-4.0);
 }

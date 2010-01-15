@@ -1,6 +1,6 @@
 /*******************************
  * Name:	functions_tostring.cpp
- * Author:	Mikaël Mayer
+ * Author:	Mikaï¿½l Mayer
  * Purpose:	Implements the toString methods of Function class
  * History: Work started 20070901
  *********************************/
@@ -143,10 +143,10 @@ void Exposant::toString(StringRendering &s) {
 void Constante::toString(StringRendering &s) {
 	TCHAR nombre[256];
 	valeur.toString(nombre);
-  bool parenthesis = (_tcschr(nombre, TEXT('+'))!=NULL || _tcschr(nombre, TEXT('-'))!=NULL);
-	if(parenthesis) s << TEXT('(');
+  bool parenthesis = (_tcschr(nombre, TEXTC('+'))!=NULL || _tcschr(nombre, TEXTC('-'))!=NULL);
+	if(parenthesis) s << TEXTC('(');
   s << nombre;
-	if(parenthesis) s << TEXT(')');
+	if(parenthesis) s << TEXTC(')');
 }
 
 void Oppose::toString(StringRendering &s) {
@@ -306,7 +306,7 @@ void FunctionMultiple::toString_multiple(StringRendering s, TCHAR* function_name
     s << function_name << TEXT("_{");
     s << var << TEXT("=") << debut;
     if(!(step->isConstant() && step->evalFast().real() == 1 && step->evalFast().imag() == 0)) {
-      s << "," << var << TEXT("+=") << step;
+      s << TEXT(",") << var << TEXT("+=") << step;
     }
     s << TEXT("}^{");
     s << fin;
@@ -319,7 +319,7 @@ void FunctionMultiple::toString_multiple(StringRendering s, TCHAR* function_name
     s << function_name << TEXT(" from {");
     s << var << TEXT("=") << debut;
     if(!(step->isConstant() && step->evalFast().real() == 1 && step->evalFast().imag() == 0)) {
-      s << ", " << var << TEXT("+=") << step;
+      s << TEXT(", ") << var << TEXT("+=") << step;
     }
     s << TEXT("} to {");
     s << fin;
@@ -436,12 +436,12 @@ StringRendering& StringRenderingOpenOffice::operator<<(Function* const f) {
 
 StringRendering& StringRenderingOpenOffice::operator<<(TCHAR tch) {
   if(notReachedEnd()) {
-    if(tch == TEXT('(')) {
+    if(tch == TEXTC('(')) {
       StringRendering::operator <<(TEXT(" left "));
-      StringRendering::operator <<(TEXT('('));
-    } else if(tch == TEXT(')')) {
+      StringRendering::operator <<(TEXTC('('));
+    } else if(tch == TEXTC(')')) {
       StringRendering::operator <<(TEXT(" right "));
-      StringRendering::operator <<(TEXT(')'));
+      StringRendering::operator <<(TEXTC(')'));
     } else {
       *(data++) = tch;
     }
@@ -462,12 +462,12 @@ StringRendering& StringRenderingLaTeX::operator<<(Function* const f) {
 
 StringRendering& StringRenderingLaTeX::operator<<(TCHAR tch) {
   if(notReachedEnd()) {
-    if(tch == TEXT('(')) {
+    if(tch == TEXTC('(')) {
       StringRendering::operator <<(TEXT("\\left"));
-      StringRendering::operator <<(TEXT('('));
-    } else if(tch == TEXT(')')) {
+      StringRendering::operator <<(TEXTC('('));
+    } else if(tch == TEXTC(')')) {
       StringRendering::operator <<(TEXT("\\right"));
-      StringRendering::operator <<(TEXT(')'));
+      StringRendering::operator <<(TEXTC(')'));
     } else {
       *(data++) = tch;
     }

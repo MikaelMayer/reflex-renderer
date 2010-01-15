@@ -1,6 +1,6 @@
 /*******************************
  * Name:	lexeme.h
- * Author:	Mikaël Mayer
+ * Author:	Mikaï¿½l Mayer
  * Purpose:	The lexeme class and its derived
 	enable to get a small part of string and
 	to interpret it correctly
@@ -31,7 +31,7 @@ NO_PARSE_ERROR = -1} ;
 
 class Lexeme {
 public:
-	Lexeme *lexPrec;//Pour tous les tuer à la fin.
+	Lexeme *lexPrec;//Pour tous les tuer ï¿½ la fin.
 	virtual bool isIdentity()			{return false;}
 	virtual bool isComplex()			{return false;}
 	virtual bool isFloat()				{return false;}
