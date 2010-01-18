@@ -441,7 +441,7 @@ public:
 	virtual ~FunctionMultiple();
 	virtual Function* kill();
 	virtual Function* simplifie();
-  void toString_multiple(StringRendering s, TCHAR* symbol);
+  void toString_multiple(StringRendering &s, TCHAR* symbol);
 	bool simplifieArgFunctionMultiple();
 };
 

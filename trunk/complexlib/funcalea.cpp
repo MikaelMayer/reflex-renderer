@@ -8,33 +8,54 @@
 #include "stdafx.h"
 #include "funcalea.h"
 
-void Tree2::fillEmptyNumber(int i) {
+int Tree2::fillEmptyNumber(int i) {
 	if(numberEmpty<i)
-		return;
+    return this->numberFinalNodes;
 	if(left==NULL) {
 		if(i==1) {
-			left = new Tree2();
+      if(right == NULL) this->numberFinalNodes--;
+      left = new Tree2(this->parent);
+      this->numberFinalNodes++;
 		} else if(right==NULL && i==2) {
-			right = new Tree2();
+      if(left == NULL) this->numberFinalNodes--;
+			right = new Tree2(this->parent);
+      this->numberFinalNodes++;
 		} else if(right!=NULL) {
-			right->fillEmptyNumber(i-1);
+      this->numberFinalNodes = right->fillEmptyNumber(i-1);
 		}
-	} else {
-		int n=left->numberEmpty;
-		if(i<=n)
-			left->fillEmptyNumber(i);
-		else if (right!=NULL){
-			right->fillEmptyNumber(i-n);
+	} else { // left != NULL
+		int n = left->numberEmpty;
+    if(i<=n) {
+			this->numberFinalNodes = left->fillEmptyNumber(i);
+      if(right != NULL) this->numberFinalNodes+= right->numberFinalNodes;
+    } else if (right!=NULL) {
+			this->numberFinalNodes = right->fillEmptyNumber(i-n);
+      this->numberFinalNodes+= left->numberFinalNodes;
 		} else if(right == NULL && i==n+1) {
-			right = new Tree2();
+			right = new Tree2(this->parent);
+      this->numberFinalNodes++;
 		}
 	}
 	numberEmpty++;
+  return this->numberFinalNodes;
+}
+
+int Tree2::computeIndexFinalNode(int start) {
+  if(left == NULL && right == NULL){
+    indexFinalNode = start;
+  } else {
+    int leftFinalNodes = 0;
+    if(left) {
+      leftFinalNodes = left->computeIndexFinalNode(start);
+    }
+    if(right) right->computeIndexFinalNode(start + leftFinalNodes);
+  }
+  return numberFinalNodes;
 }
 
 void Tree::fillEmptyNumber(int i) {
 	if(t==NULL) {
-		t=new Tree2();
+		t=new Tree2(this);
 		return;
 	}
 	t->fillEmptyNumber(i);
@@ -61,13 +82,22 @@ Function* randPolynom(int degre) {
 
 Function *Tree2::convertToFunction(bool holo) {
 	if(left==NULL && right==NULL) {
-		int numbercasesIdentity = holo?1:4;
-		switch(rand()%numbercasesIdentity) {
-			case 0:
-			case 1:	return Identity::get();
-			case 2:	return Identity_x::get();
-			case 3:	return Identity_y::get();
-		}
+    Function* result = NULL;
+
+    if(parent->subFunction && parent->chosenSubFunctionIndex == this->indexFinalNode) {
+      Function* sf = parent->subFunction;
+      parent->subFunction = NULL;
+      return sf;
+    } else {
+		  int numbercasesIdentity = holo?1:4;
+		  switch(rand()%numbercasesIdentity) {
+			  case 0:
+			  case 1:	result= Identity::get(); break;
+			  case 2:	result = Identity_x::get(); break;
+			  case 3:	result= Identity_y::get(); break;
+		  }
+    }
+    return result;
 	}
 	Function *argument1=NULL, *argument2=NULL;
 	if(left!=NULL)
@@ -130,13 +160,14 @@ Function *Tree2::convertToFunction(bool holo) {
 Function *Tree::convertToFunction(bool holo) {
 	if(t==NULL) //Cas normalement improbable.
 		return new Constante(0.0);
+  chosenSubFunctionIndex = rand()%t->computeIndexFinalNode(0);
 	return t->convertToFunction(holo);
 }
 
-Function* Tree::createFuncAlea(int n, bool holo) {
+Function* Tree::createFuncAlea(int n, bool holo, Function* subfunction) {
 	Tree* t = new Tree();
-	//srand(1);
 	t->addRandomNodes(n);
+  t->subFunction = subfunction;
 	Function *resultat = t->convertToFunction(holo);
 	delete t;
 	return resultat;
