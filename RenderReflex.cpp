@@ -665,7 +665,7 @@ int main(int argc, char** argv) {
   int height = 201;
   string winmin_string = "-4-4i";
   string winmax_string = "4+4i";
-  string output_string = "c:\\tmp.bmp";
+  string output_string = "tmp.png";
   string deltax_string = "0";  int delta_x=0;
   string deltay_string = "0";  int delta_y=0;
   string comment_string = "";
@@ -675,7 +675,6 @@ int main(int argc, char** argv) {
   bool realmode;
   bool openoffice_formula;
   bool latex_formula;
-  bool is_png;
   STRING_TYPE formula_style = DEFAULT_TYPE;
 
   as >> parameter('f', "formula", formula_string, "A formula like (1+2-x)/sin(z)", false)
@@ -691,14 +690,22 @@ int main(int argc, char** argv) {
      >> option('l', "latex", latex_formula, "If it outputs the formule using LaTeX style")
      >> parameter('d', "delta_x", deltax_string, "The horizontal shift", false)
      >> parameter('e', "delta_y", deltay_string, "The vertical shift", false)
-     >> option('g', "png", is_png, "If output in png format")
      >> parameter('x', "comment", comment_string, "The comment for the formula", false)
      >> help();
 
   SSCANF(deltax_string.c_str(), "%d", &delta_x);
   SSCANF(deltay_string.c_str(), "%d", &delta_y);
   SSCANF(colornan_string.c_str(), "%x", &colornan);
- // cout << "colornan = " << colornan << endl;
+
+  if(output_string.size() < 4) {
+    cout << "The output file name "<<output_string<< " is not valid. It should end with .png or .bmp" << endl;
+    exit(0);
+  }
+  string format_string = output_string.substr(output_string.size()-3,3);
+  if(format_string.compare("png") != 0 && format_string.compare("bmp") != 0) {
+    cout << "Only bmp and png are supported, not " << format_string << endl;
+    exit(0);
+  }
   if (as.helpRequested()) {
     cout<<as.usage()<<endl;
     exit(0);
@@ -712,6 +719,7 @@ int main(int argc, char** argv) {
   if(latex_formula)      formula_style = LATEX_TYPE;
 
   if(render_mode) {
+    bool is_png = (format_string == "png");
     if(is_png) {
       return renderPng(formula_string.c_str(), width, height,
           winmin_string.c_str(), winmax_string.c_str(), output_string.c_str(),

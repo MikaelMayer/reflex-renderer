@@ -271,6 +271,7 @@ Func vaw_windowResized()
   $tab = $vm_variable_windows[1]
   ;logging("GUI: "&$tab[0])
   $p = ControlGetPos($vaw_window, "", $vaw_slider)
+  If Not IsArray($p) Then Return ; TODO : say that the variable has been deleted
   $min = 0
   $max = $p[2]
   GUICtrlSetLimit($vaw_slider, $max, $min)

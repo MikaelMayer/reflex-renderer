@@ -301,7 +301,7 @@ void Variable::toString(StringRendering &s) {
   s << nom;
 }
 
-void FunctionMultiple::toString_multiple(StringRendering s, TCHAR* function_name) {
+void FunctionMultiple::toString_multiple(StringRendering &s, TCHAR* function_name) {
   if(s.type() == LATEX_TYPE) {
     s << function_name << TEXT("_{");
     s << var << TEXT("=") << debut;

@@ -530,7 +530,13 @@ Function *Parseur::lireFunction() {
 		lireParentheseOuvrante();
 		if(E1->isAlea()!=0) {
 			int k = (int)lireFloat();
-			Total = Tree::createFuncAlea(k, E1->isAlea()==1);
+      if(lexCourant && lexCourant->isComa()) {
+				lireVirgule();
+				F4 = lireE();
+        Total = Tree::createFuncAlea(k, E1->isAlea()==1, F4);
+			} else {
+        Total = Tree::createFuncAlea(k, E1->isAlea()==1);
+      }
 			macro=true;
 		} else if(E1->isBinaire()) {
 			Total = lireE();
