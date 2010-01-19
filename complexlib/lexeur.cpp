@@ -29,7 +29,7 @@ TCHAR* Parseur::errorNum[NUM_PARSE_ERRORS] = {
 	TEXT("Impossible call to a specialized function"),
 	TEXT("Unexpected end of formula"),
 	TEXT("Error at this point"),
-	TEXT("Missing '('"),
+	TEXT("Missing '(' for function"),
 	TEXT("Missing ')'"),
 	TEXT("Missing ','"),
 	TEXT("Missing a variable name (e.g. $i)"),
@@ -452,13 +452,13 @@ Function *Parseur::lireF() {
 			if(lexCourant->isOperator()) {
 				if(lexCourant->valueOperator()==L'^') {
 					avancerLex();
-					if(lexCourant->isInt()) {
+					if(lexCourant && lexCourant->isInt()) {
 						int k=lireEntier();
 						Total = new Exposant(Total, k);
-					} else {
+					} else if(lexCourant) {
 						Function *k = lireX();
 						Total = new ExposantComplexe(Total, k);
-					}
+					} else break;
 				} else break;
 			} else break;
 		}
