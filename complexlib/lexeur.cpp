@@ -534,6 +534,8 @@ Function *Parseur::lireFunction() {
 				lireVirgule();
 				F4 = lireE();
         Total = Tree::createFuncAlea(k, E1->isAlea()==1, F4);
+        // Now F4 is integrated to Total, we don't care about it anymore.
+        F4 = NULL;
 			} else {
         Total = Tree::createFuncAlea(k, E1->isAlea()==1);
       }
